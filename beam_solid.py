@@ -85,7 +85,7 @@ if beam_file is not None:
 
     # Create fields for the glyph representation.
     calculator = Calculator(Input=beam_extract_surface)
-    calculator.Function = '2.0 * ceil(node_val) * cross_section_radius'
+    calculator.Function = '2.0 * floor(node_value) * cross_section_radius'
     calculator.ResultArrayName = 'nodal_radius'
 
     # Represent the beam curve as a tube.
@@ -110,7 +110,7 @@ if beam_file is not None:
     # Create glyphs for nodal points.
     glyph, glyph_display = create_glyph(calculator, glyph_type='Sphere', scale_mode='scalar',
         scalars='nodal_radius', scale_factor=2, glyph_name='nodes')
-    ColorBy(glyph_display, ('POINTS', 'node_val'))
+    ColorBy(glyph_display, ('POINTS', 'node_value'))
 
 
 # Reset view to loaded geometry.
