@@ -40,23 +40,43 @@ def create_glyph(base, glyph_type='Arrow', scalars='None', vectors='None',
 def load_solid(solid_file):
     """Load the solid file in paraview."""
 
+    # Check the extension of the file to see if it is from baci or meshpy.
+    extension = os.path.splitext(solid_file)[1].lower()
+    if extension == '.pvd':
+        # Create the PVD reader.
+        solid_reader = PVDReader(FileName=solid_file)
+        is_baci = True
+    elif extension == '.vtu':
+        # Create the VTU reader.
+        solid_reader = XMLUnstructuredGridReader(FileName=solid_file)
+        is_baci = False
+    else:
+        raise TypeError('Extension has to be "pvd" or "vtu", '
+            + 'got {}!'.format(extension))
+
     # Create the PVD reader.
-    pvd_structure = PVDReader(FileName=solid_file)
+    pvd_structure = solid_reader
 
     # Set the name in paraview to the filename.
     RenameSource(os.path.basename(solid_file), pvd_structure)
 
     # Apply displacements.
-    warp_solid = WarpByVector(Input=pvd_structure)
-    warp_solid.Vectors = ['POINTS', 'displacement']
-    warp_solid.ScaleFactor = 1.0
+    if is_baci:
+        warp_solid = WarpByVector(Input=pvd_structure)
+        warp_solid.Vectors = ['POINTS', 'displacement']
+        warp_solid.ScaleFactor = 1.0
+        solid_display = Show(warp_solid, view)
+    else:
+        solid_display = Show(pvd_structure, view)
 
     # Set display style of solid.
-    solid_display = Show(warp_solid, view)
     solid_display.Representation = 'Surface With Edges'
 
     # Set opacity.
     solid_display.Opacity = 0.5
+
+    # Set nonlinear subdivision for quadratic elements.
+    solid_display.NonlinearSubdivisionLevel = 4
 
 
 def load_beam(beam_file):
