@@ -10,7 +10,7 @@ Use with programmable filter in paraview and execute with:
 # Import paraview moudles.
 from paraview import vtk
 
-# Get input and output objects (for now output is equal to input).
+# Get input and output objects.
 pdi = self.GetInput()
 pdo = self.GetOutput()
 
