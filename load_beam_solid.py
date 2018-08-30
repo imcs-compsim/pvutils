@@ -7,7 +7,7 @@ Load a solid and a beam into paraview and apply some filters.
 from paraview.simple import GetActiveViewOrCreate, PVDReader, RenameSource, \
     WarpByVector, Show, _DisableFirstRenderCameraReset, ColorBy, Glyph, \
     ExtractSurface, Tube, Calculator, CellDatatoPointData, Hide, \
-    XMLUnstructuredGridReader
+    XMLUnstructuredGridReader, ProgrammableFilter
 
 
 # Python imports.
@@ -18,6 +18,10 @@ def create_glyph(base, glyph_type='Arrow', scalars='None', vectors='None',
         scale_mode='off', scale_factor=1, glyph_mode='All Points',
         glyph_name=None):
     """Create a glyph in paraview and return the created object."""
+
+    # Show and hide the base, otherewise there is a bug.
+    Show(base, view)
+    Hide(base, view)
 
     # Create the glyph.
     glyph = Glyph(Input=base, GlyphType=glyph_type)
@@ -35,6 +39,14 @@ def create_glyph(base, glyph_type='Arrow', scalars='None', vectors='None',
     glyph_display = Show(glyph, view)
 
     return glyph, glyph_display
+
+
+def color_by(data, field_name, is_baci):
+    """Color the data by a certain field name."""
+    if is_baci:
+        ColorBy(data, ('POINTS', field_name))
+    else:
+        ColorBy(data, None)
 
 
 def load_solid(solid_file):
@@ -105,13 +117,8 @@ def load_beam(beam_file):
     # Extract the surface from the beam line.
     beam_extract_surface = ExtractSurface(Input=beam_cell_to_point)
 
-    # Create fields for the glyph representation.
-    calculator = Calculator(Input=beam_extract_surface)
-    calculator.Function = '2.0 * floor(node_value) * cross_section_radius'
-    calculator.ResultArrayName = 'nodal_radius'
-
     # Represent the beam curve as a tube.
-    beam_tube = Tube(Input=calculator)
+    beam_tube = Tube(Input=beam_extract_surface)
     beam_tube.Scalars = ['POINTS', 'cross_section_radius']
     beam_tube.VaryRadius = 'By Absolute Scalar'
     beam_tube.NumberofSides = 10
@@ -119,24 +126,24 @@ def load_beam(beam_file):
 
     # Show the tube.
     beam_tube_display = Show(beam_tube, view)
-    if is_baci:
-        ColorBy(beam_tube_display, ('POINTS', 'displacement'))
-    else:
-        ColorBy(beam_tube_display, None)
+    color_by(beam_tube_display, 'displacement', is_baci)
 
     # Create glyphs for triads.
-    create_glyph(calculator, vectors='base_vector_1', scale_mode='scalar',
+    create_glyph(beam_extract_surface, vectors='base_vector_1', scale_mode='scalar',
         scalars='cross_section_radius', scale_factor=6, glyph_name='base1')
-    create_glyph(calculator, vectors='base_vector_2', scale_mode='scalar',
+    create_glyph(beam_extract_surface, vectors='base_vector_2', scale_mode='scalar',
         scalars='cross_section_radius', scale_factor=6, glyph_name='base2')
-    create_glyph(calculator, vectors='base_vector_3', scale_mode='scalar',
+    create_glyph(beam_extract_surface, vectors='base_vector_3', scale_mode='scalar',
         scalars='cross_section_radius', scale_factor=6, glyph_name='base3')
 
-    # Create glyphs for nodal points.
-    glyph, glyph_display = create_glyph(calculator, glyph_type='Sphere',
-        scale_mode='scalar', scalars='nodal_radius', scale_factor=2,
+    # Add programmable filter to get nodal points.
+    node_filter = ProgrammableFilter(Input=beam_extract_surface)
+    node_filter.Script = 'execfile("/home/ivo/dev/paraview-scripts/pf_extract_beam_nodes.py")'
+    RenameSource('filter_nodes', node_filter)
+    glyph, glyph_display = create_glyph(node_filter, glyph_type='Sphere',
+        scale_mode='scalar', scalars='cross_section_radius', scale_factor=6,
         glyph_name='nodes')
-    ColorBy(glyph_display, ('POINTS', 'node_value'))
+    color_by(glyph_display, 'displacement', is_baci)
 
 
 def load_beam_to_solid(beam_to_solid_file):
