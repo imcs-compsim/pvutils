@@ -168,7 +168,7 @@ def load_beam_to_solid(beam_to_solid_file):
 
     # Create fields for the glyph representation.
     search_value = Calculator(Input=pvd_bts)
-    search_value.Function = 'ceil(0.5*search_point_value)'.format(
+    search_value.Function = 'ceil(0.5 * search_point_value)'.format(
         glyph_factor)
     search_value.ResultArrayName = 'search_point_glyph_value'
     Show(search_value, view)
