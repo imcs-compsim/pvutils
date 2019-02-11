@@ -25,9 +25,11 @@ def create_glyph(base, glyph_type='Arrow', scalars='None', vectors='None',
 
     # Create the glyph.
     glyph = Glyph(Input=base, GlyphType=glyph_type)
-    glyph.Scalars = ['POINTS', scalars]
-    glyph.Vectors = ['POINTS', vectors]
-    glyph.ScaleMode = scale_mode
+    glyph.OrientationArray = ['POINTS', vectors]
+    if scale_mode == 'scalar':
+        glyph.ScaleArray = ['POINTS', scalars]
+    else:
+        glyph.ScaleArray = ['POINTS', vectors]
     glyph.ScaleFactor = scale_factor
     glyph.GlyphMode = glyph_mode
 
