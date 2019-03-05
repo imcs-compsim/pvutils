@@ -143,7 +143,7 @@ def load_beam(beam_file):
     node_filter.Script = 'execfile("/home/ivo/dev/paraview-scripts/pf_extract_beam_nodes.py")'
     RenameSource('filter_nodes', node_filter)
     glyph, glyph_display = create_glyph(node_filter, glyph_type='Sphere',
-        scale_mode='scalar', scalars='cross_section_radius', scale_factor=6,
+        scale_mode='scalar', scalars='cross_section_radius', scale_factor=3,
         glyph_name='nodes')
     color_by(glyph_display, 'displacement', is_baci)
 
