@@ -120,3 +120,14 @@ def tube(data, slices=8):
     tube.VaryRadius = 'By Absolute Scalar'
     tube.NumberofSides = slices
     return tube
+
+
+def get_base(data):
+    """
+    Return the root item of a given item, e.g. the base geometry object.
+    """
+
+    if 'Input' in dir(data):
+        return get_base(data.Input)
+    else:
+        return data
