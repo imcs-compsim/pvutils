@@ -109,8 +109,14 @@ def check_data(data, name, data_type='point', dimension=None,
     return True
 
 
-def beam_tube(data):
+def tube(data, slices=8):
     """
     Apply the tube filter to a beam.
     """
-    pass
+
+    check_data(data, 'cross_section_radius', dimension=1)
+    tube = Tube(Input=data)
+    tube.Scalars = [None, 'cross_section_radius']
+    tube.VaryRadius = 'By Absolute Scalar'
+    tube.NumberofSides = slices
+    return tube
