@@ -19,13 +19,17 @@ def load_file(path):
     if not os.path.isfile(path):
         raise ValueError('The file "{}" does not exist!'.format(path))
 
-    _dummy, extension = os.path.splitext(path)
-    extension = extension.split('.')[-1].lower()
+    split_path = os.path.basename(path).split('.')
+    extension = split_path[-1]
+    base_name = ''.join(split_path[:-1])
 
     if extension == 'pvd':
-        return PVDReader(FileName=path)
+        data = PVDReader(FileName=path)
     else:
         raise ValueError('Extension "{}" not defined!'.format(extension))
+
+    RenameSource(base_name, data)
+    return data
 
 
 def display(data, line_width=None, line_color=None, solid_color=None,
