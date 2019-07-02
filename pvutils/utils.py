@@ -55,19 +55,31 @@ def display(data, line_width=None, line_color=None, solid_color=None,
         display.NonlinearSubdivisionLevel = nonlinear_subdividison
 
 
+def contour(data, field='displacement', data_type='point',
+        vector_type='Magnitude'):
+    """
+    Set the contour options for a data item.
+    """
+
+    check_data(data, field)
+    view = GetActiveViewOrCreate('RenderView')
+    display = GetDisplayProperties(data, view=view)
+    ColorBy(display, ('POINTS', field, vector_type))
+
+
 def warp(data, field='displacement', scale_factor=1):
     """
     Wrap the data by the displacement vector.
     """
 
-    check_data(data, field)
+    check_data(data, field, dimension=3)
     warp = WarpByVector(Input=data)
     warp.Vectors = ['POINTS', field]
     warp.ScaleFactor = scale_factor
     return warp
 
 
-def check_data(data, name, data_type='point', dimension=3,
+def check_data(data, name, data_type='point', dimension=None,
         fail_on_error=True):
     """
     Check if data with the given name and dimension exists.
@@ -85,13 +97,14 @@ def check_data(data, name, data_type='point', dimension=3,
                 + 'Available names: {}').format(data_type, name, names))
         return False
 
-    if not field_data.GetNumberOfComponents() == dimension:
-        if fail_on_error:
-            raise ValueError(
-                'The field {} has {} instead of {} dimensions!'.format(
-                    name, field_data.GetNumberOfComponents(), dimension)
-                )
-        return False
+    if dimension is not None:
+        if not field_data.GetNumberOfComponents() == dimension:
+            if fail_on_error:
+                raise ValueError(
+                    'The field {} has {} instead of {} dimensions!'.format(
+                        name, field_data.GetNumberOfComponents(), dimension)
+                    )
+            return False
 
     return True
 
