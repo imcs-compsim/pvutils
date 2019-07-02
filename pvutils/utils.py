@@ -131,3 +131,16 @@ def get_base(data):
         return get_base(data.Input)
     else:
         return data
+
+
+def reset_paraview():
+    """
+    Delete all data in paraview.
+    """
+
+    SetActiveSource(None)
+    SetActiveView(None)
+    CreateLayout('Layout #1')
+    view = CreateView('RenderView')
+    layout = GetLayout()
+    layout.AssignView(0, view)
