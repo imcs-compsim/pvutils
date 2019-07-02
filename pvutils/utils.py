@@ -27,6 +27,8 @@ def load_file(path):
         data = PVDReader(FileName=path)
     elif extension == 'exo':
         data = ExodusIIReader(FileName=[path])
+    elif extension == 'case':
+        data = EnSightReader(CaseFileName=path)
     else:
         raise ValueError('Extension "{}" not defined!'.format(extension))
 
