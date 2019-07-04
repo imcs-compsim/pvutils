@@ -28,7 +28,9 @@ def load_file(path):
     elif extension == 'exo':
         data = ExodusIIReader(FileName=[path])
     elif extension == 'case':
+        # In this case we get a multiblock structure, we do not want this.
         data = EnSightReader(CaseFileName=path)
+        data = MergeBlocks(Input=data)
     else:
         raise ValueError('Extension "{}" not defined!'.format(extension))
 
@@ -53,6 +55,7 @@ def display(data, line_width=None, line_color=None, solid_color=None,
         display.LineWidth = line_width
     if solid_color is not None:
         display.DiffuseColor = solid_color
+        display.AmbientColor = solid_color
     if nonlinear_subdividison is not None:
         display.NonlinearSubdivisionLevel = nonlinear_subdividison
 
