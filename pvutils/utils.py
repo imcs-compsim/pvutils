@@ -149,3 +149,18 @@ def reset_paraview():
     view = CreateView('RenderView')
     layout = GetLayout()
     layout.AssignView(0, view)
+
+
+def programmable_filter(source, name):
+    """
+    Apply a programmable filter from this git repository.
+    """
+
+    filter_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        'filters',
+        '{}.py'.format(name))
+
+    filter = ProgrammableFilter(Input=source)
+    filter.Script = 'execfile("{}")'.format(filter_path)
+    return filter
