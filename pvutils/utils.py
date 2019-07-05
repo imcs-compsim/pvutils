@@ -39,7 +39,7 @@ def load_file(path):
 
 
 def display(data, line_width=None, line_color=None, solid_color=None,
-        representation=None, nonlinear_subdividison=None):
+        representation=None, nonlinear_subdividison=None, opacity=None):
     """
     Set the display options for the paraview object data.
     """
@@ -58,6 +58,8 @@ def display(data, line_width=None, line_color=None, solid_color=None,
         display.AmbientColor = solid_color
     if nonlinear_subdividison is not None:
         display.NonlinearSubdivisionLevel = nonlinear_subdividison
+    if opacity is not None:
+        display.Opacity = opacity
 
 
 def contour(data, field='displacement', data_type='point',
