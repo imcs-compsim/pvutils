@@ -9,7 +9,7 @@ import os
 import numpy as np
 
 # Import paraview module.
-import paraview.simple as pv
+import paraview.simple as pa
 
 
 def load_file(path):
@@ -25,17 +25,17 @@ def load_file(path):
     base_name = ''.join(split_path[:-1])
 
     if extension == 'pvd':
-        data = pv.PVDReader(FileName=path)
+        data = pa.PVDReader(FileName=path)
     elif extension == 'exo':
-        data = pv.ExodusIIReader(FileName=[path])
+        data = pa.ExodusIIReader(FileName=[path])
     elif extension == 'case':
         # In this case we get a multiblock structure, we do not want this.
-        data = pv.EnSightReader(CaseFileName=path)
-        data = pv.MergeBlocks(Input=data)
+        data = pa.EnSightReader(CaseFileName=path)
+        data = pa.MergeBlocks(Input=data)
     else:
         raise ValueError('Extension "{}" not defined!'.format(extension))
 
-    pv.RenameSource(base_name, data)
+    pa.RenameSource(base_name, data)
     return data
 
 
@@ -45,8 +45,8 @@ def display(data, line_width=None, line_color=None, solid_color=None,
     Set the display options for the paraview object data.
     """
 
-    view = pv.GetActiveViewOrCreate('RenderView')
-    display = pv.Show(data, view)
+    view = pa.GetActiveViewOrCreate('RenderView')
+    display = pa.Show(data, view)
 
     if representation is not None:
         display.Representation = representation
@@ -70,10 +70,10 @@ def contour(data, field='displacement', data_type='point',
     """
 
     check_data(data, field)
-    view = pv.GetActiveViewOrCreate('RenderView')
-    display = pv.GetDisplayProperties(data, view=view)
+    view = pa.GetActiveViewOrCreate('RenderView')
+    display = pa.GetDisplayProperties(data, view=view)
     if data_type == 'point':
-        pv.ColorBy(display, ('POINTS', field, vector_type))
+        pa.ColorBy(display, ('POINTS', field, vector_type))
     else:
         raise ValueError('Data type {} not implemented!'.format(data_type))
 
@@ -84,7 +84,7 @@ def warp(data, field='displacement', scale_factor=1):
     """
 
     check_data(data, field, dimension=3)
-    warp = pv.WarpByVector(Input=data)
+    warp = pa.WarpByVector(Input=data)
     warp.Vectors = ['POINTS', field]
     warp.ScaleFactor = scale_factor
     return warp
@@ -96,7 +96,7 @@ def check_data(data, name, data_type='point', dimension=None,
     Check if data with the given name and dimension exists.
     """
 
-    vtk_data = pv.servermanager.Fetch(data)
+    vtk_data = pa.servermanager.Fetch(data)
     point_data = vtk_data.GetPointData()
     field_data = point_data.GetArray(name)
 
@@ -126,7 +126,7 @@ def tube(data, slices=8):
     """
 
     check_data(data, 'cross_section_radius', dimension=1)
-    tube = pv.Tube(Input=data)
+    tube = pa.Tube(Input=data)
     tube.Scalars = [None, 'cross_section_radius']
     tube.VaryRadius = 'By Absolute Scalar'
     tube.NumberofSides = slices
@@ -150,8 +150,8 @@ def reset_paraview():
     https://stackoverflow.com/questions/48580653/paraview-programmatically-reset-session
     """
 
-    pv.Disconnect()
-    pv.Connect()
+    pa.Disconnect()
+    pa.Connect()
 
 
 def programmable_filter(source, name):
@@ -164,7 +164,7 @@ def programmable_filter(source, name):
         'filters',
         '{}.py'.format(name))
 
-    pv_filter = pv.ProgrammableFilter(Input=source)
+    pv_filter = pa.ProgrammableFilter(Input=source)
     pv_filter.Script = 'execfile("{}")'.format(filter_path)
     return pv_filter
 
@@ -175,8 +175,8 @@ def setup_view(view, view_name='view'):
     """
 
     # Render and stop for user modifications.
-    pv.Render(view)
-    pv.Interact(view)
+    pa.Render(view)
+    pa.Interact(view)
 
     # Display the view attributes.
     attributes = [
