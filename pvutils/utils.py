@@ -6,6 +6,7 @@ Functions to simplify the use of scripts in paraview.
 
 # Import python modules.
 import os
+import numpy as np
 
 # Import paraview module.
 from paraview.simple import *
@@ -188,3 +189,32 @@ def setup_view(view, view_name='view'):
         ]
     for att in attributes:
         print('{}.{} = {}'.format(view_name, att, getattr(view, att)))
+
+
+def get_size_pixel(size, dpi):
+    """
+    Convert a output size in cm to a size in pixel.
+    """
+
+    inch = 2.54
+    return (np.array(size) / inch * dpi).astype(int)
+
+
+def set_colorbar_font(color_bar, font_size, dpi):
+    """
+    Set the font options for the a color bar.
+    This only makes sense if the screenshots are exported with the option:
+        FontScaling='Do not scale fonts'
+    """
+
+    # 72 points are in an inch. Calcualte the needed pixels for the font size.
+    dpi_font = 72.
+    inch = 2.54
+    font_size_pixel = (np.array(font_size) / dpi_font * dpi).astype(int)
+
+    color_bar.TitleFontSize = font_size_pixel[0]
+    color_bar.LabelFontSize = font_size_pixel[1]
+#    color_bar.TitleFontFamily = 'Times'
+#    color_bar.TitleFontFile = '/home/ivo/Downloads/lm.ttf'
+#    color_bar.LabelFontFamily = 'File'
+#    color_bar.LabelFontFile = '/home/ivo/Downloads/lm.ttf'
