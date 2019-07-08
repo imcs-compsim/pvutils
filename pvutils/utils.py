@@ -9,7 +9,7 @@ import os
 import numpy as np
 
 # Import paraview module.
-from paraview.simple import *
+import paraview.simple as pv
 
 
 def load_file(path):
@@ -25,17 +25,17 @@ def load_file(path):
     base_name = ''.join(split_path[:-1])
 
     if extension == 'pvd':
-        data = PVDReader(FileName=path)
+        data = pv.PVDReader(FileName=path)
     elif extension == 'exo':
-        data = ExodusIIReader(FileName=[path])
+        data = pv.ExodusIIReader(FileName=[path])
     elif extension == 'case':
         # In this case we get a multiblock structure, we do not want this.
-        data = EnSightReader(CaseFileName=path)
-        data = MergeBlocks(Input=data)
+        data = pv.EnSightReader(CaseFileName=path)
+        data = pv.MergeBlocks(Input=data)
     else:
         raise ValueError('Extension "{}" not defined!'.format(extension))
 
-    RenameSource(base_name, data)
+    pv.RenameSource(base_name, data)
     return data
 
 
@@ -45,8 +45,8 @@ def display(data, line_width=None, line_color=None, solid_color=None,
     Set the display options for the paraview object data.
     """
 
-    view = GetActiveViewOrCreate('RenderView')
-    display = Show(data, view)
+    view = pv.GetActiveViewOrCreate('RenderView')
+    display = pv.Show(data, view)
 
     if representation is not None:
         display.Representation = representation
@@ -70,9 +70,12 @@ def contour(data, field='displacement', data_type='point',
     """
 
     check_data(data, field)
-    view = GetActiveViewOrCreate('RenderView')
-    display = GetDisplayProperties(data, view=view)
-    ColorBy(display, ('POINTS', field, vector_type))
+    view = pv.GetActiveViewOrCreate('RenderView')
+    display = pv.GetDisplayProperties(data, view=view)
+    if data_type == 'point':
+        pv.ColorBy(display, ('POINTS', field, vector_type))
+    else:
+        raise ValueError('Data type {} not implemented!'.format(data_type))
 
 
 def warp(data, field='displacement', scale_factor=1):
@@ -81,7 +84,7 @@ def warp(data, field='displacement', scale_factor=1):
     """
 
     check_data(data, field, dimension=3)
-    warp = WarpByVector(Input=data)
+    warp = pv.WarpByVector(Input=data)
     warp.Vectors = ['POINTS', field]
     warp.ScaleFactor = scale_factor
     return warp
@@ -93,7 +96,7 @@ def check_data(data, name, data_type='point', dimension=None,
     Check if data with the given name and dimension exists.
     """
 
-    vtk_data = servermanager.Fetch(data)
+    vtk_data = pv.servermanager.Fetch(data)
     point_data = vtk_data.GetPointData()
     field_data = point_data.GetArray(name)
 
@@ -123,7 +126,7 @@ def tube(data, slices=8):
     """
 
     check_data(data, 'cross_section_radius', dimension=1)
-    tube = Tube(Input=data)
+    tube = pv.Tube(Input=data)
     tube.Scalars = [None, 'cross_section_radius']
     tube.VaryRadius = 'By Absolute Scalar'
     tube.NumberofSides = slices
@@ -144,14 +147,11 @@ def get_base(data):
 def reset_paraview():
     """
     Delete all data in paraview.
+    https://stackoverflow.com/questions/48580653/paraview-programmatically-reset-session
     """
 
-    SetActiveSource(None)
-    SetActiveView(None)
-    CreateLayout('Layout #1')
-    view = CreateView('RenderView')
-    layout = GetLayout()
-    layout.AssignView(0, view)
+    pv.Disconnect()
+    pv.Connect()
 
 
 def programmable_filter(source, name):
@@ -164,9 +164,9 @@ def programmable_filter(source, name):
         'filters',
         '{}.py'.format(name))
 
-    filter = ProgrammableFilter(Input=source)
-    filter.Script = 'execfile("{}")'.format(filter_path)
-    return filter
+    pv_filter = pv.ProgrammableFilter(Input=source)
+    pv_filter.Script = 'execfile("{}")'.format(filter_path)
+    return pv_filter
 
 
 def setup_view(view, view_name='view'):
@@ -175,8 +175,8 @@ def setup_view(view, view_name='view'):
     """
 
     # Render and stop for user modifications.
-    Render(view)
-    Interact(view)
+    pv.Render(view)
+    pv.Interact(view)
 
     # Display the view attributes.
     attributes = [
@@ -207,9 +207,8 @@ def set_colorbar_font(color_bar, font_size, dpi):
         FontScaling='Do not scale fonts'
     """
 
-    # 72 points are in an inch. Calcualte the needed pixels for the font size.
+    # 72 points are in an inch. Calculate the needed pixels for the font size.
     dpi_font = 72.
-    inch = 2.54
     font_size_pixel = (np.array(font_size) / dpi_font * dpi).astype(int)
 
     color_bar.TitleFontSize = font_size_pixel[0]
