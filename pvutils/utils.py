@@ -200,7 +200,7 @@ def get_size_pixel(size, dpi):
     return (np.array(size) / inch * dpi).astype(int)
 
 
-def set_colorbar_font(color_bar, font_size, dpi):
+def set_colorbar_font(color_bar, font_size, dpi, font=None):
     """
     Set the font options for the a color bar.
     This only makes sense if the screenshots are exported with the option:
@@ -213,7 +213,11 @@ def set_colorbar_font(color_bar, font_size, dpi):
 
     color_bar.TitleFontSize = font_size_pixel[0]
     color_bar.LabelFontSize = font_size_pixel[1]
-#    color_bar.TitleFontFamily = 'Times'
-#    color_bar.TitleFontFile = '/home/ivo/Downloads/lm.ttf'
-#    color_bar.LabelFontFamily = 'File'
-#    color_bar.LabelFontFile = '/home/ivo/Downloads/lm.ttf'
+
+    if font == 'TeX':
+        dirname = os.path.dirname(__file__)
+        font_file = os.path.join(dirname, 'lm_regular.ttf')
+        color_bar.TitleFontFamily = 'File'
+        color_bar.TitleFontFile = font_file
+        color_bar.LabelFontFamily = 'File'
+        color_bar.LabelFontFile = font_file
