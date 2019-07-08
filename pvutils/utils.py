@@ -166,3 +166,25 @@ def programmable_filter(source, name):
     filter = ProgrammableFilter(Input=source)
     filter.Script = 'execfile("{}")'.format(filter_path)
     return filter
+
+
+def setup_view(view, view_name='view'):
+    """
+    Allow the user to setup and return the relevant values.
+    """
+
+    # Render and stop for user modifications.
+    Render(view)
+    Interact(view)
+
+    # Display the view attributes.
+    attributes = [
+        'CameraPosition',
+        'CameraFocalPoint',
+        'CameraViewUp',
+        'CameraViewAngle',
+        'CameraParallelScale',
+        'ViewSize'
+        ]
+    for att in attributes:
+        print('{}.{} = {}'.format(view_name, att, getattr(view, att)))
