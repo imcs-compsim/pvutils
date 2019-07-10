@@ -10,7 +10,23 @@ import sys
 import numpy as np
 
 # Import paraview module.
+import paraview
 import paraview.simple as pa
+
+
+def _print_attibutes(obj, attributes, variable_name):
+    """
+    Print attributes of an object, given by a list of strings.
+    """
+
+    for att in attributes:
+        attribute = getattr(obj, att)
+        if isinstance(attribute, str):
+            att_str = '\'{}\''.format(attribute)
+            att_str = att_str.replace('\\', '\\\\')
+        else:
+            att_str = str(attribute)
+        print('{}.{} = {}'.format(variable_name, att, att_str))
 
 
 def load_file(path):
@@ -170,7 +186,7 @@ def programmable_filter(source, name):
     return pv_filter
 
 
-def setup_view(view, view_name='view'):
+def setup_view(view, *args):
     """
     Allow the user to setup and return the relevant values.
     """
@@ -190,8 +206,25 @@ def setup_view(view, view_name='view'):
         'CameraParallelProjection',
         'ViewSize'
         ]
-    for att in attributes:
-        print('{}.{} = {}'.format(view_name, att, getattr(view, att)))
+    _print_attibutes(view, attributes, 'view')
+
+    # If additional items are given to this function, print their properties.
+    for arg in args:
+
+        item_string = str(arg)
+        if 'ScalarBarWidgetRepresentation' in item_string:
+            # Display the color bar attributes.
+            attributes = [
+                'Title',
+                'ComponentTitle',
+                'WindowLocation',
+                'Orientation',
+                'ScalarBarLength',
+                'ScalarBarThickness',
+                'Position'
+                ]
+            print('')
+            _print_attibutes(arg, attributes, 'color_bar')
 
 
 def get_size_pixel(size, dpi):
