@@ -6,6 +6,7 @@ Functions to simplify the use of scripts in paraview.
 
 # Import python modules.
 import os
+import sys
 import numpy as np
 
 # Import paraview module.
@@ -185,6 +186,8 @@ def setup_view(view, view_name='view'):
         'CameraViewUp',
         'CameraViewAngle',
         'CameraParallelScale',
+        'OrientationAxesVisibility',
+        'CameraParallelProjection',
         'ViewSize'
         ]
     for att in attributes:
@@ -198,6 +201,13 @@ def get_size_pixel(size, dpi):
 
     inch = 2.54
     return (np.array(size) / inch * dpi).astype(int)
+
+
+def is_pvpython():
+    """
+    Check if the current script is executed by paraview or pvpthon.
+    """
+    return not sys.argv[0] == ''
 
 
 def set_colorbar_font(color_bar, font_size, dpi, font=None):
