@@ -24,6 +24,13 @@ def _print_attibutes(obj, attributes, variable_name):
         if isinstance(attribute, str):
             att_str = '\'{}\''.format(attribute)
             att_str = att_str.replace('\\', '\\\\')
+        elif isinstance(attribute, float):
+            att_str = '{0:.6g}'.format(attribute)
+        elif type(attribute) == paraview.servermanager.VectorProperty:
+            att_str_list = []
+            for val in attribute:
+                att_str = att_str_list.append('{0:.6g}'.format(val))
+            att_str = '[{}]'.format(', '.join(att_str_list))
         else:
             att_str = str(attribute)
         print('{}.{} = {}'.format(variable_name, att, att_str))
