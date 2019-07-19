@@ -193,14 +193,49 @@ def programmable_filter(source, name):
     return pv_filter
 
 
-def setup_view(view, *args):
+def setup_view(view, *args, **kwargs):
     """
     Allow the user to setup and return the relevant values.
     """
 
-    # Render and stop for user modifications.
+    # When python3 is used this construct will be obsolete.
+    if sys.version_info >= (3, 0):
+        raise ValueError('The keyword management in setup_view should be '
+            + 'adapted to python3.')
+
+    # Default keyword arguments.
+    kwargs_default = {
+        # If the ratio of length to height should be fixed, i.e. preview mode
+        # should be used. If pvpython is used, this does not have an effect.
+        'fixed_ratio': None,
+        # Default height of window.
+        'height': 800
+        }
+
+    # Set the keyword arguments.
+    for key in kwargs_default.keys():
+        if key in kwargs:
+            value = kwargs[key]
+            del(kwargs[key])
+        else:
+            value = kwargs_default[key]
+        exec(key + ' = value')
+    # Check that no keyword arguments remain.
+    if len(kwargs) > 0:
+        raise ValueError('Unsupported keyword arguments {} given.'.format(
+            kwargs.keys()))
+
+    # Check which paraview interpreter is used and setup the view accordingly.
     pa.Render(view)
-    pa.Interact(view)
+    if is_pvpython():
+        # Stop for user modifications.
+        pa.Interact(view)
+    else:
+        # Get the desired aspect ratio.
+        if fixed_ratio is not None:
+            # Enter preview mode.
+            layout = pa.GetLayout()
+            layout.PreviewMode = [int(height * fixed_ratio), height]
 
     # Display the view attributes.
     attributes = [
