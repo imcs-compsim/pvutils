@@ -50,6 +50,8 @@ def load_file(path):
 
     if extension == 'pvd':
         data = pa.PVDReader(FileName=path)
+    elif extension == 'vtu':
+        data = pa.XMLUnstructuredGridReader(FileName=[path])
     elif extension == 'exo':
         data = pa.ExodusIIReader(FileName=[path])
     elif extension == 'case':
@@ -205,11 +207,10 @@ def setup_view(view, *args, **kwargs):
 
     # Default keyword arguments.
     kwargs_default = {
-        # If the ratio of length to height should be fixed, i.e. preview mode
-        # should be used. If pvpython is used, this does not have an effect.
-        'fixed_ratio': None,
-        # Default height of window.
-        'height': 800
+        # If the size of the view should be fixed, i.e. preview mode should be
+        # used. If pvpython is used, this does not have an effect. The size
+        # will be taken from view.
+        'fixed_size': False,
         }
 
     # Set the keyword arguments.
@@ -232,10 +233,10 @@ def setup_view(view, *args, **kwargs):
         pa.Interact(view)
     else:
         # Get the desired aspect ratio.
-        if fixed_ratio is not None:
+        if fixed_size:
             # Enter preview mode.
             layout = pa.GetLayout()
-            layout.PreviewMode = [int(height * fixed_ratio), height]
+            layout.PreviewMode = view.ViewSize
 
     # Display the view attributes.
     attributes = [
