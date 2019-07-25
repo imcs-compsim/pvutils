@@ -238,6 +238,15 @@ def setup_view(view, *args, **kwargs):
             layout = pa.GetLayout()
             layout.PreviewMode = view.ViewSize
 
+    print_view_state(view, *args)
+
+
+def print_view_state(view, *args):
+    """
+    Print the relevant view state information, so the user can set the view in
+    the GUI and then copy the state to a script.
+    """
+
     # Display the view attributes.
     attributes = [
         'CameraPosition',
@@ -250,6 +259,7 @@ def setup_view(view, *args, **kwargs):
         'ViewSize'
         ]
     _print_attibutes(view, attributes, 'view')
+    print('')
 
     # If additional items are given to this function, print their properties.
     for arg in args:
