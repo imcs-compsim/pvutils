@@ -69,6 +69,8 @@ def display(data, line_width=None, line_color=None, solid_color=None,
         representation=None, nonlinear_subdividison=None, opacity=None):
     """
     Set the display options for the paraview object data.
+
+    Colors are given as arrays with [R,G,B] values.
     """
 
     view = pa.GetActiveViewOrCreate('RenderView')
