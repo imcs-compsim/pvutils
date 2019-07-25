@@ -89,17 +89,22 @@ def display(data, line_width=None, line_color=None, solid_color=None,
         display.Opacity = opacity
 
 
-def contour(data, field='displacement', data_type='point',
+def contour(data, field='displacement', data_type='POINTS',
         vector_type='Magnitude'):
     """
     Set the contour options for a data item.
+
+    The data_type is encoded with ParaView's data type names,
+    i.e. POINTS, CELLS, ...
     """
 
-    check_data(data, field)
+    check_data(data, field, data_type=data_type)
     view = pa.GetActiveViewOrCreate('RenderView')
     display = pa.GetDisplayProperties(data, view=view)
-    if data_type == 'point':
+    if data_type == 'POINTS': # ToDo: These cases can probably be unified.
         pa.ColorBy(display, ('POINTS', field, vector_type))
+    elif data_type == 'CELLS':
+        pa.ColorBy(display, ('CELLS', field, vector_type))
     else:
         raise ValueError('Data type {} not implemented!'.format(data_type))
 
@@ -116,20 +121,24 @@ def warp(data, field='displacement', scale_factor=1):
     return warp
 
 
-def check_data(data, name, data_type='point', dimension=None,
+def check_data(data, name, data_type='POINTS', dimension=None,
         fail_on_error=True):
     """
     Check if data with the given name and dimension exists.
     """
 
     vtk_data = pa.servermanager.Fetch(data)
-    point_data = vtk_data.GetPointData()
-    field_data = point_data.GetArray(name)
+
+    if data_type == 'POINTS':
+        data = vtk_data.GetPointData()
+    elif data_type == 'CELLS':
+        data = vtk_data.GetCellData()
+    field_data = data.GetArray(name)
 
     if field_data is None:
         if fail_on_error:
-            names = [point_data.GetArrayName(i)
-                for i in range(point_data.GetNumberOfArrays())]
+            names = [data.GetArrayName(i)
+                for i in range(data.GetNumberOfArrays())]
             raise ValueError(('Could not find {} data with the name {}! '
                 + 'Available names: {}').format(data_type, name, names))
         return False
