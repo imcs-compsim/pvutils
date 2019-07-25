@@ -321,3 +321,40 @@ def set_colorbar_font(color_bar, font_size, dpi, font=None):
         color_bar.TitleFontFile = font_file
         color_bar.LabelFontFamily = 'File'
         color_bar.LabelFontFile = font_file
+
+
+def get_available_timesteps():
+    """
+    Return a list with all available time steps in the current session.
+    """
+
+    scene = pa.GetAnimationScene()
+    return scene.TimeKeeper.TimestepValues
+
+
+def set_timestep(time, fail_on_not_available_time=True):
+    """
+    Set the time step in the current session.
+    This works fine, BUT ParaView will a wrong time (first available time),
+    even tough a different time step is displayed.
+
+    Args
+    ----
+    time: scalar
+        Time that should be set.
+    fail_on_not_available_time: bool
+        If this is true and the given time does not exist in ParaView an error
+        will be thrown.
+    """
+
+    if fail_on_not_available_time:
+        # Check that the given time is a time step in the current state.
+        times = get_available_timesteps()
+        if min(np.abs(np.array(times) - time)) > 1e-10:
+            raise ValueError(('The given time {} is not a valid time step in '
+                + 'ParaView. The valid times are: {}').format(time, times))
+
+    scene = pa.GetAnimationScene()
+    scene.TimeKeeper.Time = time
+    pa.Render()
+
