@@ -147,6 +147,21 @@ def transform(data, specs_translate=None,
     return transform
 
 
+def threshold(data, field='displacement', data_type='POINTS', threshold_range=None):
+    """
+    Apply a 'Threshold' filter to data. Limit visalization of 'field' data 
+    of type 'data_type' to the values within 2-array 'threshold_range' [min, max].
+    """
+
+    if threshold_range is None:
+        threshold_range = [-1.0e+12, 1.0e+12]
+   
+    threshold = pa.Threshold(Input=data)
+    threshold.Scalars = [data_type, field]
+    threshold.ThresholdRange = threshold_range
+    return threshold
+
+
 def check_data(data, name, data_type='POINTS', dimension=None,
         fail_on_error=True):
     """
