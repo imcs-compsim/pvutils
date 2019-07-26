@@ -52,4 +52,3 @@ if __name__ == '__main__':
 
     unittest.TextTestRunner().run(
         unittest.TestLoader().loadTestsFromTestCase(TestPvutils))
-    print(1)
