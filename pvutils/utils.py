@@ -96,17 +96,22 @@ def contour(data, field='displacement', data_type='POINTS',
     """
     Set the contour options for a data item.
 
-    The data_type is encoded with ParaView's data type names,
-    i.e. POINTS, CELLS, ...
+    Args
+    ----
+    data: ParaView data object
+        ParaView item the warp filter will be applied to.
+    field: String
+        Name of field to be used for coloring/contouring.
+    data_type: String
+        Type/topology of data, encoded using ParaView-style namings.
+    vector_type: String
+        Component (if field is a vector field)
     """
 
     check_data(data, field, data_type=data_type)
     view = pa.GetActiveViewOrCreate('RenderView')
     display = pa.GetDisplayProperties(data, view=view)
-    if data_type == 'POINTS' or data_type == 'CELLS':
-        pa.ColorBy(display, (data_type, field, vector_type))
-    else:
-        raise ValueError('Data type {} not implemented!'.format(data_type))
+    pa.ColorBy(display, (data_type, field, vector_type))
 
 
 def warp(data, field='displacement', scale_factor=1.0):
@@ -182,7 +187,7 @@ def threshold(data, field='displacement', data_type='POINTS',
     field: String
         Name of field whose values will be subject to thresholding.
     data_type: String
-        Type of data, encoded using ParaView-style namings.
+        Type/topology of data, encoded using ParaView-style namings.
     threshold_range: Array with 2 entries
         Array with min and max values of valid range of values.
 
