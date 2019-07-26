@@ -123,29 +123,29 @@ def warp(data, field='displacement', scale_factor=1):
     return warp
 
 
-def transform(data, specs_translate=None,
-        specs_rotate=None, specs_scale=None):
+def transform(data, translate=None,
+        rotate=None, scale=None):
     """
     Apply a 'Transform' filter to data. The type and values for the
     transformation are given as
-    - specs_transform: specify [x,y,z] translation increment vector
-    - specs_rotate: specify [x,y,z] rotation increment vector
-    - specs_scale: specify [x,y,z] scaling
+    - transform: specify [x,y,z] translation increment vector
+    - rotate: specify [x,y,z] rotation increment vector
+    - scale: specify [x,y,z] scaling
 
     All specifications default to no action.
     """
 
-    if specs_translate is None:
-        specs_translate = [0.0, 0.0, 0.0]
-    if specs_rotate is None:
-        specs_rotate = [0.0, 0.0, 0.0]
-    if specs_scale is None:
-        specs_scale = [1.0, 1.0, 1.0]
+    if translate is None:
+        translate = [0.0, 0.0, 0.0]
+    if rotate is None:
+        rotate = [0.0, 0.0, 0.0]
+    if scale is None:
+        scale = [1.0, 1.0, 1.0]
 
     transform = pa.Transform(Input=data)
-    transform.Transform.Translate = specs_translate
-    transform.Transform.Rotate = specs_rotate
-    transform.Transform.Scale = specs_scale
+    transform.Transform.Translate = translate
+    transform.Transform.Rotate = rotate
+    transform.Transform.Scale = scale
     return transform
 
 
