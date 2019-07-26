@@ -109,9 +109,23 @@ def contour(data, field='displacement', data_type='POINTS',
         raise ValueError('Data type {} not implemented!'.format(data_type))
 
 
-def warp(data, field='displacement', scale_factor=1):
+def warp(data, field='displacement', scale_factor=1.0):
     """
-    Wrap the data by the displacement vector.
+    Warp the data by a vector field.
+
+    Args
+    ----
+    data: ParaView data object
+        ParaView item the warp filter will be applied to.
+    field: String
+        Name of vector field to be used as "displacement" of the warp.
+    scale_factor: Float
+        Scaling factor.
+
+    Return
+    ------
+    warp: ParaView data object
+        The resulting ParaView item after applying the filter.
     """
 
     check_data(data, field, dimension=3)
@@ -121,16 +135,25 @@ def warp(data, field='displacement', scale_factor=1):
     return warp
 
 
-def transform(data, translate=None,
-        rotate=None, scale=None):
+def transform(data, translate=None, rotate=None, scale=None):
     """
-    Apply a 'Transform' filter to data. The type and values for the
-    transformation are given as
-    - transform: specify [x,y,z] translation increment vector
-    - rotate: specify [x,y,z] rotation increment vector
-    - scale: specify [x,y,z] scaling
+    Apply a 'Transform' filter to a ParaView item.
 
-    All specifications default to no action.
+    Args
+    ----
+    data: ParaView data object
+        ParaView item the transpose filter will be applied to.
+    transform: 3D-array
+        Translation increment vector.
+    rotate: 3D array
+        Rotation increment vector.
+    scale:
+        Scaling in each Cartesian direction.
+
+    Return
+    ------
+    transform: ParaView data object
+        The resulting ParaView item after applying the filter.
     """
 
     if translate is None:
@@ -147,10 +170,26 @@ def transform(data, translate=None,
     return transform
 
 
-def threshold(data, field='displacement', data_type='POINTS', threshold_range=None):
+def threshold(data, field='displacement', data_type='POINTS',
+        threshold_range=None):
     """
-    Apply a 'Threshold' filter to data. Limit visalization of 'field' data 
-    of type 'data_type' to the values within 2-array 'threshold_range' [min, max].
+    Apply a 'Threshold' filter to a ParaView item.
+
+    Args
+    ----
+    data: ParaView data object
+        ParaView item the threshold filter will be applied to.
+    field: String
+        Name of field whose values will be subject to thresholding.
+    data_type: String
+        Type of data, encoded using ParaView-style namings.
+    threshold_range: Array with 2 entries
+        Array with min and max values of valid range of values.
+
+    Return
+    ------
+    threshold: ParaView data object
+        The resulting ParaView item after applying the filter.
     """
 
     if threshold_range is None:
@@ -166,6 +205,17 @@ def check_data(data, name, data_type='POINTS', dimension=None,
         fail_on_error=True):
     """
     Check if data with the given name and dimension exists.
+
+    Args
+    ----
+    data: ParaView data object
+        ParaView item to be checked.
+    name: String
+        Name of field whose existence will be checked for.
+    data_type: String
+        Type of data, encoded using ParaView-style namings.
+    dimension:
+        Spatial dimension of requested data field.
     """
 
     vtk_data = pa.servermanager.Fetch(data)
