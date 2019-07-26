@@ -1,0 +1,59 @@
+#------------------------------------------------------------------------------
+# Stages during testing.
+#------------------------------------------------------------------------------
+
+stages:
+    - testing
+
+
+#------------------------------------------------------------------------------
+# Some variables to contol the testing behaviour.
+#------------------------------------------------------------------------------
+
+variables:
+    # Clone repository by default.
+    GIT_STRATEGY: clone
+
+
+#------------------------------------------------------------------------------
+# Templates for the testing jobs.
+#------------------------------------------------------------------------------
+
+.pvutils-testing: &pvutils-testing
+    stage: testing
+    script:
+        - "whoami"
+        - "pwd"
+        # Set system paths.
+        - export PYTHONPATH="${PYTHONPATH}:${APPEND_TO_PYTHONPATH}"
+        - export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+        - echo PYTHONPATH=$PYTHONPATH
+        - export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${APPEND_TO_LD_LIBRARY_PATH}"
+        - echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+        # Run tests.
+        - "cd tests"
+        - "${GITLAB_TESTING_COMMAND}testing_pvutils.py"
+    tags:
+        - "imcs-all"
+
+
+#------------------------------------------------------------------------------
+# Actual jobs for testing.
+#------------------------------------------------------------------------------
+
+5.6.0-pvpython:
+    << : *pvutils-testing
+    variables:
+        PARAVIEW_PATH: "/hdd/gitlab-runner/lib/ParaView-5.6.0-MPI-Linux-64bit"
+        GITLAB_TESTING_COMMAND: "${PARAVIEW_PATH}/bin/pvpython "
+        IS_PVPYTHON: 1
+
+5.6.0-system-python:
+    << : *pvutils-testing
+    variables:
+        PARAVIEW_PATH: "/hdd/gitlab-runner/lib/ParaView-5.6.0-MPI-Linux-64bit"
+        GITLAB_TESTING_COMMAND: "python "
+        APPEND_TO_PYTHONPATH: "${PARAVIEW_PATH}/lib/python2.7/site-packages"
+        APPEND_TO_LD_LIBRARY_PATH: "${PARAVIEW_PATH}/lib"
+        IS_PVPYTHON: 1
+        
