@@ -2,6 +2,11 @@
 
 A set of functions that should simplify the usability of `python` scripts in ParaView.
 
+## ParaView
+
+Unfortunately the ParaView scripting interface changes with minor version.
+The current version of this module is developed with [ParaView 5.6.0](https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.6&type=binary&os=Linux&downloadFile=ParaView-5.6.0-MPI-Linux-64bit.tar.gz).
+
 ## Setup
 
 Three different ways exist to execute a python ParaView script

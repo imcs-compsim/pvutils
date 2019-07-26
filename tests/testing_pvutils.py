@@ -12,7 +12,7 @@ import hashlib
 # ParaView imports.
 import pvutils.utils as pvutils
 import paraview.simple as pa
-from macpath import split
+pa._DisableFirstRenderCameraReset()
 
 
 def _empty_temp_testing_directory():

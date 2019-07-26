@@ -1,3 +1,0 @@
-# Source this file so you can use the default python(2) interpreter to execute paraview scripts.
-export LD_LIBRARY_PATH=LD_LIBRARY_PATH:/home/ivo/opt/ParaView-5.6.0-MPI-Linux-64bit/lib
-export PYTHONPATH=$PYTHONPATH:/home/ivo/opt/ParaView-5.6.0-MPI-Linux-64bit/lib/python2.7/site-packages

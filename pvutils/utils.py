@@ -199,7 +199,7 @@ def threshold(data, field='displacement', data_type='POINTS',
 
     if threshold_range is None:
         threshold_range = [-1.0e+12, 1.0e+12]
-   
+
     threshold = pa.Threshold(Input=data)
     threshold.Scalars = [data_type, field]
     threshold.ThresholdRange = threshold_range
@@ -420,7 +420,8 @@ def set_colorbar_font(color_bar, font_size, dpi, font=None):
 
     if font == 'TeX':
         dirname = os.path.dirname(__file__)
-        font_file = os.path.join(dirname, 'lm_regular.ttf')
+        font_file = os.path.join(dirname, '..', 'utilities',
+            'latin-modern-regular.ttf')
         color_bar.TitleFontFamily = 'File'
         color_bar.TitleFontFile = font_file
         color_bar.LabelFontFamily = 'File'
