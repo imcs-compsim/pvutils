@@ -38,6 +38,14 @@ def _get_file_hash(path):
     return hasher.hexdigest()
 
 
+def _is_gitlab():
+    """Check if the environment variable for gitlab testing is set."""
+    if os.getenv('GITLAB_TESTING', '0') == '1':
+        return True
+    else:
+        return False
+
+
 class TestPvutils(unittest.TestCase):
     """Test various stuff from the pvutils module."""
 
@@ -147,29 +155,33 @@ class TestPvutils(unittest.TestCase):
         color_bar.ScalarBarLength = 0.2
         pvutils.set_colorbar_font(color_bar, font_size, dpi, font='TeX')
 
-        # Export screenshot.
-        screenshot_path = os.path.join(testing_temp, '{}_temp.png'.format(
+        # This part will only be executed on local jobs, since GitLab can not
+        # open a X window.
+        if not _is_gitlab():
+            # Export screenshot.
+            screenshot_path = os.path.join(testing_temp, '{}_temp.png'.format(
                 self._get_test_name()))
-        pa.SaveScreenshot(screenshot_path,
-            view,
-            ImageResolution=size_pixel,
-            OverrideColorPalette='WhiteBackground',
-            TransparentBackground=0,
-            FontScaling='Do not scale fonts'
-            )
+            pa.SaveScreenshot(screenshot_path,
+                view,
+                ImageResolution=size_pixel,
+                OverrideColorPalette='WhiteBackground',
+                TransparentBackground=0,
+                FontScaling='Do not scale fonts'
+                )
 
-        # Compare the created image with the reference image by comparing their
-        # hashes. The image created with ParaView is slightly different from
-        # the one created with pvpython. The eyeball test passes, therefore two
-        # reference images will be compared.
-        if pvutils.is_pvpython():
-            interpreter = 'pvpython'
-        else:
-            interpreter = 'paraview'
-        self.assertEqual(
-            _get_file_hash(screenshot_path),
-            _get_file_hash(os.path.join(testing_reference,
-                '{}_ref_{}.png'.format(self._get_test_name(), interpreter))))
+            # Compare the created image with the reference image by comparing
+            # their hashes. The image created with ParaView is slightly
+            # different from the one created with pvpython. The eyeball test
+            # passes, therefore two reference images will be compared.
+            if pvutils.is_pvpython():
+                interpreter = 'pvpython'
+            else:
+                interpreter = 'paraview'
+            self.assertEqual(
+                _get_file_hash(screenshot_path),
+                _get_file_hash(os.path.join(testing_reference,
+                    '{}_ref_{}.png'.format(
+                        self._get_test_name(), interpreter))))
 
 
 if __name__ == '__main__':

@@ -13,6 +13,8 @@ stages:
 variables:
     # Clone repository by default.
     GIT_STRATEGY: clone
+    # Flag that GitLab testing is active
+    GITLAB_TESTING: 1
 
 
 #------------------------------------------------------------------------------
