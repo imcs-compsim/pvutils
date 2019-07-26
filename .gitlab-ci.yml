@@ -46,7 +46,6 @@ variables:
     variables:
         PARAVIEW_PATH: "/hdd/gitlab-runner/lib/ParaView-5.6.0-MPI-Linux-64bit"
         GITLAB_TESTING_COMMAND: "${PARAVIEW_PATH}/bin/pvpython "
-        IS_PVPYTHON: 1
 
 5.6.0-system-python:
     << : *pvutils-testing
@@ -55,5 +54,3 @@ variables:
         GITLAB_TESTING_COMMAND: "python2 "
         APPEND_TO_PYTHONPATH: "${PARAVIEW_PATH}/lib/python2.7/site-packages"
         APPEND_TO_LD_LIBRARY_PATH: "${PARAVIEW_PATH}/lib"
-        IS_PVPYTHON: 1
-        

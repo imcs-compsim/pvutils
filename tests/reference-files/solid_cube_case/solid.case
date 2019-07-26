@@ -1,0 +1,47 @@
+# created using post_drt_ensight
+FORMAT
+
+type:	ensight gold
+
+GEOMETRY
+
+model:	3	1	solid.geo
+
+VARIABLE
+
+scalar per element:	1	2	Owner	solid.Owner
+vector per node:	2	3	displacement	solid.displacement
+tensor symm per node:	2	4	nodal_2PK_stresses_xyz	solid.nodal_2PK_stresses_xyz
+
+TIME
+
+time set:		1
+number of steps:	1
+time values: 0.25 
+
+time set:		2
+number of steps:	4
+time values: 0.25 0.5 0.75 1 
+
+time set:		3
+number of steps:	1
+time values: 0.25 
+
+
+FILE
+
+file set:		1
+number of steps:	1
+
+file set:		2
+number of steps:	1
+
+file set:		3
+number of steps:	4
+
+file set:		4
+number of steps:	4
+
+file set:		5
+number of steps:	4
+
