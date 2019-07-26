@@ -69,6 +69,8 @@ def display(data, line_width=None, line_color=None, solid_color=None,
         representation=None, nonlinear_subdividison=None, opacity=None):
     """
     Set the display options for the paraview object data.
+
+    Colors are given as arrays with [R,G,B] values.
     """
 
     view = pa.GetActiveViewOrCreate('RenderView')
@@ -89,24 +91,46 @@ def display(data, line_width=None, line_color=None, solid_color=None,
         display.Opacity = opacity
 
 
-def contour(data, field='displacement', data_type='point',
+def contour(data, field='displacement', data_type='POINTS',
         vector_type='Magnitude'):
     """
     Set the contour options for a data item.
+
+    Args
+    ----
+    data: ParaView data object
+        ParaView item the warp filter will be applied to.
+    field: String
+        Name of field to be used for coloring/contouring.
+    data_type: String
+        Type/topology of data, encoded using ParaView-style namings.
+    vector_type: String
+        Component (if field is a vector field)
     """
 
-    check_data(data, field)
+    check_data(data, field, data_type=data_type)
     view = pa.GetActiveViewOrCreate('RenderView')
     display = pa.GetDisplayProperties(data, view=view)
-    if data_type == 'point':
-        pa.ColorBy(display, ('POINTS', field, vector_type))
-    else:
-        raise ValueError('Data type {} not implemented!'.format(data_type))
+    pa.ColorBy(display, (data_type, field, vector_type))
 
 
-def warp(data, field='displacement', scale_factor=1):
+def warp(data, field='displacement', scale_factor=1.0):
     """
-    Wrap the data by the displacement vector.
+    Warp the data by a vector field.
+
+    Args
+    ----
+    data: ParaView data object
+        ParaView item the warp filter will be applied to.
+    field: String
+        Name of vector field to be used as "displacement" of the warp.
+    scale_factor: Float
+        Scaling factor.
+
+    Return
+    ------
+    warp: ParaView data object
+        The resulting ParaView item after applying the filter.
     """
 
     check_data(data, field, dimension=3)
@@ -116,20 +140,104 @@ def warp(data, field='displacement', scale_factor=1):
     return warp
 
 
-def check_data(data, name, data_type='point', dimension=None,
+def transform(data, translate=None, rotate=None, scale=None):
+    """
+    Apply a 'Transform' filter to a ParaView item.
+
+    Args
+    ----
+    data: ParaView data object
+        ParaView item the transpose filter will be applied to.
+    transform: 3D-array
+        Translation increment vector.
+    rotate: 3D array
+        Rotation increment vector.
+    scale:
+        Scaling in each Cartesian direction.
+
+    Return
+    ------
+    transform: ParaView data object
+        The resulting ParaView item after applying the filter.
+    """
+
+    if translate is None:
+        translate = [0.0, 0.0, 0.0]
+    if rotate is None:
+        rotate = [0.0, 0.0, 0.0]
+    if scale is None:
+        scale = [1.0, 1.0, 1.0]
+
+    transform = pa.Transform(Input=data)
+    transform.Transform.Translate = translate
+    transform.Transform.Rotate = rotate
+    transform.Transform.Scale = scale
+    return transform
+
+
+def threshold(data, field='displacement', data_type='POINTS',
+        threshold_range=None):
+    """
+    Apply a 'Threshold' filter to a ParaView item.
+
+    Args
+    ----
+    data: ParaView data object
+        ParaView item the threshold filter will be applied to.
+    field: String
+        Name of field whose values will be subject to thresholding.
+    data_type: String
+        Type/topology of data, encoded using ParaView-style namings.
+    threshold_range: Array with 2 entries
+        Array with min and max values of valid range of values.
+
+    Return
+    ------
+    threshold: ParaView data object
+        The resulting ParaView item after applying the filter.
+    """
+
+    if threshold_range is None:
+        threshold_range = [-1.0e+12, 1.0e+12]
+   
+    threshold = pa.Threshold(Input=data)
+    threshold.Scalars = [data_type, field]
+    threshold.ThresholdRange = threshold_range
+    return threshold
+
+
+def check_data(data, name, data_type='POINTS', dimension=None,
         fail_on_error=True):
     """
     Check if data with the given name and dimension exists.
+
+    Args
+    ----
+    data: ParaView data object
+        ParaView item to be checked.
+    name: String
+        Name of field whose existence will be checked for.
+    data_type: String
+        Type of data, encoded using ParaView-style namings.
+    dimension:
+        Spatial dimension of requested data field.
     """
 
-    vtk_data = pa.servermanager.Fetch(data)
-    point_data = vtk_data.GetPointData()
-    field_data = point_data.GetArray(name)
+    visualization_data = pa.servermanager.Fetch(data)
+
+    if data_type == 'POINTS':
+        data = visualization_data.GetPointData()
+    elif data_type == 'CELLS':
+        data = visualization_data.GetCellData()
+    else:
+        raise ValueError(('Can\'t access data of type {} so far. '
+            + 'Needs to be implemented.').format(data_type))
+    field_data = data.GetArray(name)
 
     if field_data is None:
         if fail_on_error:
-            names = [point_data.GetArrayName(i)
-                for i in range(point_data.GetNumberOfArrays())]
+            names = [data.GetArrayName(i)
+                for i in range(data.GetNumberOfArrays())]
             raise ValueError(('Could not find {} data with the name {}! '
                 + 'Available names: {}').format(data_type, name, names))
         return False
