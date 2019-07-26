@@ -218,12 +218,15 @@ def check_data(data, name, data_type='POINTS', dimension=None,
         Spatial dimension of requested data field.
     """
 
-    vtk_data = pa.servermanager.Fetch(data)
+    visualization_data = pa.servermanager.Fetch(data)
 
     if data_type == 'POINTS':
-        data = vtk_data.GetPointData()
+        data = visualization_data.GetPointData()
     elif data_type == 'CELLS':
-        data = vtk_data.GetCellData()
+        data = visualization_data.GetCellData()
+    else:
+        raise ValueError(('Can\'t access data of type {} so far. '
+            + 'Needs to be implemented.').format(data_type))
     field_data = data.GetArray(name)
 
     if field_data is None:
