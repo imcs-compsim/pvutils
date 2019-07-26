@@ -103,10 +103,8 @@ def contour(data, field='displacement', data_type='POINTS',
     check_data(data, field, data_type=data_type)
     view = pa.GetActiveViewOrCreate('RenderView')
     display = pa.GetDisplayProperties(data, view=view)
-    if data_type == 'POINTS': # ToDo: These cases can probably be unified.
-        pa.ColorBy(display, ('POINTS', field, vector_type))
-    elif data_type == 'CELLS':
-        pa.ColorBy(display, ('CELLS', field, vector_type))
+    if data_type == 'POINTS' or data_type == 'CELLS':
+        pa.ColorBy(display, (data_type, field, vector_type))
     else:
         raise ValueError('Data type {} not implemented!'.format(data_type))
 
