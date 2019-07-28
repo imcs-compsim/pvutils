@@ -10,7 +10,7 @@ import shutil
 import hashlib
 
 # ParaView imports.
-import pvutils.utils as pvutils
+import pvutils
 import paraview.simple as pa
 pa._DisableFirstRenderCameraReset()
 
