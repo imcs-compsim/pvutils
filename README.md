@@ -2,12 +2,17 @@
 
 A set of functions that should simplify the usability of `python` scripts in ParaView.
 
-## ParaView
+- The directory `pvuitls` contains the files for this module, utility functions and ParaView filter wrappers. 
+- Some useful programmable filters can be found in the directory `filters`. To use one of the programmable filters in a script, use the function `programmable_filter` from `pvutils`.
+
+
+## ParaView version
 
 Unfortunately the ParaView scripting interface changes with minor version.
 The current version of this module is developed with [ParaView 5.6.0](https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.6&type=binary&os=Linux&downloadFile=ParaView-5.6.0-MPI-Linux-64bit.tar.gz).
 
-## Setup
+
+## Execute scripts with `pvutils`
 
 Three different ways exist to execute a python ParaView script
 
