@@ -226,37 +226,40 @@ class TestPvutils(unittest.TestCase):
             )
         self.assertTrue(time_step_error < 1e-10)
 
-        # Apply filters to the meshes and display them. The temporal
-        # interpolator is applied, so both meshes have the same displacement
-        # (interpolated).
-        three_steps = pvutils.temporal_interpolator(three_steps)
-        three_steps = pvutils.transform(three_steps, translate=[0, 0, 2])
-        three_steps = pvutils.warp(three_steps)
-        pvutils.display(three_steps)
-        four_steps = pvutils.warp(four_steps)
-        pvutils.display(four_steps)
+        # The rest will only be tested locally since it requires an X window
+        # (for the temporal time filter).
+        if not _is_gitlab():
+            # Apply filters to the meshes and display them. The temporal
+            # interpolator is applied, so both meshes have the same
+            # displacement (interpolated).
+            three_steps = pvutils.temporal_interpolator(three_steps)
+            three_steps = pvutils.transform(three_steps, translate=[0, 0, 2])
+            three_steps = pvutils.warp(three_steps)
+            pvutils.display(three_steps)
+            four_steps = pvutils.warp(four_steps)
+            pvutils.display(four_steps)
 
-        # Set the time. The three step mesh will be interpolated, as it does
-        # not have a discrete time step here.
-        pvutils.set_timestep(0.9, fail_on_not_available_time=True)
+            # Set the time. The three step mesh will be interpolated, as it
+            # does not have a discrete time step here.
+            pvutils.set_timestep(0.9, fail_on_not_available_time=True)
 
-        # Set the view.
-        view = pa.GetActiveViewOrCreate('RenderView')
-        view.CameraPosition = [11.429, 2.4, 1]
-        view.CameraFocalPoint = [0, 2.4, 1]
-        view.CameraViewUp = [0, 0, 1]
-        view.CameraViewAngle = 30
-        view.CameraParallelScale = 2.95804
-        view.OrientationAxesVisibility = 0
-        view.CameraParallelProjection = 0
-        view.InteractionMode = '2D'
-        view.ViewSize = [400, 400]
+            # Set the view.
+            view = pa.GetActiveViewOrCreate('RenderView')
+            view.CameraPosition = [11.429, 2.4, 1]
+            view.CameraFocalPoint = [0, 2.4, 1]
+            view.CameraViewUp = [0, 0, 1]
+            view.CameraViewAngle = 30
+            view.CameraParallelScale = 2.95804
+            view.OrientationAxesVisibility = 0
+            view.CameraParallelProjection = 0
+            view.InteractionMode = '2D'
+            view.ViewSize = [400, 400]
 
-        # Compare the current view with the reference image.
-        self._save_screenshot_and_compare(view,
-                OverrideColorPalette='WhiteBackground',
-                TransparentBackground=0
-                )
+            # Compare the current view with the reference image.
+            self._save_screenshot_and_compare(view,
+                    OverrideColorPalette='WhiteBackground',
+                    TransparentBackground=0
+                    )
 
 
 if __name__ == '__main__':
