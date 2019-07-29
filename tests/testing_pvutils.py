@@ -13,7 +13,6 @@ import numpy as np
 # ParaView imports.
 import pvutils
 import paraview.simple as pa
-pa._DisableFirstRenderCameraReset()
 
 
 def _empty_temp_testing_directory():
@@ -264,6 +263,8 @@ class TestPvutils(unittest.TestCase):
 
 if __name__ == '__main__':
     # Execution part of script.
+
+    pa._DisableFirstRenderCameraReset()
 
     # Define the testing paths.
     testing_path = os.path.abspath(os.getcwd())
