@@ -259,7 +259,8 @@ def print_view_state(view, *args):
         'CameraParallelScale',
         'OrientationAxesVisibility',
         'CameraParallelProjection',
-        'ViewSize'
+        'ViewSize',
+        'InteractionMode'
         ]
     _print_attibutes(view, attributes, 'view')
     print('')
