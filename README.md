@@ -25,8 +25,15 @@ If the script uses `pvutils` the path to the root `pvutils` directory has to be 
 
 ## Testing
 
-The unit tests are defined in `tests/testing.pvutils.py`.
-All tests can be executed with the script `tests/test_local.sh`. The environment variable `PARAVIEW_PATH` pointing to the root directory of the ParaView installation (the one containing `bin` and `lib`) has to be set.
-The path to `pvutils` has to be in `PYTHONPATH`.
 A change in the repository also starts a pipeline in GitLab.
 Tests that require a graphical output (e.g. everything that writes an image) can not be performed via GitLab, therefore a local run of `tests/test_local.sh` should be performed before EVERY commit.
+
+The unit tests are defined in `tests/testing.pvutils.py`.
+
+To setup local testing, modify your `~/.bashrc` to
+- point the environment variable `PARAVIEW_PATH` pointing to the root directory of the ParaView installation (the one containing `bin` and `lib`)
+- include th repository `pvutils` into your `PYTHONPATH`.
+
+Then, all tests can be executed by
+- navigating to `tests/`
+- executing `test_local.sh` 
