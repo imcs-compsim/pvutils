@@ -114,3 +114,16 @@ def tube(data, slices=8):
     tube.VaryRadius = 'By Absolute Scalar'
     tube.NumberofSides = slices
     return tube
+
+
+def temporal_interpolator(data):
+    """
+    Apply the temporal data interpolator to an item. It is necessary to show
+    and hide the resulting item, as otherwise ParaView will raise an error as
+    soon as field data is requested.
+    """
+
+    temp_interpolator = pa.TemporalInterpolator(Input=data)
+    pa.Show(temp_interpolator)
+    pa.Hide(temp_interpolator)
+    return temp_interpolator

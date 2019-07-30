@@ -8,11 +8,11 @@ import unittest
 import os
 import shutil
 import hashlib
+import numpy as np
 
 # ParaView imports.
 import pvutils
 import paraview.simple as pa
-pa._DisableFirstRenderCameraReset()
 
 
 def _empty_temp_testing_directory():
@@ -68,6 +68,49 @@ class TestPvutils(unittest.TestCase):
             raise ValueError(('The test name {} does not match the expected '
                 + 'format').format(name))
         return split_name[1]
+
+    def _save_screenshot_and_compare(self, view, different_paraview=False,
+            **kwargs):
+        """
+        Save the view to a screenshot and compare it with the reference image.
+        The reference image is stored in the 'reference=files' directory. When
+        the testing is performed via GitLab, this part is skipped, as currently
+        we can not open a X window and therefore create screenshots with the
+        GitLab runner.
+
+        Args
+        ----
+        view: ParaView view object
+            View that will be written to an image.
+        different_paraview: bool
+            If there are different reference images depending on if the image
+            was created with ParaView or pvpython.
+        kwargs:
+            Will be passed to pa.SaveScreenshot.
+        """
+
+        if not _is_gitlab():
+
+            if different_paraview:
+                if pvutils.is_pvpython():
+                    interpreter = '_pvpython'
+                else:
+                    interpreter = '_paraview'
+            else:
+                interpreter = ''
+
+            # Export screenshot.
+            screenshot_path = os.path.join(testing_temp,
+                '{}_temp{}.png'.format(self._get_test_name(), interpreter))
+            pa.SaveScreenshot(screenshot_path, view, **kwargs)
+
+            # Compare the created image with the reference image by comparing
+            # their hashes.
+            self.assertEqual(
+                _get_file_hash(screenshot_path),
+                _get_file_hash(os.path.join(testing_reference,
+                    '{}_ref{}.png'.format(
+                        self._get_test_name(), interpreter))))
 
     def test_full_script_beam_to_solid_volume_meshtying(self):
         """
@@ -155,37 +198,73 @@ class TestPvutils(unittest.TestCase):
         color_bar.ScalarBarLength = 0.2
         pvutils.set_colorbar_font(color_bar, font_size, dpi, font='TeX')
 
-        # This part will only be executed on local jobs, since GitLab can not
-        # open a X window.
-        if not _is_gitlab():
-            # Export screenshot.
-            screenshot_path = os.path.join(testing_temp, '{}_temp.png'.format(
-                self._get_test_name()))
-            pa.SaveScreenshot(screenshot_path,
-                view,
+        # Compare the current view with the reference image.
+        self._save_screenshot_and_compare(view, different_paraview=True,
                 ImageResolution=size_pixel,
                 OverrideColorPalette='WhiteBackground',
                 TransparentBackground=0,
                 FontScaling='Do not scale fonts'
                 )
 
-            # Compare the created image with the reference image by comparing
-            # their hashes. The image created with ParaView is slightly
-            # different from the one created with pvpython. The eyeball test
-            # passes, therefore two reference images will be compared.
-            if pvutils.is_pvpython():
-                interpreter = 'pvpython'
-            else:
-                interpreter = 'paraview'
-            self.assertEqual(
-                _get_file_hash(screenshot_path),
-                _get_file_hash(os.path.join(testing_reference,
-                    '{}_ref_{}.png'.format(
-                        self._get_test_name(), interpreter))))
+    def test_time_step(self):
+        """
+        Test the set time step functions. Two meshes are loaded with different
+        time values. Both meshes contain a solid block with the same (constant
+        per time step) displacement.
+        """
+
+        three_steps = pvutils.load_file(os.path.join(testing_reference,
+            'solid_cantilever_pvd', 'solid_cantilever_3-steps.pvd'))
+        four_steps = pvutils.load_file(os.path.join(testing_reference,
+            'solid_cantilever_pvd', 'solid_cantilever_4-steps.pvd'))
+
+        # Check if all time steps are found.
+        time_step_error = np.linalg.norm(
+            np.array(pvutils.get_available_timesteps())
+            - [0.3, 0.4, 0.6, 0.8, 0.9, 1.2]
+            )
+        self.assertTrue(time_step_error < 1e-10)
+
+        # The rest will only be tested locally since it requires an X window
+        # (for the temporal time filter).
+        if not _is_gitlab():
+            # Apply filters to the meshes and display them. The temporal
+            # interpolator is applied, so both meshes have the same
+            # displacement (interpolated).
+            three_steps = pvutils.temporal_interpolator(three_steps)
+            three_steps = pvutils.transform(three_steps, translate=[0, 0, 2])
+            three_steps = pvutils.warp(three_steps)
+            pvutils.display(three_steps)
+            four_steps = pvutils.warp(four_steps)
+            pvutils.display(four_steps)
+
+            # Set the time. The three step mesh will be interpolated, as it
+            # does not have a discrete time step here.
+            pvutils.set_timestep(0.9, fail_on_not_available_time=True)
+
+            # Set the view.
+            view = pa.GetActiveViewOrCreate('RenderView')
+            view.CameraPosition = [11.429, 2.4, 1]
+            view.CameraFocalPoint = [0, 2.4, 1]
+            view.CameraViewUp = [0, 0, 1]
+            view.CameraViewAngle = 30
+            view.CameraParallelScale = 2.95804
+            view.OrientationAxesVisibility = 0
+            view.CameraParallelProjection = 0
+            view.InteractionMode = '2D'
+            view.ViewSize = [400, 400]
+
+            # Compare the current view with the reference image.
+            self._save_screenshot_and_compare(view,
+                    OverrideColorPalette='WhiteBackground',
+                    TransparentBackground=0
+                    )
 
 
 if __name__ == '__main__':
     # Execution part of script.
+
+    pa._DisableFirstRenderCameraReset()
 
     # Define the testing paths.
     testing_path = os.path.abspath(os.getcwd())
