@@ -336,7 +336,7 @@ def get_available_timesteps():
 def set_timestep(time, fail_on_not_available_time=True):
     """
     Set the time step in the current session.
-    This works fine, BUT ParaView will a wrong time (first available time),
+    This works fine, BUT ParaView will use a wrong time (first available time),
     even tough a different time step is displayed.
 
     Args

@@ -73,7 +73,7 @@ class TestPvutils(unittest.TestCase):
             **kwargs):
         """
         Save the view to a screenshot and compare it with the reference image.
-        The reference image is stores in the 'reference=files' directory. When
+        The reference image is stored in the 'reference=files' directory. When
         the testing is performed via GitLab, this part is skipped, as currently
         we can not open a X window and therefore create screenshots with the
         GitLab runner.
@@ -209,7 +209,7 @@ class TestPvutils(unittest.TestCase):
     def test_time_step(self):
         """
         Test the set time step functions. Two meshes are loaded with different
-        time values. Both meshes contain a slid block with the same (constant
+        time values. Both meshes contain a solid block with the same (constant
         per time step) displacement.
         """
 
