@@ -9,6 +9,7 @@ import os
 import shutil
 import hashlib
 import numpy as np
+from matplotlib.image import imread
 
 # ParaView imports.
 import pvutils
@@ -82,35 +83,30 @@ class TestPvutils(unittest.TestCase):
         ----
         view: ParaView view object
             View that will be written to an image.
-        different_paraview: bool
-            If there are different reference images depending on if the image
-            was created with ParaView or pvpython.
         kwargs:
             Will be passed to pa.SaveScreenshot.
         """
 
         if not _is_gitlab():
 
-            if different_paraview:
-                if pvutils.is_pvpython():
-                    interpreter = '_pvpython'
-                else:
-                    interpreter = '_paraview'
-            else:
-                interpreter = ''
-
             # Export screenshot.
             screenshot_path = os.path.join(testing_temp,
-                '{}_temp{}.png'.format(self._get_test_name(), interpreter))
+                '{}_temp.png'.format(self._get_test_name()))
             pa.SaveScreenshot(screenshot_path, view, **kwargs)
 
-            # Compare the created image with the reference image by comparing
-            # their hashes.
-            self.assertEqual(
-                _get_file_hash(screenshot_path),
-                _get_file_hash(os.path.join(testing_reference,
-                    '{}_ref{}.png'.format(
-                        self._get_test_name(), interpreter))))
+            # Compare the created image with the reference image.
+            reference_path = os.path.join(testing_reference,
+                 '{}_ref.png'.format(self._get_test_name()))
+            test_image = imread(screenshot_path)
+            ref_image = imread(reference_path)
+
+            # Get the average difference.
+            # https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
+            err = np.sum((test_image.astype("float")
+                - ref_image.astype("float")) ** 2)
+            err /= float(test_image.shape[0] * test_image.shape[1])
+
+            self.assertTrue(err < 5e-4)
 
     def test_full_script_beam_to_solid_volume_meshtying(self):
         """
@@ -199,7 +195,7 @@ class TestPvutils(unittest.TestCase):
         pvutils.set_colorbar_font(color_bar, font_size, dpi, font='TeX')
 
         # Compare the current view with the reference image.
-        self._save_screenshot_and_compare(view, different_paraview=True,
+        self._save_screenshot_and_compare(view,
                 ImageResolution=size_pixel,
                 OverrideColorPalette='WhiteBackground',
                 TransparentBackground=0,
