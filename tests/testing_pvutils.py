@@ -9,7 +9,6 @@ import os
 import shutil
 import hashlib
 import numpy as np
-from matplotlib.image import imread
 
 # ParaView imports.
 import pvutils
@@ -88,6 +87,8 @@ class TestPvutils(unittest.TestCase):
         """
 
         if not _is_gitlab():
+
+            from matplotlib.image import imread
 
             # Export screenshot.
             screenshot_path = os.path.join(testing_temp,
