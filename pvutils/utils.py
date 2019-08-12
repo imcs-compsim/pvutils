@@ -73,7 +73,7 @@ def display(data, line_width=None, line_color=None, solid_color=None,
     Colors are given as arrays with [R,G,B] values.
     """
 
-    view = pa.GetActiveViewOrCreate('RenderView')
+    view = get_view()
     display = pa.Show(data, view)
 
     if representation is not None:
@@ -109,7 +109,7 @@ def contour(data, field='displacement', data_type='POINTS',
     """
 
     check_data(data, field, data_type=data_type)
-    view = pa.GetActiveViewOrCreate('RenderView')
+    view = get_view()
     display = pa.GetDisplayProperties(data, view=view)
     pa.ColorBy(display, (data_type, field, vector_type))
 
@@ -198,7 +198,12 @@ def programmable_filter(source, name):
     return pv_filter
 
 
-def setup_view(view, *args, **kwargs):
+def get_view():
+    """Return the view object from ParaView."""
+    return pa.GetActiveViewOrCreate('RenderView')
+
+
+def setup_view(*args, **kwargs):
     """
     Allow the user to setup and return the relevant values.
     """
@@ -210,10 +215,12 @@ def setup_view(view, *args, **kwargs):
 
     # Default keyword arguments.
     kwargs_default = {
+        # The current view object. If none is given, the default one is taken.
+        'view': None,
         # If the size of the view should be fixed, i.e. preview mode should be
         # used. If pvpython is used, this does not have an effect. The size
         # will be taken from view.
-        'fixed_size': False,
+        'fixed_size': False
         }
 
     # Set the keyword arguments.
@@ -228,6 +235,10 @@ def setup_view(view, *args, **kwargs):
     if len(kwargs) > 0:
         raise ValueError('Unsupported keyword arguments {} given.'.format(
             kwargs.keys()))
+
+    # Get the view object.
+    if view is None:
+        view = get_view()
 
     # Check which paraview interpreter is used and setup the view accordingly.
     pa.Render(view)
