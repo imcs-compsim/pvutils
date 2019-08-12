@@ -73,7 +73,7 @@ def display(data, line_width=None, line_color=None, solid_color=None,
     Colors are given as arrays with [R,G,B] values.
     """
 
-    view = pa.GetActiveViewOrCreate('RenderView')
+    view = get_view()
     display = pa.Show(data, view)
 
     if representation is not None:
@@ -109,19 +109,69 @@ def contour(data, field='displacement', data_type='POINTS',
     """
 
     check_data(data, field, data_type=data_type)
-    view = pa.GetActiveViewOrCreate('RenderView')
-    display = pa.GetDisplayProperties(data, view=view)
+    display = get_display(data)
     pa.ColorBy(display, (data_type, field, vector_type))
 
 
-def check_data(data, name, data_type='POINTS', dimension=None,
+def get_field_names(item):
+    """
+    Return a dictionary with the available field data names in data.
+
+    Return
+    ----
+    names: dict
+        The return dictionary has the following structure:
+        {
+            'FIELD': [
+                ('field_name_1', number_of_components),
+                ('field_name_2', number_of_components)
+                ],
+            'CELLS': [
+                ('cell_field_name_1', number_of_components),
+                ('cell_field_name_2', number_of_components)
+                ],
+            'POINTS': [
+                ('point_field_name_1', number_of_components),
+                ('point_field_name_2', number_of_components)
+                ]
+        }
+    """
+
+    # Loop over global, cell and point data to get the available names.
+    return_dict = {}
+    visualization_data = pa.servermanager.Fetch(item)
+    for funct, data_type in [
+            (visualization_data.GetFieldData, 'FIELD'),
+            (visualization_data.GetCellData, 'CELLS'),
+            (visualization_data.GetPointData, 'POINTS')
+            ]:
+
+        # Create the entry in the return dictionary.
+        return_dict[data_type] = []
+
+        # Get all names for this data type.
+        data = funct()
+        names = [data.GetArrayName(i)
+                 for i in range(data.GetNumberOfArrays())]
+
+        # Add the number of components for the fields.
+        for name in names:
+            field_data = data.GetArray(name)
+            return_dict[data_type].append(
+                (name, field_data.GetNumberOfComponents())
+                )
+
+    return return_dict
+
+
+def check_data(item, name, data_type='POINTS', dimension=None,
         fail_on_error=True):
     """
     Check if data with the given name and dimension exists.
 
     Args
     ----
-    data: ParaView data object
+    item: ParaView data object
         ParaView item to be checked.
     name: String
         Name of field whose existence will be checked for.
@@ -131,35 +181,24 @@ def check_data(data, name, data_type='POINTS', dimension=None,
         Spatial dimension of requested data field.
     """
 
-    visualization_data = pa.servermanager.Fetch(data)
-
-    if data_type == 'POINTS':
-        data = visualization_data.GetPointData()
-    elif data_type == 'CELLS':
-        data = visualization_data.GetCellData()
+    # Check if the field exists with the correct dimension.
+    field_names = get_field_names(item)[data_type]
+    for field_name, field_dimension in field_names:
+        if field_name == name:
+            if (dimension is not None) and (not field_dimension == dimension):
+                if fail_on_error:
+                    raise ValueError(
+                        'The field {} has {} instead of {} dimensions!'.format(
+                            name, field_dimension, dimension)
+                        )
+                return False
+            return True
     else:
-        raise ValueError(('Can\'t access data of type {} so far. '
-            + 'Needs to be implemented.').format(data_type))
-    field_data = data.GetArray(name)
-
-    if field_data is None:
+        # No match was found in the field names.
         if fail_on_error:
-            names = [data.GetArrayName(i)
-                for i in range(data.GetNumberOfArrays())]
             raise ValueError(('Could not find {} data with the name {}! '
-                + 'Available names: {}').format(data_type, name, names))
+                + 'Available names: {}').format(data_type, name, field_names))
         return False
-
-    if dimension is not None:
-        if not field_data.GetNumberOfComponents() == dimension:
-            if fail_on_error:
-                raise ValueError(
-                    'The field {} has {} instead of {} dimensions!'.format(
-                        name, field_data.GetNumberOfComponents(), dimension)
-                    )
-            return False
-
-    return True
 
 
 def get_base(data):
@@ -189,8 +228,8 @@ def programmable_filter(source, name):
     """
 
     filter_path = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        'filters',
+        os.path.dirname(__file__),
+        'programmable_filters',
         '{}.py'.format(name))
 
     pv_filter = pa.ProgrammableFilter(Input=source)
@@ -198,7 +237,19 @@ def programmable_filter(source, name):
     return pv_filter
 
 
-def setup_view(view, *args, **kwargs):
+def get_display(data, view=None):
+    """Return the display object from ParaView."""
+    if view is None:
+        view = get_view()
+    return pa.GetDisplayProperties(data, view=view)
+
+
+def get_view():
+    """Return the view object from ParaView."""
+    return pa.GetActiveViewOrCreate('RenderView')
+
+
+def setup_view(*args, **kwargs):
     """
     Allow the user to setup and return the relevant values.
     """
@@ -210,10 +261,12 @@ def setup_view(view, *args, **kwargs):
 
     # Default keyword arguments.
     kwargs_default = {
+        # The current view object. If none is given, the default one is taken.
+        'view': None,
         # If the size of the view should be fixed, i.e. preview mode should be
         # used. If pvpython is used, this does not have an effect. The size
         # will be taken from view.
-        'fixed_size': False,
+        'fixed_size': False
         }
 
     # Set the keyword arguments.
@@ -228,6 +281,10 @@ def setup_view(view, *args, **kwargs):
     if len(kwargs) > 0:
         raise ValueError('Unsupported keyword arguments {} given.'.format(
             kwargs.keys()))
+
+    # Get the view object.
+    if view is None:
+        view = get_view()
 
     # Check which paraview interpreter is used and setup the view accordingly.
     pa.Render(view)
