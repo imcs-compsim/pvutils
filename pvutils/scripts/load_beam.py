@@ -17,7 +17,8 @@ class BeamDisplay(object):
     Class to handle the display of a beam in ParaView.
     """
 
-    def __init__(self, beam_file, triads=True, nodes=True, segments=8):
+    def __init__(self, beam_file, triads=True, nodes=True, segments=8,
+            factor_nodes=3.0, factor_triads=3.0):
         """
         Load a beam into ParaView.
 
@@ -46,6 +47,7 @@ class BeamDisplay(object):
         self.base_vectors = []
 
         # Set the options for the tube filter.
+        pa.UpdatePipeline()
         field_names = pvutils.get_field_names(self.beam_cell_to_point)
         if ('cross_section_radius', 1) not in field_names['POINTS']:
             raise ValueError('Could not find cross_section_radius for tube!')
@@ -60,10 +62,17 @@ class BeamDisplay(object):
         if nodes:
             self.endpoints = pvutils.programmable_filter(
                 self.beam_cell_to_point, 'get_polyline_endpoints')
+
+            # This show and hide is needed, because otherwise the scalar data
+            # settings in the glyph will not be applied correctly (ParaView
+            # bug).
+            pa.Show(self.endpoints)
+            pa.Hide(self.endpoints)
+
             self.nodes = pa.Glyph(Input=self.endpoints)
             self.nodes.GlyphType = 'Sphere'
             self.nodes.ScaleArray = ['POINTS', 'cross_section_radius']
-            self.nodes.ScaleFactor = 3.0
+            self.nodes.ScaleFactor = factor_nodes
             self.nodes.GlyphMode = 'All Points'
             self.nodes.GlyphType.ThetaResolution = segments
             self.nodes.GlyphType.PhiResolution = segments
@@ -72,6 +81,13 @@ class BeamDisplay(object):
 
         # Display the basis vector of the triads.
         if triads:
+
+            # This show and hide is needed, because otherwise the scalar data
+            # settings in the glyph will not be applied correctly (ParaView
+            # bug).
+            pa.Show(self.beam_cell_to_point)
+            pa.Hide(self.beam_cell_to_point)
+
             for i in range(3):
                 name = 'base_vector_{}'.format(i + 1)
                 if (name, 3) in field_names['POINTS']:
@@ -80,7 +96,7 @@ class BeamDisplay(object):
                     base_vector.OrientationArray = ['POINTS', name]
                     base_vector.ScaleArray = ['POINTS',
                         'cross_section_radius']
-                    base_vector.ScaleFactor = 3.0
+                    base_vector.ScaleFactor = factor_triads
                     base_vector.GlyphMode = 'All Points'
                     pa.RenameSource(name, base_vector)
                     pvutils.display(base_vector)

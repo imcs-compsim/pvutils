@@ -12,6 +12,7 @@ import numpy as np
 
 # ParaView imports.
 import pvutils
+from pvutils.scripts.load_beam import BeamDisplay
 import paraview.simple as pa
 
 
@@ -256,6 +257,40 @@ class TestPvutils(unittest.TestCase):
                     OverrideColorPalette='WhiteBackground',
                     TransparentBackground=0
                     )
+
+    def test_beam_display(self):
+        """
+        Test the BeamDisplay object.
+        """
+
+        # Load the beam.
+        beam = BeamDisplay(os.path.join(testing_reference,
+            'beam_cantilever_pvd', 'cantilever.pvd'), segments=30,
+            factor_nodes=4, factor_triads=10)
+
+        # Set the view.
+        view = pvutils.get_view()
+        view.CameraPosition = [-0.907414, 1.60167, 1.27251]
+        view.CameraFocalPoint = [0.161918, -0.0745694, 0.503964]
+        view.CameraViewUp = [0.208326, -0.294696, 0.932606]
+        view.CameraViewAngle = 30
+        view.CameraParallelScale = 1.73
+        view.OrientationAxesVisibility = 1
+        view.CameraParallelProjection = 0
+        view.ViewSize = [600, 800]
+        view.InteractionMode = '3D'
+
+        # Color the beam parts.
+        pvutils.contour(beam.beam_tube)
+        pvutils.contour(beam.nodes)
+        for triad in beam.base_vectors:
+            pvutils.contour(triad)
+
+        # Compare the current view with the reference image.
+        self._save_screenshot_and_compare(view,
+                OverrideColorPalette='WhiteBackground',
+                TransparentBackground=0
+                )
 
 
 if __name__ == '__main__':
