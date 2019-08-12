@@ -229,8 +229,8 @@ def programmable_filter(source, name):
     """
 
     filter_path = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        'filters',
+        os.path.dirname(__file__),
+        'programmable_filters',
         '{}.py'.format(name))
 
     pv_filter = pa.ProgrammableFilter(Input=source)
