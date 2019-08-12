@@ -109,8 +109,7 @@ def contour(data, field='displacement', data_type='POINTS',
     """
 
     check_data(data, field, data_type=data_type)
-    view = get_view()
-    display = pa.GetDisplayProperties(data, view=view)
+    display = get_display(data)
     pa.ColorBy(display, (data_type, field, vector_type))
 
 
@@ -236,6 +235,13 @@ def programmable_filter(source, name):
     pv_filter = pa.ProgrammableFilter(Input=source)
     pv_filter.Script = 'execfile("{}")'.format(filter_path)
     return pv_filter
+
+
+def get_display(data, view=None):
+    """Return the display object from ParaView."""
+    if view is None:
+        view = get_view()
+    return pa.GetDisplayProperties(data, view=view)
 
 
 def get_view():
