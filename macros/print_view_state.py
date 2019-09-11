@@ -8,5 +8,5 @@ Print the state of the current view in ParaView.
 import paraview.simple as pa
 from pvutils import print_view_state
 
-view = view = pa.GetActiveViewOrCreate('RenderView')
+view = pa.GetActiveViewOrCreate('RenderView')
 print_view_state(view)
