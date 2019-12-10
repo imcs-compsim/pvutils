@@ -416,3 +416,13 @@ def set_timestep(time, fail_on_not_available_time=True):
     scene.TimeKeeper.Time = time
     pa.Render()
 
+
+def get_parents(source):
+    """
+    Return a list with all parents of an object in paraview.
+    """
+
+    parents = [source]
+    if 'Input' in dir(source):
+        parents.extend(get_parents(source.Input))
+    return parents
