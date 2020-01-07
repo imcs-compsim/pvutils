@@ -292,6 +292,27 @@ class TestPvutils(unittest.TestCase):
                 TransparentBackground=0
                 )
 
+    def test_get_parents(self):
+        """
+        Test the get_parents function.
+        """
+
+        # Load a beam representation and get the parents of some entries.
+        beam = BeamDisplay(os.path.join(testing_reference,
+            'beam_cantilever_pvd', 'cantilever.pvd'), segments=30,
+            factor_nodes=4, factor_triads=10)
+        node_parents = pvutils.get_parents(beam.nodes)
+        tube_parents = pvutils.get_parents(beam.beam_tube)
+
+        # Compare with the expected parents.
+        self.assertEqual(node_parents,
+            [beam.nodes, beam.endpoints, beam.beam_cell_to_point, beam.beam])
+        self.assertEqual(tube_parents,
+            [
+                beam.beam_tube, beam.beam_extract_surface,
+                beam.beam_cell_to_point, beam.beam
+            ])
+
 
 if __name__ == '__main__':
     # Execution part of script.

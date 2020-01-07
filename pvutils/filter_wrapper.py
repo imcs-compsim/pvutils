@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Function  wrappers for ParaView functions.
+Function wrappers for ParaView functions.
 """
 
 

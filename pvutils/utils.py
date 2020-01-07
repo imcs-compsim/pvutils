@@ -68,7 +68,7 @@ def load_file(path):
 def display(data, line_width=None, line_color=None, solid_color=None,
         representation=None, nonlinear_subdividison=None, opacity=None):
     """
-    Set the display options for the paraview object data.
+    Set the display options for the ParaView object data.
 
     Colors are given as arrays with [R,G,B] values.
     """
@@ -286,7 +286,7 @@ def setup_view(*args, **kwargs):
     if view is None:
         view = get_view()
 
-    # Check which paraview interpreter is used and setup the view accordingly.
+    # Check which ParaView interpreter is used and setup the view accordingly.
     pa.Render(view)
     if is_pvpython():
         # Stop for user modifications.
@@ -419,10 +419,26 @@ def set_timestep(time, fail_on_not_available_time=True):
 
 def get_parents(source):
     """
-    Return a list with all parents of an object in paraview.
+    Return a list with all direct parents of an object in ParaView, including
+    the object itself.
     """
 
     parents = [source]
+    # Only add the parent if the object has a method 'get_parents'.
     if 'Input' in dir(source):
-        parents.extend(get_parents(source.Input))
+        # In some cases input returns a list, e.g. for programmable filters. In
+        # this case this function only works if there is exactly one element in
+        # that list.
+        pv_input = source.Input
+        is_pv_list = ('paraview.servermanager.InputProperty'
+            in str(type(pv_input)))
+        if is_pv_list and len(pv_input) > 1:
+            raise ValueError(('"Input" for the object "{}" returned the '
+                + 'following list with more than 1 entry: {}'
+                ).format(source, pv_input))
+        elif is_pv_list:
+            # For some reason we can not access the __getitem__ method with
+            # pv_input[index]. Therefore, we call the method directly.
+            pv_input = pa.servermanager.InputProperty.__getitem__(pv_input, 0)
+        parents.extend(get_parents(pv_input))
     return parents
