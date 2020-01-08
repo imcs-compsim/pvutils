@@ -19,8 +19,10 @@ class BeamDisplay(object):
     Class to handle the display of a beam in ParaView.
     """
 
-    def __init__(self, beam_file, triads=True, nodes=True, segments=8,
-            factor_nodes=3.0, factor_triads=3.0):
+    def __init__(self, beam_file, segments=8,
+            triads=True, factor_triads=3.0, show_triads=False,
+            nodes=True, factor_nodes=3.0, show_nodes=False
+            ):
         """
         Load a beam into ParaView.
 
@@ -28,14 +30,22 @@ class BeamDisplay(object):
         ----
         beam_file: str
             Path to the beam file that should be displayed.
-        triads: bool
-            If the basis vectors should be displayed.
-        nodes: bool
-            If the nodes of the beam elements (start and end node) should be
-            displayed.
         segments: int
             Number of segments to be used for the beam tube and the node
             spheres.
+        triads: bool
+            If the basis vectors should be displayed.
+        factor_triads: float
+            Factor between triad length and beam radius.
+        show_triads: bool
+            If triads are created, should they be visible or not.
+        nodes: bool
+            If the nodes of the beam elements (start and end node) should be
+            displayed.
+        factor_nodes: float
+            Factor between node radius and beam radius.
+        show_nodes: bool
+            If nodes are created, should they be visible or not.
         """
 
         # Display items of this class.
@@ -74,7 +84,8 @@ class BeamDisplay(object):
             self.nodes.GlyphType.ThetaResolution = segments
             self.nodes.GlyphType.PhiResolution = segments
             pa.RenameSource('nodes', self.nodes)
-            utility_functions.display(self.nodes)
+            if show_nodes:
+                utility_functions.display(self.nodes)
 
         # Display the basis vector of the triads.
         if triads:
@@ -90,7 +101,8 @@ class BeamDisplay(object):
                     base_vector.ScaleFactor = factor_triads
                     base_vector.GlyphMode = 'All Points'
                     pa.RenameSource(name, base_vector)
-                    utility_functions.display(base_vector)
+                    if show_triads:
+                        utility_functions.display(base_vector)
                     self.base_vectors.append(base_vector)
 
         # Set the beam tube as active element.

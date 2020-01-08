@@ -26,7 +26,6 @@ def load_beam_to_solid(solid_path, beam_path):
     # Load the beams.
     beam = pvutils.BeamDisplay(beam_path)
     pvutils.contour(beam.beam_tube)
-    pvutils.contour(beam.nodes)
 
     # Set to first time step.
     pvutils.set_timestep(pvutils.get_available_timesteps()[0])
