@@ -125,6 +125,9 @@ class TestPvutils(unittest.TestCase):
         scene.UpdateAnimationUsingDataTimeSteps()
         scene.GoToLast()
 
+        # Test that the correct name can be read from the source.
+        self.assertEqual('solid', pvutils.get_source_name(solid))
+
         # Apply the tube filter to the beam and display the curvature.
         scale_factor = 50.0
         beam = pvutils.warp(beam, scale_factor=scale_factor)

@@ -113,6 +113,22 @@ def contour(data, field='displacement', data_type='POINTS',
     pa.ColorBy(display, (data_type, field, vector_type))
 
 
+def get_source_name(item):
+    """
+    Return the name of a source item in the ParaView tree. The name does not
+    have to be unique.
+    """
+
+    # Get all sources in the session.
+    sources = pa.GetSources()
+    for key, value in sources.items():
+        if value == item:
+            return key[0]
+    else:
+        raise ValueError('The item "{}" was not found in sources!'.format(
+            item))
+
+
 def get_field_names(item):
     """
     Return a dictionary with the available field data names in data.
@@ -187,17 +203,20 @@ def check_data(item, name, data_type='POINTS', dimension=None,
         if field_name == name:
             if (dimension is not None) and (not field_dimension == dimension):
                 if fail_on_error:
-                    raise ValueError(
-                        'The field {} has {} instead of {} dimensions!'.format(
-                            name, field_dimension, dimension)
+                    raise ValueError((
+                        'The field {} has {} instead of {} dimensions in the '
+                        + 'source "{}"!').format(
+                            name, field_dimension, dimension,
+                            get_source_name(item))
                         )
                 return False
             return True
     else:
         # No match was found in the field names.
         if fail_on_error:
-            raise ValueError(('Could not find {} data with the name {}! '
-                + 'Available names: {}').format(data_type, name, field_names))
+            raise ValueError(('Could not find {} data with the name {} in the'
+                + 'source "{}"! Available names: {}').format(data_type, name,
+                    get_source_name(item), field_names))
         return False
 
 
