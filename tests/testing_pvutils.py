@@ -70,8 +70,7 @@ class TestPvutils(unittest.TestCase):
                 + 'format').format(name))
         return split_name[1]
 
-    def _save_screenshot_and_compare(self, view, different_paraview=False,
-            **kwargs):
+    def _save_screenshot_and_compare(self, view, **kwargs):
         """
         Save the view to a screenshot and compare it with the reference image.
         The reference image is stored in the 'reference=files' directory. When
