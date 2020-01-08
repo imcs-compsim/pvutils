@@ -12,7 +12,6 @@ import numpy as np
 
 # ParaView imports.
 import pvutils
-from pvutils.scripts.load_beam import BeamDisplay
 import paraview.simple as pa
 
 
@@ -266,7 +265,7 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load the beam.
-        beam = BeamDisplay(os.path.join(testing_reference,
+        beam = pvutils.BeamDisplay(os.path.join(testing_reference,
             'beam_cantilever_pvd', 'cantilever.pvd'), segments=30,
             factor_nodes=4, factor_triads=10)
 
@@ -300,7 +299,7 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load a beam representation and get the parents of some entries.
-        beam = BeamDisplay(os.path.join(testing_reference,
+        beam = pvutils.BeamDisplay(os.path.join(testing_reference,
             'beam_cantilever_pvd', 'cantilever.pvd'), segments=30,
             factor_nodes=4, factor_triads=10)
         node_parents = pvutils.get_parents(beam.nodes)
