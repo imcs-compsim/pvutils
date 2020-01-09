@@ -387,7 +387,16 @@ def get_available_timesteps():
     """
 
     scene = pa.GetAnimationScene()
-    return scene.TimeKeeper.TimestepValues
+    times = scene.TimeKeeper.TimestepValues
+
+    # In the case of a single time step the function
+    # scene.TimeKeeper.TimestepValues returns a float instead of a list with
+    # one entry. Here we check that the return value of this function is
+    # always a list.
+    if isinstance(times, float):
+        return [times]
+    else:
+        return times
 
 
 def set_timestep(time, fail_on_not_available_time=True):
