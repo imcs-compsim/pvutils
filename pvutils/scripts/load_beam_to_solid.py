@@ -35,15 +35,20 @@ def load_beam_to_solid(solid_path, beam_path):
     view.Update()
     view.ResetCamera()
 
+    # Return the created objects.
+    return solid, beam
 
-if __name__ == '__main__':
-    """Execute part of script."""
 
-    # Get the working directory.
-    work_dir = os.environ['PWD']
+def load_beam_to_solid_in_dir(path):
+    """
+    Load a beam and solid file in a given path.
+    The beam file is expected to contain "-structure-beams.pvd", while the
+    solid file should contain "-structure.pvd". There has to be exactly ONE
+    beam and solid file in the working directory.
+    """
 
     # Get all pvd files in the working directory.
-    pvd_files = [file for file in os.listdir(work_dir) if file.endswith('pvd')]
+    pvd_files = [file for file in os.listdir(path) if file.endswith('pvd')]
 
     # Check if there is ONE structure and beam file.
     structure_files = [file for file in pvd_files if '-structure.pvd' in file]
@@ -54,7 +59,13 @@ if __name__ == '__main__':
                 len(structure_files), len(beam_files)))
 
     # Call the script.
-    load_beam_to_solid(
-        os.path.join(work_dir, structure_files[0]),
-        os.path.join(work_dir, beam_files[0])
+    return load_beam_to_solid(
+        os.path.join(path, structure_files[0]),
+        os.path.join(path, beam_files[0])
         )
+
+
+if __name__ == '__main__':
+    """Execute part of script."""
+
+    load_beam_to_solid_in_dir(os.environ['PWD'])

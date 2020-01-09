@@ -17,3 +17,6 @@ from .filter_wrapper import (glyph, warp, transform, threshold, tube,
 
 # Load utility classes.
 from .utility_classes import (BeamDisplay)
+
+# Load scripts.
+import scripts
