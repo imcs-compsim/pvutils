@@ -11,6 +11,26 @@ import paraview.simple as pa
 from .utils import check_data
 
 
+def glyph(data):
+    """
+    Apply a glyph filter to data.
+
+    Args
+    ----
+    data: ParaView data object
+        ParaView item the glyph filter will be applied to.
+    """
+
+    # This show and hide is needed, because otherwise the scalar data settings
+    # in the glyph will not be applied correctly (ParaView bug).
+    pa.Show(data)
+    pa.Hide(data)
+
+    # Create the filter and set the desired options.
+    glyph = pa.Glyph(Input=data)
+    return glyph
+
+
 def warp(data, field='displacement', scale_factor=1.0):
     """
     Warp the data by a vector field.

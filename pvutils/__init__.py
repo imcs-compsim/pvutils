@@ -11,5 +11,5 @@ from .utils import (load_file, display, contour, check_data, get_base,
     set_timestep, get_field_names, get_view, get_display, get_parents)
 
 # Load the wrappers.
-from .filter_wrapper import (warp, transform, threshold, tube,
+from .filter_wrapper import (glyph, warp, transform, threshold, tube,
     temporal_interpolator)

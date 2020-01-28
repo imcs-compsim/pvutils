@@ -63,13 +63,7 @@ class BeamDisplay(object):
             self.endpoints = pvutils.programmable_filter(
                 self.beam_cell_to_point, 'get_polyline_endpoints')
 
-            # This show and hide is needed, because otherwise the scalar data
-            # settings in the glyph will not be applied correctly (ParaView
-            # bug).
-            pa.Show(self.endpoints)
-            pa.Hide(self.endpoints)
-
-            self.nodes = pa.Glyph(Input=self.endpoints)
+            self.nodes = pvutils.glyph(self.endpoints)
             self.nodes.GlyphType = 'Sphere'
             self.nodes.ScaleArray = ['POINTS', 'cross_section_radius']
             self.nodes.ScaleFactor = factor_nodes
@@ -81,17 +75,10 @@ class BeamDisplay(object):
 
         # Display the basis vector of the triads.
         if triads:
-
-            # This show and hide is needed, because otherwise the scalar data
-            # settings in the glyph will not be applied correctly (ParaView
-            # bug).
-            pa.Show(self.beam_cell_to_point)
-            pa.Hide(self.beam_cell_to_point)
-
             for i in range(3):
                 name = 'base_vector_{}'.format(i + 1)
                 if (name, 3) in field_names['POINTS']:
-                    base_vector = pa.Glyph(Input=self.beam_cell_to_point)
+                    base_vector = pvutils.glyph(self.beam_cell_to_point)
                     base_vector.GlyphType = 'Arrow'
                     base_vector.OrientationArray = ['POINTS', name]
                     base_vector.ScaleArray = ['POINTS',
