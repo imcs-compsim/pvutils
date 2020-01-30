@@ -442,7 +442,10 @@ def set_timestep(time, fail_on_not_available_time=True):
 
     scene = pa.GetAnimationScene()
     scene.TimeKeeper.Time = time
-    pa.Render()
+
+    # This render command is disabled as it resulted in failing pipelines in
+    # GitLab.
+    # pa.Render()
 
 
 def get_parents(source):
