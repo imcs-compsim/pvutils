@@ -45,12 +45,7 @@ for i in range(n_cells):
 
             # Add all point data.
             for j, array in enumerate(point_data_arrays):
-                if array.GetNumberOfComponents() == 1:
-                    array.InsertNextTuple1(pdi.GetPointData().GetArray(j).GetTuple1(index))
-                elif array.GetNumberOfComponents() == 3:
-                    array.InsertNextTuple3(*pdi.GetPointData().GetArray(j).GetTuple3(index)[:3])
-                else:
-                    raise ValueError('Only 1 and 3 tuples allowed.')
+                array.InsertNextTuple(pdi.GetPointData().GetArray(j).GetTuple(index))
 
 # Reset output.
 pdo.Initialize()

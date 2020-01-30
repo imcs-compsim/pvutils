@@ -12,7 +12,6 @@ import numpy as np
 
 # ParaView imports.
 import pvutils
-from pvutils.scripts.load_beam import BeamDisplay
 import paraview.simple as pa
 
 
@@ -70,8 +69,7 @@ class TestPvutils(unittest.TestCase):
                 + 'format').format(name))
         return split_name[1]
 
-    def _save_screenshot_and_compare(self, view, different_paraview=False,
-            **kwargs):
+    def _save_screenshot_and_compare(self, view, **kwargs):
         """
         Save the view to a screenshot and compare it with the reference image.
         The reference image is stored in the 'reference=files' directory. When
@@ -125,6 +123,9 @@ class TestPvutils(unittest.TestCase):
         scene = pa.GetAnimationScene()
         scene.UpdateAnimationUsingDataTimeSteps()
         scene.GoToLast()
+
+        # Test that the correct name can be read from the source.
+        self.assertEqual('solid', pvutils.get_source_name(solid))
 
         # Apply the tube filter to the beam and display the curvature.
         scale_factor = 50.0
@@ -264,7 +265,7 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load the beam.
-        beam = BeamDisplay(os.path.join(testing_reference,
+        beam = pvutils.BeamDisplay(os.path.join(testing_reference,
             'beam_cantilever_pvd', 'cantilever.pvd'), segments=30,
             factor_nodes=4, factor_triads=10)
 
@@ -298,7 +299,7 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load a beam representation and get the parents of some entries.
-        beam = BeamDisplay(os.path.join(testing_reference,
+        beam = pvutils.BeamDisplay(os.path.join(testing_reference,
             'beam_cantilever_pvd', 'cantilever.pvd'), segments=30,
             factor_nodes=4, factor_triads=10)
         node_parents = pvutils.get_parents(beam.nodes)
@@ -312,6 +313,40 @@ class TestPvutils(unittest.TestCase):
                 beam.beam_tube, beam.beam_extract_surface,
                 beam.beam_cell_to_point, beam.beam
             ])
+
+    def test_script_load_beam_to_solid(self):
+        """
+        Load a patch test of a solid structure with beams, apply some filters
+        to it and check the created screenshot. This will test if the complete
+        workflow works.
+        """
+
+        # Call the script.
+        _solid, beam = pvutils.scripts.load_beam_to_solid_in_dir(
+            os.path.join(testing_reference, 'beam_and_solid_cantilever')
+            )
+
+        # Display some features on the beam.
+        pvutils.contour(beam.nodes)
+        pa.Show(beam.base_vectors[1])
+
+        # Setup the view.
+        view = pvutils.get_view()
+        view.CameraPosition = [37.0083, 21.8822, -37.7023]
+        view.CameraFocalPoint = [4.54484, 3.0232, -2.89383]
+        view.CameraViewUp = [-0.0915005, 0.90881, 0.407052]
+        view.CameraViewAngle = 30
+        view.CameraParallelScale = 16.0335
+        view.OrientationAxesVisibility = 0
+        view.CameraParallelProjection = 0
+        view.ViewSize = [696, 654]
+        view.InteractionMode = '3D'
+
+        # Compare the current view with the reference image.
+        self._save_screenshot_and_compare(view,
+                OverrideColorPalette='WhiteBackground',
+                TransparentBackground=0
+                )
 
 
 if __name__ == '__main__':

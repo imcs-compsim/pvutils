@@ -8,7 +8,7 @@ Function wrappers for ParaView functions.
 import paraview.simple as pa
 
 # Import pvutils functions.
-from .utils import check_data
+import utility_functions
 
 
 def glyph(data):
@@ -50,7 +50,7 @@ def warp(data, field='displacement', scale_factor=1.0):
         The resulting ParaView item after applying the filter.
     """
 
-    check_data(data, field, dimension=3)
+    utility_functions.check_data(data, field, dimension=3)
     warp = pa.WarpByVector(Input=data)
     warp.Vectors = ['POINTS', field]
     warp.ScaleFactor = scale_factor
@@ -128,7 +128,7 @@ def tube(data, slices=8):
     Apply the tube filter to a beam.
     """
 
-    check_data(data, 'cross_section_radius', dimension=1)
+    utility_functions.check_data(data, 'cross_section_radius', dimension=1)
     tube = pa.Tube(Input=data)
     tube.Scalars = [None, 'cross_section_radius']
     tube.VaryRadius = 'By Absolute Scalar'
