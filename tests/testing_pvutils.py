@@ -9,6 +9,7 @@ import os
 import shutil
 import hashlib
 import numpy as np
+import sys
 
 # ParaView imports.
 import pvutils
@@ -365,5 +366,6 @@ if __name__ == '__main__':
     _empty_temp_testing_directory()
 
     # Perform the tests.
-    unittest.TextTestRunner().run(
+    run = unittest.TextTestRunner().run(
         unittest.TestLoader().loadTestsFromTestCase(TestPvutils))
+    sys.exit(not (run.wasSuccessful() and len(run.skipped) == 0))
