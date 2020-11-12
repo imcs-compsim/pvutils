@@ -88,7 +88,6 @@ def find_connected_cells(pdi, cell_id):
             # cell.
             connected_cell_points = (new_cell_point_ids[:-1] +
                 connected_cell_points)
-            print(connected_cell_points)
             connected_cell_points, old_cells = add_cell_recursive(
                 connected_cell_points, old_cells, new_cell_point_ids[0])
         else:
