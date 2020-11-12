@@ -14,6 +14,90 @@ import sys
 # ParaView imports.
 import pvutils
 import paraview.simple as pa
+import vtk
+from vtk.util import numpy_support as vtk_numpy
+
+
+def compare_data(data1, data2, raise_error=False, tol_float=None):
+    """
+    Compare the ParaView data1 and data2, by compairing the stored data.
+
+    Args
+    ----
+    raise_error: bool
+        If true, then an error will be raised in case the files do not match.
+        Otherwise False will be returned.
+    tol_float: None / float
+        If given, numbers will be considered equal if the difference between
+        them is smaller than tol_float.
+    """
+
+    # Default value for the numerical tolerance.
+    if tol_float is None:
+        tol_float = 1e-16
+
+    def compare_arrays(array1, array2, name=None):
+        """
+        Compare two vtk arrays.
+        """
+
+        diff = vtk_numpy.vtk_to_numpy(array1) - vtk_numpy.vtk_to_numpy(array2)
+        if not np.max(np.abs(diff)) < tol_float:
+            error_string = 'VTK array comparison failed!'
+            if name is not None:
+                error_string += ' Name of the array: {}'.format(name)
+            raise ValueError(error_string)
+
+    def compare_data_sets(data1, data2):
+        """
+        Compare data sets obtained from vtk objects.
+        """
+
+        # Both data sets need to have the same number of arrays.
+        if not data1.GetNumberOfArrays() == data2.GetNumberOfArrays():
+            raise ValueError('Length of vtk data objects do not match!')
+
+        # Compare each array.
+        for i in range(data1.GetNumberOfArrays()):
+
+            # Get the arrays with the same name.
+            name = data1.GetArrayName(i)
+            array1 = data1.GetArray(name)
+            array2 = data2.GetArray(name)
+            compare_arrays(array1, array2, name=name)
+
+    # Perform all checks, catch errors.
+    try:
+
+        # Compare the point positions.
+        compare_arrays(
+            data1.GetPoints().GetData(),
+            data2.GetPoints().GetData(),
+            name='point_positions'
+            )
+
+        # Compare the cell and point data of the array.
+        compare_data_sets(data1.GetCellData(), data2.GetCellData())
+        compare_data_sets(data1.GetPointData(), data2.GetPointData())
+
+        # Compare the cell connectivity.
+        compare_arrays(
+            data1.GetCells().GetData(),
+            data2.GetCells().GetData(),
+            name='cell_connectivity')
+
+        # Compare the cell types.
+        compare_arrays(
+            data1.GetCellTypesArray(),
+            data2.GetCellTypesArray(),
+            name='cell_type')
+
+    except Exception as error:
+        if raise_error:
+            raise error
+        return False
+
+    return True
 
 
 def _empty_temp_testing_directory():
@@ -348,6 +432,30 @@ class TestPvutils(unittest.TestCase):
                 OverrideColorPalette='WhiteBackground',
                 TransparentBackground=0
                 )
+
+
+    def test_merge_polylines_filter(self):
+        """
+        Test the merge polylines programmable filter.
+        """
+
+        raw_file = os.path.join(testing_reference,
+            'beam_merge_polylines_raw.vtu')
+        ref_file = os.path.join(testing_reference,
+            'beam_merge_polylines_reference.vtu')
+        test_file = os.path.join(testing_temp, 'beam_merge_polylines.vtu')
+
+        # Load the beam (with the merge polylines filter)
+        beam = pvutils.BeamDisplay(raw_file, merge_poly_lines=True)
+
+        # Load the reference file.
+        beam_ref = pvutils.load_file(ref_file)
+
+        # Compare the vtk file with the reference file.
+        self.assertTrue(compare_data(
+            pa.servermanager.Fetch(beam_ref),
+            pa.servermanager.Fetch(beam.beam_merge_poly_line),
+            raise_error=True))
 
 
 if __name__ == '__main__':
