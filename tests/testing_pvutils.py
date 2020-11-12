@@ -433,17 +433,15 @@ class TestPvutils(unittest.TestCase):
                 TransparentBackground=0
                 )
 
-
     def test_merge_polylines_filter(self):
         """
         Test the merge polylines programmable filter.
         """
 
         raw_file = os.path.join(testing_reference,
-            'beam_merge_polylines_raw.vtu')
+            'merge_polylines_raw_beam.vtu')
         ref_file = os.path.join(testing_reference,
-            'beam_merge_polylines_reference.vtu')
-        test_file = os.path.join(testing_temp, 'beam_merge_polylines.vtu')
+            'merge_polylines_reference.vtu')
 
         # Load the beam (with the merge polylines filter)
         beam = pvutils.BeamDisplay(raw_file, merge_poly_lines=True)
