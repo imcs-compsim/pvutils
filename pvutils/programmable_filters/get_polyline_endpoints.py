@@ -1,6 +1,7 @@
 """
-This script merges all polylines that are connected to each other via a shared
-node.
+This script filters all cells for polylines and extracts the first and last
+nodes from that cell (nodal points for beams). It also keeps all point data
+values.
 
 Use with programmable filter in paraview and execute with:
 >> execfile('path to file')
