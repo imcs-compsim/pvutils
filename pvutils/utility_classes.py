@@ -19,7 +19,7 @@ class BeamDisplay(object):
     Class to handle the display of a beam in ParaView.
     """
 
-    def __init__(self, beam_file, segments=8,
+    def __init__(self, beam_file, segments=8, merge_poly_lines=False,
             triads=True, factor_triads=3.0, show_triads=False,
             nodes=True, factor_nodes=3.0, show_nodes=False
             ):
@@ -33,6 +33,8 @@ class BeamDisplay(object):
         segments: int
             Number of segments to be used for the beam tube and the node
             spheres.
+        merge_poly_lines: bool
+            If the clean to grid and merge poly lines filter should be applied.
         triads: bool
             If the basis vectors should be displayed.
         factor_triads: float
@@ -51,8 +53,17 @@ class BeamDisplay(object):
         # Display items of this class.
         self.beam = utility_functions.load_file(beam_file)
         self.beam_cell_to_point = pa.CellDatatoPointData(Input=self.beam)
-        self.beam_extract_surface = pa.ExtractSurface(
-            Input=self.beam_cell_to_point)
+        if merge_poly_lines:
+            self.beam_clean_to_grid = pa.CleantoGrid(
+                Input=self.beam_cell_to_point)
+            self.beam_merge_poly_line = utility_functions.programmable_filter(
+                self.beam_clean_to_grid, 'merge_polylines')
+            next_input = self.beam_merge_poly_line
+        else:
+            self.beam_clean_to_grid = None
+            self.beam_merge_poly_line = None
+            next_input = self.beam_cell_to_point
+        self.beam_extract_surface = pa.ExtractSurface(Input=next_input)
         self.beam_tube = filter_wrapper.tube(self.beam_extract_surface)
         self.endpoints = None
         self.nodes = None
