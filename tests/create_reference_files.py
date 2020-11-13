@@ -98,6 +98,40 @@ def create_reference_file_merge_polyline():
         [0, 1, z],
         n_el=n_el)
 
+    # Create a simple bifurcation.
+    z = 5
+    create_beam_mesh_line(mesh, Beam3rHerm2Line3, mat,
+        [0, 0, z],
+        [0, 1, z],
+        n_el=n_el)
+    create_beam_mesh_line(mesh, Beam3rHerm2Line3, mat,
+        [0, 1, z],
+        [0.5, 2, z],
+        n_el=n_el)
+    create_beam_mesh_line(mesh, Beam3rHerm2Line3, mat,
+        [0, 1, z],
+        [-0.5, 2, z],
+        n_el=n_el)
+
+    # Create a bifurcation with a closed circle.
+    z = 6
+    create_beam_mesh_line(mesh, Beam3rHerm2Line3, mat,
+        [0, 0, z],
+        [0, 1, z],
+        n_el=n_el)
+    create_beam_mesh_line(mesh, Beam3rHerm2Line3, mat,
+        [0, 1, z],
+        [0.5, 2, z],
+        n_el=n_el)
+    create_beam_mesh_line(mesh, Beam3rHerm2Line3, mat,
+        [0, 1, z],
+        [-0.5, 2, z],
+        n_el=n_el)
+    create_beam_mesh_line(mesh, Beam3rHerm2Line3, mat,
+        [0, 0, z],
+        [-0.5, 2, z],
+        n_el=n_el)
+
     mesh.write_vtk('merge_polylines_raw', ref_dir, ascii=True)
 
 
