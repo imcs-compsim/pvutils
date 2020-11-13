@@ -52,39 +52,62 @@ def find_connected_cells(pdi, cell_id):
 
         # Add this cell and its points (in correct order).
         new_cell_id = new_cell_ids[0]
-        old_cells.append(new_cell_id)
         new_cell_point_ids = vtk_id_to_list(
             pdi.GetCell(new_cell_id).GetPointIds())
         if new_cell_point_ids[0] == connected_cell_points[-1]:
             # First point of this cell is added to the last point of the last
             # cell.
-            connected_cell_points.extend(new_cell_point_ids[1:])
-            connected_cell_points, old_cells = add_cell_recursive(
-                connected_cell_points, old_cells, new_cell_point_ids[-1])
+            extend = True
         elif new_cell_point_ids[-1] == connected_cell_points[-1]:
             # Last point of this cell is added to the last point of the last
             # cell.
+            extend = True
             new_cell_point_ids.reverse()
-            connected_cell_points.extend(new_cell_point_ids[1:])
-            connected_cell_points, old_cells = add_cell_recursive(
-                connected_cell_points, old_cells, new_cell_point_ids[-1])
         elif new_cell_point_ids[0] == connected_cell_points[0]:
             # First point of this cell is added to the first point of the last
             # cell.
+            extend = False
             new_cell_point_ids.reverse()
-            connected_cell_points = (new_cell_point_ids[:-1] +
-                connected_cell_points)
-            connected_cell_points, old_cells = add_cell_recursive(
-                connected_cell_points, old_cells, new_cell_point_ids[0])
         elif new_cell_point_ids[-1] == connected_cell_points[0]:
             # Last point of this cell is added to the first point of the last
             # cell.
-            connected_cell_points = (new_cell_point_ids[:-1] +
-                connected_cell_points)
-            connected_cell_points, old_cells = add_cell_recursive(
-                connected_cell_points, old_cells, new_cell_point_ids[0])
+            extend = False
         else:
             raise ValueError('This should not happen')
+
+        # Check the angel of the corner and decide whether or not to merge
+        # this.
+        import numpy as np
+        if extend:
+            corner_point_ids = (connected_cell_points[-2:] +
+                [new_cell_point_ids[1]])
+        else:
+            corner_point_ids = ([new_cell_point_ids[-2]] +
+                connected_cell_points[:2])
+        points = [np.array(pdi.GetPoint(j)) for j in corner_point_ids]
+        vec_1 = points[1] - points[0]
+        vec_1 = vec_1 / np.linalg.norm(vec_1)
+        vec_2 = points[2] - points[1]
+        vec_2 = vec_2 / np.linalg.norm(vec_2)
+        dot = np.dot(vec_1, vec_2)
+#         if dot < 0.5:
+#             # Corner is too sharp do not merge this point.
+#             return connected_cell_points, old_cells
+
+        # Extend the merged poly line points.
+        if extend:
+            connected_cell_points.extend(new_cell_point_ids[1:])
+            next_start_index = -1
+        else:
+            connected_cell_points = (new_cell_point_ids[:-1] +
+                connected_cell_points)
+            next_start_index = 0
+
+        old_cells.append(new_cell_id)
+        connected_cell_points, old_cells = add_cell_recursive(
+            connected_cell_points, old_cells,
+            new_cell_point_ids[next_start_index])
+
         return connected_cell_points, old_cells
 
     id_list = vtk.vtkIdList()
