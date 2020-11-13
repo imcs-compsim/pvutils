@@ -26,15 +26,7 @@ for i in range(pdi.GetPointData().GetNumberOfArrays()):
 n_cells = pdi.GetNumberOfCells()
 for i in range(n_cells):
     if not pdi.GetCellType(i) == 4:
-        raise ValueError('Only polylines (vtk type 4) are supported')
-
-# Check that no point connects more than one cell.
-n_points = pdi.GetNumberOfPoints()
-id_list = vtk.vtkIdList()
-for i in range(n_points):
-    pdi.GetPointCells(i, id_list)
-    if id_list.GetNumberOfIds() > 2:
-        raise ValueError('Bifurcations are not supported')
+        raise ValueError('Only poly lines (vtk type 4) are supported')
 
 
 def find_connected_cells(pdi, cell_id):
@@ -53,9 +45,9 @@ def find_connected_cells(pdi, cell_id):
         cell_connectivity = vtk_id_to_list(id_list)
         new_cell_ids = [cell_id for cell_id in cell_connectivity if
             cell_id not in old_cells]
-        if len(new_cell_ids) > 1:
-            raise ValueError('This should not happen')
-        elif len(new_cell_ids) == 0:
+        if len(cell_connectivity) > 2 or len(new_cell_ids) == 0:
+            # In this case we either have a bifurcation point or are at the end
+            # the poly line.
             return connected_cell_points, old_cells
 
         # Add this cell and its points (in correct order).
@@ -115,19 +107,16 @@ def find_connected_cells(pdi, cell_id):
 cell_ids = list(range(n_cells))
 new_cells = []
 while True:
-    # Get the next available cell id.
+    # Take the next available cell and look for all connected cells.
     for i in cell_ids:
         if i is not None:
             next_id = i
             break
     else:
         break
-
-    # Take the next available cell and look for all connected cells.
     old_cells, connected_cell_points = find_connected_cells(pdi, next_id)
 
-    # Mark the found cell IDs since each one can only occur once in the
-    # output.
+    # Mark the found cell IDs.
     for found_cell_id in old_cells:
         cell_ids[found_cell_id] = None
 
