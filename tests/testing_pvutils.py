@@ -455,6 +455,30 @@ class TestPvutils(unittest.TestCase):
             pa.servermanager.Fetch(beam.beam_merge_poly_line),
             raise_error=True))
 
+    def test_second_order_to_first_order(self):
+        """
+        Test the second_order_to_first_order programmable filter.
+        """
+
+        raw_file = os.path.join(testing_reference, 'solid_bending_test',
+            'solid_bending_test.pvtu')
+        ref_file = os.path.join(testing_reference, 'solid_bending_test',
+            'solid_bending_test_only_first_order_elements.vtu')
+
+        # Load both files.
+        raw = pvutils.load_file(raw_file)
+        ref = pvutils.load_file(ref_file)
+
+        # Apply filter.
+        raw_filtered = pvutils.programmable_filter(raw,
+            'second_order_to_first_order')
+
+        # Compare the vtk file with the reference file.
+        self.assertTrue(compare_data(
+            pa.servermanager.Fetch(raw_filtered),
+            pa.servermanager.Fetch(ref),
+            raise_error=True))
+
 
 if __name__ == '__main__':
     # Execution part of script.

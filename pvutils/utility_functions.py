@@ -50,6 +50,8 @@ def load_file(path):
 
     if extension == 'pvd':
         data = pa.PVDReader(FileName=path)
+    elif extension == 'pvtu':
+        data = pa.XMLPartitionedUnstructuredGridReader(FileName=[path])
     elif extension == 'vtu':
         data = pa.XMLUnstructuredGridReader(FileName=[path])
     elif extension == 'exo':
