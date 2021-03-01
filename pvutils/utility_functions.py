@@ -243,7 +243,7 @@ def reset_paraview():
     pa.Connect()
 
 
-def programmable_filter(source, name):
+def programmable_filter(source, name, **kwargs):
     """
     Apply a programmable filter from this git repository.
     """
@@ -252,6 +252,10 @@ def programmable_filter(source, name):
         os.path.dirname(__file__),
         'programmable_filters',
         '{}.py'.format(name))
+
+    # Store the kwargs in a variable in the namespace of the ParaView python
+    # module.
+    paraview.programmable_filter_kwargs = kwargs
 
     pv_filter = pa.ProgrammableFilter(Input=source)
     pv_filter.Script = 'execfile("{}")'.format(filter_path)

@@ -8,7 +8,19 @@ Use with programmable filter in paraview and execute with:
 """
 
 # Import paraview moudles.
+import paraview
 from paraview import vtk
+import numpy as np
+
+# Get "keyword arguments".
+# Default value, if the angle of a corner is more than 45 degrees, the polyline
+# will be split there.
+max_angle = 0.5 * np.pi
+if hasattr(paraview, 'programmable_filter_kwargs'):
+    if 'max_angle' in paraview.programmable_filter_kwargs.keys():
+        tmp = paraview.programmable_filter_kwargs['max_angle']
+        if tmp is not None:
+            max_angle = tmp
 
 # Get input and output objects.
 pdi = self.GetInput()
@@ -35,6 +47,8 @@ def find_connected_cells(pdi, cell_id):
     one. Also return all points of those lines in order for the combined poly
     line.
     """
+
+    global max_angle
 
     def vtk_id_to_list(vtk_id_list):
         return [int(vtk_id_list.GetId(i_id)) for i_id in
@@ -77,7 +91,6 @@ def find_connected_cells(pdi, cell_id):
 
         # Check the angel of the corner and decide whether or not to merge
         # this.
-        import numpy as np
         if extend:
             corner_point_ids = (connected_cell_points[-2:] +
                 [new_cell_point_ids[1]])
@@ -90,9 +103,11 @@ def find_connected_cells(pdi, cell_id):
         vec_2 = points[2] - points[1]
         vec_2 = vec_2 / np.linalg.norm(vec_2)
         dot = np.dot(vec_1, vec_2)
-#         if dot < 0.5:
-#             # Corner is too sharp do not merge this point.
-#             return connected_cell_points, old_cells
+        angle = np.arccos(dot)
+        if np.abs(angle) > max_angle:
+            # Angle between beam elements is more than the maximum angle,
+            # which indicates an edge and not a continuous polyline.
+            return connected_cell_points, old_cells
 
         # Extend the merged poly line points.
         if extend:
