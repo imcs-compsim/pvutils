@@ -20,6 +20,7 @@ class BeamDisplay(object):
     """
 
     def __init__(self, beam_file, segments=8, merge_poly_lines=False,
+            merge_polylines_max_angle=None,
             triads=True, factor_triads=3.0, show_triads=False,
             nodes=True, factor_nodes=3.0, show_nodes=False
             ):
@@ -57,7 +58,8 @@ class BeamDisplay(object):
             self.beam_clean_to_grid = pa.CleantoGrid(
                 Input=self.beam_cell_to_point)
             self.beam_merge_poly_line = utility_functions.programmable_filter(
-                self.beam_clean_to_grid, 'merge_polylines')
+                self.beam_clean_to_grid, 'merge_polylines',
+                max_angle=merge_polylines_max_angle)
             next_input = self.beam_merge_poly_line
         else:
             self.beam_clean_to_grid = None

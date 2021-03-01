@@ -243,7 +243,7 @@ def reset_paraview():
     pa.Connect()
 
 
-def programmable_filter(source, name):
+def programmable_filter(source, name, **kwargs):
     """
     Apply a programmable filter from this git repository.
     """
@@ -252,6 +252,10 @@ def programmable_filter(source, name):
         os.path.dirname(__file__),
         'programmable_filters',
         '{}.py'.format(name))
+
+    # Store the kwargs in a variable in the namespace of the ParaView python
+    # module.
+    paraview.programmable_filter_kwargs = kwargs
 
     pv_filter = pa.ProgrammableFilter(Input=source)
     pv_filter.Script = 'execfile("{}")'.format(filter_path)
@@ -344,6 +348,9 @@ def print_view_state(view, *args):
     print('')
 
     # If additional items are given to this function, print their properties.
+    args = list(args)
+    if hasattr(paraview, 'print_view_state_scalar_bar'):
+        args.extend(paraview.print_view_state_scalar_bar)
     for arg in args:
 
         item_string = str(arg)
@@ -360,6 +367,13 @@ def print_view_state(view, *args):
                 ]
             print('')
             _print_attibutes(arg, attributes, 'color_bar')
+
+
+def print_view_state_set_scalar_bar(arg):
+    """
+    Set a scalar bar that will be included in print_view_state.
+    """
+    paraview.print_view_state_scalar_bar = arg
 
 
 def get_size_pixel(size, dpi):

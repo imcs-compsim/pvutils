@@ -444,7 +444,8 @@ class TestPvutils(unittest.TestCase):
             'merge_polylines_reference.vtu')
 
         # Load the beam (with the merge polylines filter)
-        beam = pvutils.BeamDisplay(raw_file, merge_poly_lines=True)
+        beam = pvutils.BeamDisplay(raw_file, merge_poly_lines=True,
+            merge_polylines_max_angle=2 * np.pi)
 
         # Load the reference file.
         beam_ref = pvutils.load_file(ref_file)
