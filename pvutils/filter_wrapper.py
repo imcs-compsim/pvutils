@@ -114,6 +114,11 @@ def threshold(data, field='displacement', data_type='POINTS',
         The resulting ParaView item after applying the filter.
     """
 
+    # This show and hide is needed, because otherwise the scalar data settings
+    # in the threshold will not be applied correctly (ParaView bug).
+    pa.Show(data)
+    pa.Hide(data)
+
     if threshold_range is None:
         threshold_range = [-1.0e+12, 1.0e+12]
 
