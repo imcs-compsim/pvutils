@@ -490,3 +490,31 @@ def get_parents(source):
             pv_input = pa.servermanager.InputProperty.__getitem__(pv_input, 0)
         parents.extend(get_parents(pv_input))
     return parents
+
+
+def von_mises_stress(source):
+    """
+    Add a cell and node based field with the vonMises stress.
+    """
+
+    # Check if arrays are available.
+    check_data(source, 'nodal_cauchy_stresses_xyz', data_type='POINTS')
+    check_data(source, 'element_cauchy_stresses_xyz', data_type='CELLS')
+
+    function = (
+        'sqrt(' +
+        '{}_XX^2 + {}_YY^2 + + {}_ZZ^2' +
+        '- {}_XX * {}_YY - {}_XX * {}_ZZ - {}_ZZ * {}_YY' +
+        '+ 6*({}_XY^2 + {}_YZ^2 + {}_XZ^2))')
+
+    node_based = pa.Calculator(Input=source)
+    node_based.ResultArrayName = 'sigma_von_mises'
+    node_based.Function = function.format('nodal_cauchy_stresses_xyz')
+    node_based.AttributeType = 'Point Data'
+
+    cell_based = pa.Calculator(Input=node_based)
+    cell_based.ResultArrayName = 'sigma_von_mises'
+    cell_based.Function = function.format('element_cauchy_stresses_xyz')
+    cell_based.AttributeType = 'Cell Data'
+
+    return cell_based
