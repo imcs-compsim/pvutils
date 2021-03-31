@@ -103,6 +103,8 @@ def find_connected_cells(pdi, cell_id):
         vec_2 = points[2] - points[1]
         vec_2 = vec_2 / np.linalg.norm(vec_2)
         dot = np.dot(vec_1, vec_2)
+        if 1.0 <= dot and dot < 1.0 + 1e-12:
+            dot = 1.0
         angle = np.arccos(dot)
         if np.abs(angle) > max_angle:
             # Angle between beam elements is more than the maximum angle,
