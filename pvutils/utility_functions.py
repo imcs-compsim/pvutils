@@ -369,11 +369,12 @@ def print_view_state(view, *args):
             _print_attibutes(arg, attributes, 'color_bar')
 
 
-def print_view_state_set_scalar_bar(arg):
+def print_view_state_set_scalar_bar(*args):
     """
     Set a scalar bar that will be included in print_view_state.
     """
-    paraview.print_view_state_scalar_bar = arg
+
+    paraview.print_view_state_scalar_bar = args
 
 
 def get_size_pixel(size, dpi):
