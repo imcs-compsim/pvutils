@@ -504,6 +504,7 @@ def update_scene():
     # view.Update()
     # view.ResetCamera()
     # pa.UpdatePipeline()
+    # pa.Render()
 
     animation_scene = pa.GetAnimationScene()
     animation_scene.UpdateAnimationUsingDataTimeSteps()
