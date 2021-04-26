@@ -490,3 +490,21 @@ def get_parents(source):
             pv_input = pa.servermanager.InputProperty.__getitem__(pv_input, 0)
         parents.extend(get_parents(pv_input))
     return parents
+
+
+def update_scene():
+    """
+    This has the same effect, as if 'Apply' is clicked in ParaView, i.e. the
+    time steps are loaded correctly in the GUI.
+    """
+
+    # Sometimes these commands are used, but it seems it it not needed. Keep
+    # this comment for reference.
+    # view = pvutils.get_view()
+    # view.Update()
+    # view.ResetCamera()
+    # pa.UpdatePipeline()
+
+    animation_scene = pa.GetAnimationScene()
+    animation_scene.UpdateAnimationUsingDataTimeSteps()
+    return animation_scene
