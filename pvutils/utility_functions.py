@@ -511,6 +511,24 @@ def update_scene():
     return animation_scene
 
 
+def set_color_range(field, val_min, val_max):
+    """
+    Set the max and min values for the contour plot color range.
+
+    Args
+    ----
+    field: str
+        Name of field quantity.
+    val_min, val_max: floar
+        Minimum and maximum values for the color range
+    """
+
+    lut = pa.GetColorTransferFunction(field)
+    lut.RescaleTransferFunction(val_min, val_max)
+    pwf = pa.GetOpacityTransferFunction(field)
+    pwf.RescaleTransferFunction(val_min, val_max)
+
+
 def von_mises_stress(source):
     """
     Add a cell and node based field with the vonMises stress.
