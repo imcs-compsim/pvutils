@@ -55,6 +55,7 @@ def find_connected_cells(pdi, cell_id):
             range(vtk_id_list.GetNumberOfIds())]
 
     def add_cell_recursive(connected_cell_points, old_cells, initial_point_id):
+        import numpy as np
         pdi.GetPointCells(initial_point_id, id_list)
         cell_connectivity = vtk_id_to_list(id_list)
         new_cell_ids = [cell_id for cell_id in cell_connectivity if
