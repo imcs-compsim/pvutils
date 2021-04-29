@@ -205,8 +205,7 @@ class TestPvutils(unittest.TestCase):
             'solid_cube_case', 'solid.case'))
         beam = pvutils.load_file(os.path.join(testing_reference,
             'beam_helix_pvd', 'beam.pvd'))
-        scene = pa.GetAnimationScene()
-        scene.UpdateAnimationUsingDataTimeSteps()
+        scene = pvutils.update_scene()
         scene.GoToLast()
 
         # Test that the correct name can be read from the source.

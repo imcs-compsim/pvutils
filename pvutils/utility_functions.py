@@ -492,6 +492,25 @@ def get_parents(source):
     return parents
 
 
+def update_scene():
+    """
+    This has the same effect, as if 'Apply' is clicked in ParaView, i.e. the
+    time steps are loaded correctly in the GUI.
+    """
+
+    # Sometimes these commands are used, but it seems it it not needed. Keep
+    # this comment for reference.
+    # view = pvutils.get_view()
+    # view.Update()
+    # view.ResetCamera()
+    # pa.UpdatePipeline()
+    # pa.Render()
+
+    animation_scene = pa.GetAnimationScene()
+    animation_scene.UpdateAnimationUsingDataTimeSteps()
+    return animation_scene
+
+
 def von_mises_stress(source):
     """
     Add a cell and node based field with the vonMises stress.
