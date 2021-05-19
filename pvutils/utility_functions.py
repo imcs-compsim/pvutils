@@ -12,6 +12,7 @@ import numpy as np
 # Import ParaView module.
 import paraview
 import paraview.simple as pa
+import pvutils
 
 
 def _print_attibutes(obj, attributes, variable_name):
@@ -576,26 +577,55 @@ def von_mises_stress(source):
     return cell_based
 
 
-def add_coordinate_axis(origin=[0, 0, 0], scale=1.0, resolution=20):
+def add_coordinate_axis(origin=None, basis=None, scale=1.0, resolution=20,
+        show=True):
     """
     Add arrow representations for the coordinate axis.
+
+    Args
+    ----
+    origin: [float]
+        Point where the axis will be drawn.
+    basis: [[float]]
+        List of basis vectors.
+    scale: float
+        Scale factor for displaying basis vectors.
+    resolution: int
+        ParaView internal resolution for arrow representation.
+    show: bool
+        If the basis vectors should be displayed.
     """
 
-    basis = [
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]
-        ]
+    # Set default values for origin and basis vectors.
+    if origin is None:
+        origin = [0, 0, 0]
+    if basis is None:
+        basis = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+            ]
     sorce = programmable_source('axis', origin=origin, basis=basis)
     base_glyphs = []
-    for i in range(3):
-        base_glyph = pa.Glyph(Input=sorce, GlyphType='Arrow')
+    for i, base in enumerate(basis):
+        base_glyph = pvutils.glyph(sorce)
+        base_glyph.GlyphType = 'Arrow'
         base_glyph.OrientationArray = ['POINTS', 'base_{}'.format(i + 1)]
         base_glyph.ScaleArray = ['POINTS', 'base_{}'.format(i + 1)]
         base_glyph.ScaleFactor = scale
         base_glyph.GlyphMode = 'All Points'
         base_glyph.GlyphType.TipResolution = resolution
         base_glyph.GlyphType.ShaftResolution = resolution
+
+        # The arrow representation is scaled, so the arrow does not look
+        # "thick" when getting longer.
+        length = np.linalg.norm(base)
+        base_glyph.GlyphType.TipRadius = 0.1 / length
+        base_glyph.GlyphType.TipLength = 0.35 / length
+        base_glyph.GlyphType.ShaftRadius = 0.03 / length
+
+        if show:
+            pa.Show(base_glyph)
         base_glyphs.append(base_glyph)
 
     return {
