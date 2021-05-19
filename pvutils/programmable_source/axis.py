@@ -9,23 +9,23 @@ Use with programmable source filter in paraview and execute with:
 from paraview import vtk
 
 
-def get_keyword_argument(name):
+def get_keyword_argument(name, kwargs_id):
     """
     Return the wanted keyword argument.
     """
     import paraview
     if hasattr(paraview, 'programmable_source_kwargs'):
-        if name in paraview.programmable_source_kwargs.keys():
-            return paraview.programmable_source_kwargs[name]
+        if name in paraview.programmable_source_kwargs[kwargs_id].keys():
+            return paraview.programmable_source_kwargs[kwargs_id][name]
     raise ValueError('Keyword argument "{}" not found'.format(name))
 
 
 # Get keyword arguments.
-origin = get_keyword_argument('origin')
-basis = get_keyword_argument('basis')
+origin = get_keyword_argument('origin', kwargs_id)
+basis = get_keyword_argument('basis', kwargs_id)
 
 # Add the origin.
-output = self.GetPolyDataOutput()
+output = self.GetOutput()
 newPts = vtk.vtkPoints()
 newPts.InsertPoint(0, origin[0], origin[1], origin[2])
 output.SetPoints(newPts)

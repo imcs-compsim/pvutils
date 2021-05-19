@@ -17,8 +17,8 @@ import numpy as np
 # will be split there.
 max_angle = 0.5 * np.pi
 if hasattr(paraview, 'programmable_filter_kwargs'):
-    if 'max_angle' in paraview.programmable_filter_kwargs.keys():
-        tmp = paraview.programmable_filter_kwargs['max_angle']
+    if 'max_angle' in paraview.programmable_filter_kwargs[kwargs_id].keys():
+        tmp = paraview.programmable_filter_kwargs[kwargs_id]['max_angle']
         if tmp is not None:
             max_angle = tmp
 

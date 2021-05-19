@@ -255,15 +255,23 @@ def programmable_filter(source, name, **kwargs):
         '{}.py'.format(name))
 
     # Store the kwargs in a variable in the namespace of the ParaView python
-    # module.
-    paraview.programmable_filter_kwargs = kwargs
+    # module. This variable can be retrieved by the programmable filter. The
+    # kwargs_id stores which keyword arguments belong to this programmable
+    # filter.
+    if hasattr(paraview, 'programmable_filter_kwargs'):
+        paraview.programmable_filter_kwargs.append(kwargs)
+    else:
+        paraview.programmable_filter_kwargs = [kwargs]
+    kwargs_id = len(paraview.programmable_filter_kwargs) - 1
 
     pv_filter = pa.ProgrammableFilter(Input=source)
-    pv_filter.Script = 'execfile("{}")'.format(filter_path)
+    pv_filter.Script = (
+        'kwargs_id = {}\n'.format(kwargs_id) +
+        'execfile("{}")'.format(filter_path))
     return pv_filter
 
 
-def programmable_source(name, **kwargs):
+def programmable_source(name, output_data='vtkUnstructuredGrid', **kwargs):
     """
     Apply a programmable source filter from this git repository.
     """
@@ -274,11 +282,21 @@ def programmable_source(name, **kwargs):
         '{}.py'.format(name))
 
     # Store the kwargs in a variable in the namespace of the ParaView python
-    # module.
-    paraview.programmable_source_kwargs = kwargs
+    # module. This variable can be retrieved by the programmable source. The
+    # kwargs_id stores which keyword arguments belong to this programmable
+    # source.
+    if hasattr(paraview, 'programmable_source_kwargs'):
+        paraview.programmable_source_kwargs.append(kwargs)
+    else:
+        paraview.programmable_source_kwargs = [kwargs]
+    kwargs_id = len(paraview.programmable_source_kwargs) - 1
 
     pv_source = pa.ProgrammableSource()
-    pv_source.Script = 'execfile("{}")'.format(filter_path)
+    pv_source.OutputDataSetType = output_data
+    pv_source.Script = (
+        'kwargs_id = {}\n'.format(kwargs_id) +
+        'execfile("{}")'.format(filter_path)
+        )
     return pv_source
 
 
