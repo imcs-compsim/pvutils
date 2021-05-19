@@ -262,6 +262,25 @@ def programmable_filter(source, name, **kwargs):
     return pv_filter
 
 
+def programmable_source(name, **kwargs):
+    """
+    Apply a programmable source filter from this git repository.
+    """
+
+    filter_path = os.path.join(
+        os.path.dirname(__file__),
+        'programmable_source',
+        '{}.py'.format(name))
+
+    # Store the kwargs in a variable in the namespace of the ParaView python
+    # module.
+    paraview.programmable_source_kwargs = kwargs
+
+    pv_source = pa.ProgrammableSource()
+    pv_source.Script = 'execfile("{}")'.format(filter_path)
+    return pv_source
+
+
 def get_display(data, view=None):
     """Return the display object from ParaView."""
     if view is None:
@@ -555,3 +574,31 @@ def von_mises_stress(source):
     cell_based.AttributeType = 'Cell Data'
 
     return cell_based
+
+
+def add_coordinate_axis(origin=[0, 0, 0], scale=1.0, resolution=20):
+    """
+    Add arrow representations for the coordinate axis.
+    """
+
+    basis = [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+        ]
+    sorce = programmable_source('axis', origin=origin, basis=basis)
+    base_glyphs = []
+    for i in range(3):
+        base_glyph = pa.Glyph(Input=sorce, GlyphType='Arrow')
+        base_glyph.OrientationArray = ['POINTS', 'base_{}'.format(i + 1)]
+        base_glyph.ScaleArray = ['POINTS', 'base_{}'.format(i + 1)]
+        base_glyph.ScaleFactor = scale
+        base_glyph.GlyphMode = 'All Points'
+        base_glyph.GlyphType.TipResolution = resolution
+        base_glyph.GlyphType.ShaftResolution = resolution
+        base_glyphs.append(base_glyph)
+
+    return {
+        'axis_source': sorce,
+        'base_glyphs': base_glyphs
+        }

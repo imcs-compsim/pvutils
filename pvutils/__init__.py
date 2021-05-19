@@ -10,7 +10,7 @@ from .utility_functions import (load_file, display, contour, check_data,
     print_view_state, get_size_pixel, is_pvpython, set_colorbar_font,
     get_available_timesteps, set_timestep, get_field_names, get_view,
     get_display, get_parents, get_source_name, print_view_state_set_scalar_bar,
-    update_scene, set_color_range)
+    update_scene, set_color_range, programmable_source, add_coordinate_axis)
 
 # Load the wrappers.
 from .filter_wrapper import (glyph, warp, transform, threshold, tube,
