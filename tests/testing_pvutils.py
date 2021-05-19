@@ -479,6 +479,29 @@ class TestPvutils(unittest.TestCase):
             pa.servermanager.Fetch(ref),
             raise_error=True))
 
+    def test_add_coordinate_axis(self):
+        """
+        Test the add_coordinate_axis function, and therefore, also the
+        programmable source filter "axis".
+        """
+
+        coordinate_axis = pvutils.add_coordinate_axis(
+            origin=[1, 2, 3],
+            basis=[[1, 1, 1], [0, 1, 0], [0, 0, 1], [-1, 0, 0]],
+            scale=4.0, resolution=4)
+        group_glyphs = pa.GroupDatasets(Input=coordinate_axis['base_glyphs'])
+        merged_glyphs = pa.MergeBlocks(Input=group_glyphs)
+        merged_glyphs.MergePoints = 0
+
+        # Compare the vtk file with the reference file.
+        ref_file = os.path.join(testing_reference,
+            'coordinate_axis_reference.vtu')
+        ref = pvutils.load_file(ref_file)
+        self.assertTrue(compare_data(
+            pa.servermanager.Fetch(ref),
+            pa.servermanager.Fetch(merged_glyphs),
+            raise_error=True))
+
 
 if __name__ == '__main__':
     # Execution part of script.
