@@ -540,7 +540,7 @@ def von_mises_stress(source):
 
     function = (
         'sqrt(' +
-        '{}_XX^2 + {}_YY^2 + + {}_ZZ^2' +
+        '{}_XX^2 + {}_YY^2 + {}_ZZ^2' +
         '- {}_XX * {}_YY - {}_XX * {}_ZZ - {}_ZZ * {}_YY' +
         '+ 6*({}_XY^2 + {}_YZ^2 + {}_XZ^2))')
 
