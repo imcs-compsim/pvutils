@@ -13,6 +13,7 @@ import numpy as np
 import paraview
 import paraview.simple as pa
 import pvutils
+from vtk.util import numpy_support as VN
 
 
 def _print_attibutes(obj, attributes, variable_name):
@@ -650,3 +651,25 @@ def add_coordinate_axis(origin=None, basis=None, scale=1.0, resolution=20,
         'axis_source': sorce,
         'base_glyphs': base_glyphs
         }
+
+
+def get_vtk_data_as_numpy(source):
+    """
+    Return all vtk data arrays.
+
+    Return
+    ------
+    [point_coordinates, {point_data}, {cell_data}]
+    """
+
+    data = pa.servermanager.Fetch(source)
+    point_coordinates = VN.vtk_to_numpy(data.GetPoints().GetData())
+
+    def get_data_array(input_data):
+        data_dir = {}
+        for i in range(input_data.GetNumberOfArrays()):
+            data_dir[input_data.GetArrayName(i)] = VN.vtk_to_numpy(
+                input_data.GetArray(i))
+        return data_dir
+    return (point_coordinates, get_data_array(data.GetPointData()),
+            get_data_array(data.GetCellData()))
