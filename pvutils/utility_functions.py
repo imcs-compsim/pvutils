@@ -653,6 +653,20 @@ def add_coordinate_axis(origin=None, basis=None, scale=1.0, resolution=20,
         }
 
 
+def get_bounding_box(source):
+    """
+    Get the bounding box dimensions (using the outline filter).
+    """
+
+    outline = pa.Outline(Input=source)
+    position, _, _ = get_vtk_data_as_numpy(outline)
+    max_min_coordinates = [
+        [np.min(position[:, i]), np.max(position[:, i])]
+        for i in range(3)]
+    pa.Delete(outline)
+    return max_min_coordinates
+
+
 def get_vtk_data_as_numpy(source):
     """
     Return all vtk data arrays.
