@@ -602,9 +602,8 @@ class TestPvutils(unittest.TestCase):
         raw_file = os.path.join(testing_reference, 'solid_bending_test',
             'solid_bending_test.pvtu')
         raw = pvutils.load_file(raw_file)
-        threshold = pa.Threshold(Input=raw)
-        threshold.Scalars = ['CELLS', 'element_gid']
-        threshold.ThresholdRange = [69.0, 72.0]
+        threshold = pvutils.threshold(raw, field='element_gid', data_type='CELLS',
+            threshold_range=[69.0, 72.0])
 
         coordinates, point_data, cell_data = pvutils.get_vtk_data_as_numpy(
             threshold)
