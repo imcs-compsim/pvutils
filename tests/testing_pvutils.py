@@ -656,6 +656,23 @@ class TestPvutils(unittest.TestCase):
         self.assertTrue(compare_numpy_arrays(
             cell_data['element_gid'], element_gid_ref))
 
+    def test_get_bounding_box(self):
+        """
+        Test the get_bounding_box function.
+        """
+
+        raw_file = os.path.join(testing_reference, 'solid_bending_test',
+            'solid_bending_test.pvtu')
+        raw = pvutils.load_file(raw_file)
+        threshold = pa.Threshold(Input=raw)
+        threshold.Scalars = ['CELLS', 'element_gid']
+        threshold.ThresholdRange = [1.0, 127.0]
+
+        bounding_box = np.array(pvutils.get_bounding_box(threshold))
+        bounding_box_ref = [[-5.0, 5.0], [1.0, 8.0], [-0.1, 0.1]]
+        self.assertTrue(compare_numpy_arrays(bounding_box, bounding_box_ref,
+            tol=1e-8))
+
 
 if __name__ == '__main__':
     # Execution part of script.
