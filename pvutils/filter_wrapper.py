@@ -150,9 +150,9 @@ def clip(data, clip_type="Plane", origin=None, normal=None, invert=True):
         raise Exception(
             "Clipt types other than 'plane' are not available, yet. Please implement them."
         )
-    if origin == None:
+    if origin is None:
         origin = [0.0, 0.0, 0.0]
-    if normal == None:
+    if normal is None:
         normal = [1.0, 0.0, 0.0]
 
     clip = pa.Clip(Input=data)
