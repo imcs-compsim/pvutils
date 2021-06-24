@@ -128,6 +128,41 @@ def threshold(data, field='displacement', data_type='POINTS',
     return threshold
 
 
+def clip(data, clip_type="Plane", origin=None, normal=None, invert=True):
+    """
+    Apply a 'clip' filter to a ParaView item.
+
+    Args
+    ----
+    data: ParaView data object
+        ParaView item the threshold filter will be applied to.
+    clip_type: str
+        Type of clipping operation. Not all types implemented, yet.
+    origin: list
+        Coordinates of origin of the clipping geometry
+    normal: list
+        Normal vector to define the clipping geometry
+    invert: bool
+        Flag to indicate "invert" of the clipping output
+    """
+
+    if clip_type != "Plane":
+        raise Exception(
+            "Clipt types other than 'plane' are not available, yet. Please implement them."
+        )
+    if origin == None:
+        origin = [0.0, 0.0, 0.0]
+    if normal == None:
+        normal = [1.0, 0.0, 0.0]
+
+    clip = pa.Clip(Input=data)
+    clip.ClipType = "Plane"
+    clip.ClipType.Origin = origin
+    clip.ClipType.Normal = normal
+    clip.Invert = int(invert)
+    return clip
+
+
 def tube(data, slices=8):
     """
     Apply the tube filter to a beam.

@@ -15,7 +15,7 @@ from .utility_functions import (load_file, display, contour, check_data,
 
 # Load the wrappers.
 from .filter_wrapper import (glyph, warp, transform, threshold, tube,
-    temporal_interpolator)
+    temporal_interpolator, clip)
 
 # Load utility classes.
 from .utility_classes import (BeamDisplay)

@@ -374,6 +374,38 @@ class TestPvutils(unittest.TestCase):
                 TransparentBackground=0
                 )
 
+
+    def test_clip(self):
+        """
+        Test the filter wrapper for the Clip filter. Load a mesh,
+        clip it, generate and compare a screenshot.
+        """
+
+        vtk_data = pvutils.load_file(os.path.join(testing_reference,
+            'solid_bending_test', 'solid_bending_test.pvtu'))
+        clipped_data = pvutils.clip(vtk_data, clip_type="Plane", origin=[1.1, 4.5, 0.2], normal=[1.0, 0.2, 0.3], invert=False)
+        # pvutils.contour(vtk_data, field="displacement", data_type="POINTS", vector_type="Magnitude")
+        pvutils.display(clipped_data, representation="Surface With Edges", line_color=[0.0, 0.0, 0.0])
+
+        # Set the view.
+        view = pa.GetActiveViewOrCreate('RenderView')
+        view.CameraPosition = [0, 4.5, -23.6]
+        view.CameraFocalPoint = [0.0, 4.5, 0.0]
+        view.CameraViewUp = [0.0, 1.0, 0.0]
+        view.CameraViewAngle = 30
+        view.CameraParallelScale = 6.1040969848371525
+        view.OrientationAxesVisibility = 0
+        view.CameraParallelProjection = 0
+        view.InteractionMode = '3D'
+        view.ViewSize = [400, 400]
+
+        # Compare the current view with the reference image.
+        self._save_screenshot_and_compare(view,
+                OverrideColorPalette='WhiteBackground',
+                TransparentBackground=0
+                )
+
+
     def test_beam_display(self):
         """
         Test the BeamDisplay object.
