@@ -358,8 +358,10 @@ class TestPvutils(unittest.TestCase):
 
         vtk_data = pvutils.load_file(os.path.join(testing_reference,
             'solid_bending_test', 'solid_bending_test.pvtu'))
-        pvutils.contour(vtk_data, field="displacement", data_type="POINTS", vector_type="Magnitude")
-        pvutils.display(vtk_data, representation="Surface With Edges", line_color=[0.0, 0.0, 0.0])
+        pvutils.contour(vtk_data, field='displacement', data_type='POINTS',
+            vector_type='Magnitude')
+        pvutils.display(vtk_data, representation='Surface With Edges',
+            line_color=[0.0, 0.0, 0.0])
 
         # Set the view.
         view = pa.GetActiveViewOrCreate('RenderView')
@@ -373,7 +375,7 @@ class TestPvutils(unittest.TestCase):
         view.InteractionMode = '2D'
         view.ViewSize = [400, 400]
 
-        pvutils.set_color_range(field="displacement", val_min=-3.0, val_max=10.0)
+        pvutils.set_color_range(field='displacement', val_min=-3.0, val_max=10)
 
         # Compare the current view with the reference image.
         self._save_screenshot_and_compare(view,
