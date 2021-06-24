@@ -343,6 +343,37 @@ class TestPvutils(unittest.TestCase):
                     TransparentBackground=0
                     )
 
+    def test_set_color_range(self):
+        """
+        Test to set a prescribed color range. Load a mesh, prescribe and
+        set a user-defined color range, generate and compare a screenshot.
+        """
+
+        vtk_data = pvutils.load_file(os.path.join(testing_reference,
+            'solid_bending_test', 'solid_bending_test.pvtu'))
+        pvutils.contour(vtk_data, field="displacement", data_type="POINTS", vector_type="Magnitude")
+        pvutils.display(vtk_data, representation="Surface With Edges", line_color=[0.0, 0.0, 0.0])
+
+        # Set the view.
+        view = pa.GetActiveViewOrCreate('RenderView')
+        view.CameraPosition = [11.429, 2.4, 1]
+        view.CameraFocalPoint = [0, 2.4, 1]
+        view.CameraViewUp = [0, 0, 1]
+        view.CameraViewAngle = 30
+        view.CameraParallelScale = 2.95804
+        view.OrientationAxesVisibility = 0
+        view.CameraParallelProjection = 0
+        view.InteractionMode = '2D'
+        view.ViewSize = [400, 400]
+
+        pvutils.set_color_range(field="displacement", val_min=-3.0, val_max=10.0)
+
+        # Compare the current view with the reference image.
+        self._save_screenshot_and_compare(view,
+                OverrideColorPalette='WhiteBackground',
+                TransparentBackground=0
+                )
+
     def test_beam_display(self):
         """
         Test the BeamDisplay object.
