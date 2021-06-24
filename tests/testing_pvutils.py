@@ -18,6 +18,13 @@ import vtk
 from vtk.util import numpy_support as vtk_numpy
 
 
+def compare_numpy_arrays(array_1, array_2, tol=1e-12):
+    """
+    Check if two numpy arrays are equal up to a tolerance.
+    """
+    return np.max(np.abs(array_1 - array_2)) < tol
+
+
 def compare_data(data1, data2, raise_error=False, tol_float=None):
     """
     Compare the ParaView data1 and data2, by compairing the stored data.
@@ -584,6 +591,70 @@ class TestPvutils(unittest.TestCase):
             pa.servermanager.Fetch(ref),
             pa.servermanager.Fetch(merged_glyphs),
             raise_error=True))
+
+    def test_get_vtk_data(self):
+        """
+        Test the get_vtk_data_as_numpy function.
+        """
+
+        raw_file = os.path.join(testing_reference, 'solid_bending_test',
+            'solid_bending_test.pvtu')
+        raw = pvutils.load_file(raw_file)
+        threshold = pa.Threshold(Input=raw)
+        threshold.Scalars = ['CELLS', 'element_gid']
+        threshold.ThresholdRange = [69.0, 72.0]
+
+        coordinates, point_data, cell_data = pvutils.get_vtk_data_as_numpy(
+            threshold)
+
+        coordinates_ref = [
+            [-4.0, 5.5, 0.0],
+            [-5.0, 5.5, -0.1],
+            [-5.0, 6.0, 0.0],
+            [-5.0, 6.5, -0.1],
+            [-4.0, 5.5, 0.0],
+            [-5.0, 5.5, 0.1],
+            [-5.0, 6.0, 0.0],
+            [-5.0, 5.5, 0.0],
+            [-2.5, 5.5, -0.1],
+            [-0.8361517190933228, 5.836465835571289, 0.0193617828190327],
+            [0.0, 5.5, 0.1],
+            [0.0, 5.5, -0.1],
+            [-2.5, 5.5, 0.1],
+            [-0.8361517190933228, 5.836465835571289, 0.0193617828190327],
+            [0.0, 5.5, 0.1],
+            [-2.5, 5.5, -0.1]
+            ]
+        displacement_ref = [
+            [0.0003291757392039, 0.0003353593798872, 0.0159429200775854],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0003291757392039, 0.0003353593798872, 0.0159429200775854],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0025836127952543, 0.0008385389656487, 0.0400271307814528],
+            [-0.0023565150891169, 0.0005493473675322, 0.1053407068309232],
+            [-0.0065797429018676, 0.0004041546251416, 0.1381304273983756],
+            [0.0025622749311803, 0.0004140327305645, 0.1383420488881466],
+            [-0.003470225734218, 0.0008279363486563, 0.0399211419658582],
+            [-0.0023565150891169, 0.0005493473675322, 0.1053407068309232],
+            [-0.0065797429018676, 0.0004041546251416, 0.1381304273983756],
+            [0.0025836127952543, 0.0008385389656487, 0.0400271307814528]
+            ]
+        element_owner_ref = [0.0, 0.0, 0.0, 0.0]
+        element_gid_ref = [69.0, 70.0, 71.0, 72.0]
+
+        self.assertTrue(len(point_data) == 1)
+        self.assertTrue(len(cell_data) == 2)
+        self.assertTrue(compare_numpy_arrays(coordinates, coordinates_ref))
+        self.assertTrue(compare_numpy_arrays(
+            point_data['displacement'], displacement_ref))
+        self.assertTrue(compare_numpy_arrays(
+            cell_data['element_owner'], element_owner_ref))
+        self.assertTrue(compare_numpy_arrays(
+            cell_data['element_gid'], element_gid_ref))
 
 
 if __name__ == '__main__':
