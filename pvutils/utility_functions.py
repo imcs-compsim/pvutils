@@ -667,6 +667,10 @@ def add_coordinate_axes(origin=None, basis=None, scale=1.0, resolution=20,
 def get_bounding_box(source):
     """
     Get the bounding box dimensions (using the outline filter).
+
+    Return
+    ----
+    [[min_x, max_x], [min_y, max_y], [min_z, max_z]]
     """
 
     outline = pa.Outline(Input=source)
