@@ -596,15 +596,15 @@ def von_mises_stress(source):
     return cell_based
 
 
-def add_coordinate_axis(origin=None, basis=None, scale=1.0, resolution=20,
+def add_coordinate_axes(origin=None, basis=None, scale=1.0, resolution=20,
         show=True):
     """
-    Add arrow representations for the coordinate axis.
+    Add arrow representations for coordinate axes.
 
     Args
     ----
     origin: [float]
-        Point where the axis will be drawn.
+        Point where the axes will be drawn.
     basis: [[float]]
         List of basis vectors.
     scale: float
@@ -613,6 +613,15 @@ def add_coordinate_axis(origin=None, basis=None, scale=1.0, resolution=20,
         ParaView internal resolution for arrow representation.
     show: bool
         If the basis vectors should be displayed.
+
+    Return
+    ----
+    {
+        'axis_source': ParaView data
+            Source data for the bais vectors,
+        'base_glyphs': ParaView data
+            Axes visualization data.
+    }
     """
 
     # Set default values for origin and basis vectors.
@@ -624,7 +633,7 @@ def add_coordinate_axis(origin=None, basis=None, scale=1.0, resolution=20,
             [0, 1, 0],
             [0, 0, 1]
             ]
-    sorce = programmable_source('axis', origin=origin, basis=basis)
+    sorce = programmable_source('axes', origin=origin, basis=basis)
     base_glyphs = []
     for i, base in enumerate(basis):
         base_glyph = pvutils.glyph(sorce)

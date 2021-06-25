@@ -540,13 +540,13 @@ class TestPvutils(unittest.TestCase):
             pa.servermanager.Fetch(ref),
             raise_error=True))
 
-    def test_add_coordinate_axis(self):
+    def test_add_coordinate_axes(self):
         """
-        Test the add_coordinate_axis function, and therefore, also the
-        programmable source filter "axis".
+        Test the add_coordinate_axes function, and therefore, also the
+        programmable source filter "axes".
         """
 
-        coordinate_axis = pvutils.add_coordinate_axis(
+        coordinate_axis = pvutils.add_coordinate_axes(
             origin=[1, 2, 3],
             basis=[[1, 1, 1], [0, 1, 0], [0, 0, 1], [-1, 0, 0]],
             scale=4.0, resolution=4)
@@ -556,25 +556,25 @@ class TestPvutils(unittest.TestCase):
 
         # Compare the vtk file with the reference file.
         ref_file = os.path.join(testing_reference,
-            'coordinate_axis_reference.vtu')
+            'coordinate_axes_reference.vtu')
         ref = pvutils.load_file(ref_file)
         self.assertTrue(compare_data(
             pa.servermanager.Fetch(ref),
             pa.servermanager.Fetch(merged_glyphs),
             raise_error=True))
 
-    def test_add_multiple_coordinate_axis(self):
+    def test_add_multiple_coordinate_axes(self):
         """
-        Test the add_coordinate_axis function multiple times, and therefore,
+        Test the add_coordinate_axes function multiple times, and therefore,
         also the functionality of the programmable source filter to handle
         different types of keyword arguments.
         """
 
-        coordinate_axis_1 = pvutils.add_coordinate_axis(
+        coordinate_axis_1 = pvutils.add_coordinate_axes(
             origin=[1, 2, 3],
             basis=[[1, 1, 1], [0, 1, 0], [0, 0, 1], [-1, 0, 0]],
             scale=4.0, resolution=4)
-        coordinate_axis_2 = pvutils.add_coordinate_axis(
+        coordinate_axis_2 = pvutils.add_coordinate_axes(
             origin=[0, 0, 0],
             basis=[[-1, 0, 0], [0, -1, 0], [0, 0, -1]],
             scale=2.0, resolution=8)
@@ -587,7 +587,7 @@ class TestPvutils(unittest.TestCase):
 
         # Compare the vtk file with the reference file.
         ref_file = os.path.join(testing_reference,
-            'coordinate_axis_multiple_reference.vtu')
+            'coordinate_axes_multiple_reference.vtu')
         ref = pvutils.load_file(ref_file)
         self.assertTrue(compare_data(
             pa.servermanager.Fetch(ref),
