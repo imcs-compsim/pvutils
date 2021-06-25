@@ -563,9 +563,11 @@ def set_color_range(field, val_min, val_max):
     """
 
     color_transfer_function = pa.GetColorTransferFunction(field)
-    color_transfer_function.RescaleTransferFunction(float(val_min), float(val_max))
+    color_transfer_function.RescaleTransferFunction(float(val_min),
+        float(val_max))
     opacity_transfer_function = pa.GetOpacityTransferFunction(field)
-    opacity_transfer_function.RescaleTransferFunction(float(val_min), float(val_max))
+    opacity_transfer_function.RescaleTransferFunction(float(val_min),
+        float(val_max))
 
 
 def von_mises_stress(source):
