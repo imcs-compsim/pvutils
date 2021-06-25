@@ -18,6 +18,13 @@ import vtk
 from vtk.util import numpy_support as vtk_numpy
 
 
+def compare_numpy_arrays(array_1, array_2, tol=1e-12):
+    """
+    Check if two numpy arrays are equal up to a tolerance.
+    """
+    return np.max(np.abs(array_1 - array_2)) < tol
+
+
 def compare_data(data1, data2, raise_error=False, tol_float=None):
     """
     Compare the ParaView data1 and data2, by compairing the stored data.
@@ -343,6 +350,60 @@ class TestPvutils(unittest.TestCase):
                     TransparentBackground=0
                     )
 
+    def test_set_color_range(self):
+        """
+        Test to set a prescribed color range. Load a mesh, prescribe and
+        set a user-defined color range, generate and compare a screenshot.
+        """
+
+        vtk_data = pvutils.load_file(os.path.join(testing_reference,
+            'solid_bending_test', 'solid_bending_test.pvtu'))
+        pvutils.contour(vtk_data, field='displacement', data_type='POINTS',
+            vector_type='Magnitude')
+        pvutils.display(vtk_data, representation='Surface With Edges',
+            line_color=[0.0, 0.0, 0.0])
+
+        # Set the view.
+        view = pa.GetActiveViewOrCreate('RenderView')
+        view.CameraPosition = [11.429, 2.4, 1]
+        view.CameraFocalPoint = [0, 2.4, 1]
+        view.CameraViewUp = [0, 0, 1]
+        view.CameraViewAngle = 30
+        view.CameraParallelScale = 2.95804
+        view.OrientationAxesVisibility = 0
+        view.CameraParallelProjection = 0
+        view.InteractionMode = '2D'
+        view.ViewSize = [400, 400]
+
+        pvutils.set_color_range(field='displacement', val_min=-3.0, val_max=10)
+
+        # Compare the current view with the reference image.
+        self._save_screenshot_and_compare(view,
+                OverrideColorPalette='WhiteBackground',
+                TransparentBackground=0
+                )
+
+    def test_clip(self):
+        """
+        Test the filter wrapper for the Clip filter. Load a mesh,
+        clip it, generate and compare a screenshot.
+        """
+
+        vtk_data = pvutils.load_file(os.path.join(testing_reference,
+            'solid_bending_test', 'solid_bending_test.pvtu'))
+        clipped_data = pvutils.clip(vtk_data, clip_type='Plane',
+            origin=[1.1, 4.5, 0.2], normal=[1.0, 0.2, 0.3], invert=False)
+        pa.Show(clipped_data)
+
+        ref_file = os.path.join(testing_reference, 'clip_vtk', 'clip.vtu')
+        ref_data = pvutils.load_file(ref_file)
+
+        # Compare the vtk file with the reference file.
+        self.assertTrue(compare_data(
+            pa.servermanager.Fetch(clipped_data),
+            pa.servermanager.Fetch(ref_data),
+            raise_error=True))
+
     def test_beam_display(self):
         """
         Test the BeamDisplay object.
@@ -478,6 +539,140 @@ class TestPvutils(unittest.TestCase):
             pa.servermanager.Fetch(raw_filtered),
             pa.servermanager.Fetch(ref),
             raise_error=True))
+
+    def test_add_coordinate_axes(self):
+        """
+        Test the add_coordinate_axes function, and therefore, also the
+        programmable source filter "axes".
+        """
+
+        coordinate_axis = pvutils.add_coordinate_axes(
+            origin=[1, 2, 3],
+            basis=[[1, 1, 1], [0, 1, 0], [0, 0, 1], [-1, 0, 0]],
+            scale=4.0, resolution=4)
+        group_glyphs = pa.GroupDatasets(Input=coordinate_axis['base_glyphs'])
+        merged_glyphs = pa.MergeBlocks(Input=group_glyphs)
+        merged_glyphs.MergePoints = 0
+
+        # Compare the vtk file with the reference file.
+        ref_file = os.path.join(testing_reference,
+            'coordinate_axes_reference.vtu')
+        ref = pvutils.load_file(ref_file)
+        self.assertTrue(compare_data(
+            pa.servermanager.Fetch(ref),
+            pa.servermanager.Fetch(merged_glyphs),
+            raise_error=True))
+
+    def test_add_multiple_coordinate_axes(self):
+        """
+        Test the add_coordinate_axes function multiple times, and therefore,
+        also the functionality of the programmable source filter to handle
+        different types of keyword arguments.
+        """
+
+        coordinate_axis_1 = pvutils.add_coordinate_axes(
+            origin=[1, 2, 3],
+            basis=[[1, 1, 1], [0, 1, 0], [0, 0, 1], [-1, 0, 0]],
+            scale=4.0, resolution=4)
+        coordinate_axis_2 = pvutils.add_coordinate_axes(
+            origin=[0, 0, 0],
+            basis=[[-1, 0, 0], [0, -1, 0], [0, 0, -1]],
+            scale=2.0, resolution=8)
+
+        group_glyphs = pa.GroupDatasets(Input=(
+            coordinate_axis_1['base_glyphs']
+            + coordinate_axis_2['base_glyphs']))
+        merged_glyphs = pa.MergeBlocks(Input=group_glyphs)
+        merged_glyphs.MergePoints = 0
+
+        # Compare the vtk file with the reference file.
+        ref_file = os.path.join(testing_reference,
+            'coordinate_axes_multiple_reference.vtu')
+        ref = pvutils.load_file(ref_file)
+        self.assertTrue(compare_data(
+            pa.servermanager.Fetch(ref),
+            pa.servermanager.Fetch(merged_glyphs),
+            raise_error=True))
+
+    def test_get_vtk_data(self):
+        """
+        Test the get_vtk_data_as_numpy function.
+        """
+
+        raw_file = os.path.join(testing_reference, 'solid_bending_test',
+            'solid_bending_test.pvtu')
+        raw = pvutils.load_file(raw_file)
+        threshold = pvutils.threshold(raw, field='element_gid', data_type='CELLS',
+            threshold_range=[69.0, 72.0])
+
+        coordinates, point_data, cell_data = pvutils.get_vtk_data_as_numpy(
+            threshold)
+
+        coordinates_ref = [
+            [-4.0, 5.5, 0.0],
+            [-5.0, 5.5, -0.1],
+            [-5.0, 6.0, 0.0],
+            [-5.0, 6.5, -0.1],
+            [-4.0, 5.5, 0.0],
+            [-5.0, 5.5, 0.1],
+            [-5.0, 6.0, 0.0],
+            [-5.0, 5.5, 0.0],
+            [-2.5, 5.5, -0.1],
+            [-0.8361517190933228, 5.836465835571289, 0.0193617828190327],
+            [0.0, 5.5, 0.1],
+            [0.0, 5.5, -0.1],
+            [-2.5, 5.5, 0.1],
+            [-0.8361517190933228, 5.836465835571289, 0.0193617828190327],
+            [0.0, 5.5, 0.1],
+            [-2.5, 5.5, -0.1]
+            ]
+        displacement_ref = [
+            [0.0003291757392039, 0.0003353593798872, 0.0159429200775854],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0003291757392039, 0.0003353593798872, 0.0159429200775854],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0025836127952543, 0.0008385389656487, 0.0400271307814528],
+            [-0.0023565150891169, 0.0005493473675322, 0.1053407068309232],
+            [-0.0065797429018676, 0.0004041546251416, 0.1381304273983756],
+            [0.0025622749311803, 0.0004140327305645, 0.1383420488881466],
+            [-0.003470225734218, 0.0008279363486563, 0.0399211419658582],
+            [-0.0023565150891169, 0.0005493473675322, 0.1053407068309232],
+            [-0.0065797429018676, 0.0004041546251416, 0.1381304273983756],
+            [0.0025836127952543, 0.0008385389656487, 0.0400271307814528]
+            ]
+        element_owner_ref = [0.0, 0.0, 0.0, 0.0]
+        element_gid_ref = [69.0, 70.0, 71.0, 72.0]
+
+        self.assertTrue(len(point_data) == 1)
+        self.assertTrue(len(cell_data) == 2)
+        self.assertTrue(compare_numpy_arrays(coordinates, coordinates_ref))
+        self.assertTrue(compare_numpy_arrays(
+            point_data['displacement'], displacement_ref))
+        self.assertTrue(compare_numpy_arrays(
+            cell_data['element_owner'], element_owner_ref))
+        self.assertTrue(compare_numpy_arrays(
+            cell_data['element_gid'], element_gid_ref))
+
+    def test_get_bounding_box(self):
+        """
+        Test the get_bounding_box function.
+        """
+
+        raw_file = os.path.join(testing_reference, 'solid_bending_test',
+            'solid_bending_test.pvtu')
+        raw = pvutils.load_file(raw_file)
+        threshold = pa.Threshold(Input=raw)
+        threshold.Scalars = ['CELLS', 'element_gid']
+        threshold.ThresholdRange = [1.0, 127.0]
+
+        bounding_box = np.array(pvutils.get_bounding_box(threshold))
+        bounding_box_ref = [[-5.0, 5.0], [1.0, 8.0], [-0.1, 0.1]]
+        self.assertTrue(compare_numpy_arrays(bounding_box, bounding_box_ref,
+            tol=1e-8))
 
 
 if __name__ == '__main__':

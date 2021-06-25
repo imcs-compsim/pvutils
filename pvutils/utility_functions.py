@@ -12,6 +12,8 @@ import numpy as np
 # Import ParaView module.
 import paraview
 import paraview.simple as pa
+import pvutils
+from vtk.util import numpy_support as VN
 
 
 def _print_attibutes(obj, attributes, variable_name):
@@ -254,12 +256,49 @@ def programmable_filter(source, name, **kwargs):
         '{}.py'.format(name))
 
     # Store the kwargs in a variable in the namespace of the ParaView python
-    # module.
-    paraview.programmable_filter_kwargs = kwargs
+    # module. This variable can be retrieved by the programmable filter. The
+    # kwargs_id stores which keyword arguments belong to this programmable
+    # filter.
+    if hasattr(paraview, 'programmable_filter_kwargs'):
+        paraview.programmable_filter_kwargs.append(kwargs)
+    else:
+        paraview.programmable_filter_kwargs = [kwargs]
+    kwargs_id = len(paraview.programmable_filter_kwargs) - 1
 
     pv_filter = pa.ProgrammableFilter(Input=source)
-    pv_filter.Script = 'execfile("{}")'.format(filter_path)
+    pv_filter.Script = (
+        'kwargs_id = {}\n'.format(kwargs_id) +
+        'execfile("{}")'.format(filter_path))
     return pv_filter
+
+
+def programmable_source(name, output_data='vtkUnstructuredGrid', **kwargs):
+    """
+    Apply a programmable source filter from this git repository.
+    """
+
+    filter_path = os.path.join(
+        os.path.dirname(__file__),
+        'programmable_source',
+        '{}.py'.format(name))
+
+    # Store the kwargs in a variable in the namespace of the ParaView python
+    # module. This variable can be retrieved by the programmable source. The
+    # kwargs_id stores which keyword arguments belong to this programmable
+    # source.
+    if hasattr(paraview, 'programmable_source_kwargs'):
+        paraview.programmable_source_kwargs.append(kwargs)
+    else:
+        paraview.programmable_source_kwargs = [kwargs]
+    kwargs_id = len(paraview.programmable_source_kwargs) - 1
+
+    pv_source = pa.ProgrammableSource()
+    pv_source.OutputDataSetType = output_data
+    pv_source.Script = (
+        'kwargs_id = {}\n'.format(kwargs_id) +
+        'execfile("{}")'.format(filter_path)
+        )
+    return pv_source
 
 
 def get_display(data, view=None):
@@ -511,6 +550,26 @@ def update_scene():
     return animation_scene
 
 
+def set_color_range(field, val_min, val_max):
+    """
+    Set the max and min values for the contour plot color range.
+
+    Args
+    ----
+    field: str
+        Name of field quantity.
+    val_min, val_max: float (or int)
+        Minimum and maximum values for the color range
+    """
+
+    color_transfer_function = pa.GetColorTransferFunction(field)
+    color_transfer_function.RescaleTransferFunction(float(val_min),
+        float(val_max))
+    opacity_transfer_function = pa.GetOpacityTransferFunction(field)
+    opacity_transfer_function.RescaleTransferFunction(float(val_min),
+        float(val_max))
+
+
 def von_mises_stress(source):
     """
     Add a cell and node based field with the vonMises stress.
@@ -522,7 +581,7 @@ def von_mises_stress(source):
 
     function = (
         'sqrt(' +
-        '{}_XX^2 + {}_YY^2 + + {}_ZZ^2' +
+        '{}_XX^2 + {}_YY^2 + {}_ZZ^2' +
         '- {}_XX * {}_YY - {}_XX * {}_ZZ - {}_ZZ * {}_YY' +
         '+ 6*({}_XY^2 + {}_YZ^2 + {}_XZ^2))')
 
@@ -537,3 +596,109 @@ def von_mises_stress(source):
     cell_based.AttributeType = 'Cell Data'
 
     return cell_based
+
+
+def add_coordinate_axes(origin=None, basis=None, scale=1.0, resolution=20,
+        show=True):
+    """
+    Add arrow representations for coordinate axes.
+
+    Args
+    ----
+    origin: [float]
+        Point where the axes will be drawn.
+    basis: [[float]]
+        List of basis vectors.
+    scale: float
+        Scale factor for displaying basis vectors.
+    resolution: int
+        ParaView internal resolution for arrow representation.
+    show: bool
+        If the basis vectors should be displayed.
+
+    Return
+    ----
+    {
+        'axis_source': ParaView data
+            Source data for the bais vectors,
+        'base_glyphs': ParaView data
+            Axes visualization data.
+    }
+    """
+
+    # Set default values for origin and basis vectors.
+    if origin is None:
+        origin = [0, 0, 0]
+    if basis is None:
+        basis = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+            ]
+    sorce = programmable_source('axes', origin=origin, basis=basis)
+    base_glyphs = []
+    for i, base in enumerate(basis):
+        base_glyph = pvutils.glyph(sorce)
+        base_glyph.GlyphType = 'Arrow'
+        base_glyph.OrientationArray = ['POINTS', 'base_{}'.format(i + 1)]
+        base_glyph.ScaleArray = ['POINTS', 'base_{}'.format(i + 1)]
+        base_glyph.ScaleFactor = scale
+        base_glyph.GlyphMode = 'All Points'
+        base_glyph.GlyphType.TipResolution = resolution
+        base_glyph.GlyphType.ShaftResolution = resolution
+
+        # The arrow representation is scaled, so the arrow does not look
+        # "thick" when getting longer.
+        length = np.linalg.norm(base)
+        base_glyph.GlyphType.TipRadius = 0.1 / length
+        base_glyph.GlyphType.TipLength = 0.35 / length
+        base_glyph.GlyphType.ShaftRadius = 0.03 / length
+
+        if show:
+            pa.Show(base_glyph)
+        base_glyphs.append(base_glyph)
+
+    return {
+        'axis_source': sorce,
+        'base_glyphs': base_glyphs
+        }
+
+
+def get_bounding_box(source):
+    """
+    Get the bounding box dimensions (using the outline filter).
+
+    Return
+    ----
+    [[min_x, max_x], [min_y, max_y], [min_z, max_z]]
+    """
+
+    outline = pa.Outline(Input=source)
+    position, _, _ = get_vtk_data_as_numpy(outline)
+    max_min_coordinates = [
+        [np.min(position[:, i]), np.max(position[:, i])]
+        for i in range(3)]
+    pa.Delete(outline)
+    return max_min_coordinates
+
+
+def get_vtk_data_as_numpy(source):
+    """
+    Return all vtk data arrays.
+
+    Return
+    ------
+    [point_coordinates, {point_data}, {cell_data}]
+    """
+
+    data = pa.servermanager.Fetch(source)
+    point_coordinates = VN.vtk_to_numpy(data.GetPoints().GetData())
+
+    def get_data_array(input_data):
+        data_dir = {}
+        for i in range(input_data.GetNumberOfArrays()):
+            data_dir[input_data.GetArrayName(i)] = VN.vtk_to_numpy(
+                input_data.GetArray(i))
+        return data_dir
+    return (point_coordinates, get_data_array(data.GetPointData()),
+            get_data_array(data.GetCellData()))
