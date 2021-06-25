@@ -1,6 +1,6 @@
 """
 This script generates a point with vector data. Can be used to visualize
-coordinat axes.
+coordinate axes.
 
 Use with programmable source filter in paraview and execute with:
 >> execfile('path to file')
