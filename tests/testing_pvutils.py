@@ -602,11 +602,16 @@ class TestPvutils(unittest.TestCase):
         raw_file = os.path.join(testing_reference, 'solid_bending_test',
             'solid_bending_test.pvtu')
         raw = pvutils.load_file(raw_file)
-        threshold = pvutils.threshold(raw, field='element_gid', data_type='CELLS',
-            threshold_range=[69.0, 72.0])
+        threshold = pvutils.threshold(raw, field='element_gid',
+            data_type='CELLS', threshold_range=[69.0, 72.0])
 
-        coordinates, point_data, cell_data = pvutils.get_vtk_data_as_numpy(
-            threshold)
+        vtk_data = pvutils.get_vtk_data_as_numpy(threshold, coordinates=True,
+            point_data=True, cell_data=True, cell_connectivity=True)
+        coordinates = vtk_data['coordinates']
+        point_data = vtk_data['point_data']
+        cell_data = vtk_data['cell_data']
+        cell_types = vtk_data['cell_types']
+        cell_connectivity = vtk_data['cell_connectivity']
 
         coordinates_ref = [
             [-4.0, 5.5, 0.0],
@@ -646,6 +651,9 @@ class TestPvutils(unittest.TestCase):
             ]
         element_owner_ref = [0.0, 0.0, 0.0, 0.0]
         element_gid_ref = [69.0, 70.0, 71.0, 72.0]
+        cell_types_ref = [10, 10, 10, 10]
+        cell_connectivity_ref = [
+            [0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]]
 
         self.assertTrue(len(point_data) == 1)
         self.assertTrue(len(cell_data) == 2)
@@ -656,6 +664,10 @@ class TestPvutils(unittest.TestCase):
             cell_data['element_owner'], element_owner_ref))
         self.assertTrue(compare_numpy_arrays(
             cell_data['element_gid'], element_gid_ref))
+        self.assertTrue(compare_numpy_arrays(
+            cell_types, np.array(cell_types_ref)))
+        self.assertTrue(compare_numpy_arrays(
+            cell_connectivity, np.array(cell_connectivity_ref)))
 
     def test_get_bounding_box(self):
         """
