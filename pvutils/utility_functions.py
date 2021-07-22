@@ -674,7 +674,8 @@ def get_bounding_box(source):
     """
 
     outline = pa.Outline(Input=source)
-    position, _, _ = get_vtk_data_as_numpy(outline)
+    vtk_data = get_vtk_data_as_numpy(outline, coordinates=True)
+    position = vtk_data['coordinates']
     max_min_coordinates = [
         [np.min(position[:, i]), np.max(position[:, i])]
         for i in range(3)]
@@ -682,23 +683,82 @@ def get_bounding_box(source):
     return max_min_coordinates
 
 
-def get_vtk_data_as_numpy(source):
+def get_vtk_data_as_numpy(source, coordinates=False, point_data=False,
+        cell_data=False, cell_connectivity=False):
     """
     Return all vtk data arrays.
 
+    Args
+    ----
+    source:
+        Paraview source object.
+    coordinates:
+        If point coordinates should be returned.
+    point_data:
+        If point data should be returned.
+    cell_data:
+        If cell data should be returned.
+    cell_connectivity:
+        If cell connectivity and cell types should be returned.
     Return
     ------
-    [point_coordinates, {point_data}, {cell_data}]
+    {
+    'coordinates': coordinates,
+    'point_data': point_data,
+    'cell_data': cell_data,
+    'cell_types': cell_types,
+    'cell_connectivity': cell_connectivity
+    }
     """
 
     data = pa.servermanager.Fetch(source)
-    point_coordinates = VN.vtk_to_numpy(data.GetPoints().GetData())
+
+    if coordinates:
+        coordinates = VN.vtk_to_numpy(data.GetPoints().GetData())
+    else:
+        coordinates = None
 
     def get_data_array(input_data):
+        """
+        Extract data from an array.
+        """
         data_dir = {}
         for i in range(input_data.GetNumberOfArrays()):
             data_dir[input_data.GetArrayName(i)] = VN.vtk_to_numpy(
                 input_data.GetArray(i))
         return data_dir
-    return (point_coordinates, get_data_array(data.GetPointData()),
-            get_data_array(data.GetCellData()))
+
+    if point_data:
+        point_data = get_data_array(data.GetPointData())
+    else:
+        cell_data = None
+    if cell_data:
+        cell_data = get_data_array(data.GetCellData())
+    else:
+        cell_data = None
+
+    def vtk_id_to_list(vtk_id_list):
+        """
+        Convert an vtk id list to a python list.
+        """
+        return [int(vtk_id_list.GetId(i_id)) for i_id in
+            range(vtk_id_list.GetNumberOfIds())]
+
+    if cell_connectivity:
+        n_cells = data.GetNumberOfCells()
+        cell_types = [None] * n_cells
+        cell_connectivity = [None] * n_cells
+        for i in range(n_cells):
+            cell_types[i] = data.GetCellType(i)
+            cell_connectivity[i] = vtk_id_to_list(data.GetCell(i).GetPointIds())
+    else:
+        cell_types = None
+        cell_connectivity = None
+
+    return {
+        'coordinates': coordinates,
+        'point_data': point_data,
+        'cell_data': cell_data,
+        'cell_types': cell_types,
+        'cell_connectivity': cell_connectivity
+        }
