@@ -731,7 +731,7 @@ def get_vtk_data_as_numpy(source, coordinates=False, point_data=False,
     if point_data:
         point_data = get_data_array(data.GetPointData())
     else:
-        cell_data = None
+        point_data = None
     if cell_data:
         cell_data = get_data_array(data.GetCellData())
     else:
