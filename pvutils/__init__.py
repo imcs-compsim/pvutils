@@ -21,6 +21,7 @@ from .utility_functions import (
     get_view,
     get_vtk_data_as_numpy,
     is_pvpython,
+    list_to_mathematica_string,
     load_file,
     print_view_state,
     print_view_state_set_scalar_bar,

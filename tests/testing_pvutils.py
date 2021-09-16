@@ -686,6 +686,35 @@ class TestPvutils(unittest.TestCase):
         self.assertTrue(compare_numpy_arrays(bounding_box, bounding_box_ref,
             tol=1e-8))
 
+    def test_list_to_mathematica_string(self):
+        """
+        Test the list_to_mathematica_string functionality.
+        """
+
+        data = np.array([[
+            [1, 2, 3],
+            [4, 5, 6],
+            [9, 8, 7]]
+            ])
+
+        self.assertEqual(
+            pvutils.list_to_mathematica_string(data),
+            '{{{1.000000000000000, 2.000000000000000, 3.000000000000000}, ' +
+            '{4.000000000000000, 5.000000000000000, 6.000000000000000}, ' +
+            '{9.000000000000000, 8.000000000000000, 7.000000000000000}}}'
+            )
+        self.assertEqual(
+            pvutils.list_to_mathematica_string(data, name='testName'),
+            'testName = ' +
+            '{{{1.000000000000000, 2.000000000000000, 3.000000000000000}, ' +
+            '{4.000000000000000, 5.000000000000000, 6.000000000000000}, ' +
+            '{9.000000000000000, 8.000000000000000, 7.000000000000000}}};'
+            )
+        self.assertEqual(
+            pvutils.list_to_mathematica_string(data, string_format='{:d}'),
+            '{{{1, 2, 3}, {4, 5, 6}, {9, 8, 7}}}'
+            )
+
 
 if __name__ == '__main__':
     # Execution part of script.

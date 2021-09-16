@@ -762,3 +762,36 @@ def get_vtk_data_as_numpy(source, coordinates=False, point_data=False,
         'cell_types': cell_types,
         'cell_connectivity': cell_connectivity
         }
+
+
+def list_to_mathematica_string(data, name=None, string_format='{:.15f}'):
+    """
+    Convert a list to a Mathematica string.
+
+    Args
+    ----
+    data: array-like
+        The data that should be converted to a string.
+    name: str
+        Name of the Mathematica variable. If this argument is given the
+        output is in the form: "name = {data};"
+    string_format: str
+        Format for numeric values.
+    """
+
+    def data_to_string(data):
+        """Recursive function to convert array-like structures to a string."""
+        if isinstance(data, list) or isinstance(data, np.ndarray):
+            data_string = '{'
+            for var in data:
+                data_string += data_to_string(var)
+            data_string = data_string[:-2] + '}, '
+            return data_string
+        else:
+            return string_format.format(data) + ', '
+
+    data_string = data_to_string(data)[:-2]
+    if name is None:
+        return data_string
+    else:
+        return '{} = {};'.format(name, data_string)
