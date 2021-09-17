@@ -269,6 +269,7 @@ def programmable_filter(source, name, **kwargs):
     pv_filter.Script = (
         'kwargs_id = {}\n'.format(kwargs_id) +
         'execfile("{}")'.format(filter_path))
+    pa.RenameSource(name, pv_filter)
     return pv_filter
 
 
@@ -298,6 +299,7 @@ def programmable_source(name, output_data='vtkUnstructuredGrid', **kwargs):
         'kwargs_id = {}\n'.format(kwargs_id) +
         'execfile("{}")'.format(filter_path)
         )
+    pa.RenameSource(name, pv_source)
     return pv_source
 
 
