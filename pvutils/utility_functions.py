@@ -329,6 +329,11 @@ def setup_view(*args, **kwargs):
     kwargs_default = {
         # The current view object. If none is given, the default one is taken.
         'view': None,
+        # Name of the view object in the print out. You can add spaces here to
+        # directly copy the resulting print output to the code.
+        'view_name': None,
+        # Name of the variable that holds the view size in pixel.
+        'size_pixel_name': None,
         # If the size of the view should be fixed, i.e. preview mode should be
         # used. If pvpython is used, this does not have an effect. The size
         # will be taken from view.
@@ -364,6 +369,11 @@ def setup_view(*args, **kwargs):
             layout = pa.GetLayout()
             layout.PreviewMode = view.ViewSize
 
+    if view_name is not None:
+        set_function_arguments('print_view_state', 'view_name', view_name)
+    if size_pixel_name is not None:
+        set_function_arguments('print_view_state', 'size_pixel_name',
+            size_pixel_name)
     print_view_state(view, *args)
 
 
@@ -372,6 +382,10 @@ def print_view_state(view, *args):
     Print the relevant view state information, so the user can set the view in
     the GUI and then copy the state to a script.
     """
+
+    view_name = get_function_arguments('view_name', default_value='view')
+    size_pixel_name = get_function_arguments('size_pixel_name',
+        default_value='size_pixel')
 
     # Display the view attributes.
     attributes = [
@@ -382,17 +396,18 @@ def print_view_state(view, *args):
         'CameraParallelScale',
         'OrientationAxesVisibility',
         'CameraParallelProjection',
-        'ViewSize',
         'InteractionMode'
         ]
-    _print_attibutes(view, attributes, 'view')
+    print('{} = {}\n\n'.format(size_pixel_name, view.ViewSize))
+    print('{}.ViewSize = {}'.format(view_name, size_pixel_name))
+    _print_attibutes(view, attributes, view_name)
     print('')
 
     # If additional items are given to this function, print their properties.
     args = list(args)
-    if hasattr(paraview, 'print_view_state_scalar_bar'):
-        args.extend(paraview.print_view_state_scalar_bar)
-    for arg in args:
+    extra_args = get_function_arguments('extra_args', default_value=[])
+    args.extend(extra_args)
+    for name, arg in args:
 
         item_string = str(arg)
         if 'ScalarBarWidgetRepresentation' in item_string:
@@ -404,18 +419,104 @@ def print_view_state(view, *args):
                 'Orientation',
                 'ScalarBarLength',
                 'ScalarBarThickness',
-                'Position'
+                'Position',
+                'UseCustomLabels',
+                'AddRangeLabels',
+                'DrawAnnotations',
+                'AddRangeAnnotations',
+                'AutomaticAnnotations',
+                'DrawNanAnnotation',
+                'DrawTickLabels'
                 ]
             print('')
-            _print_attibutes(arg, attributes, 'color_bar')
+            _print_attibutes(arg, attributes, name)
+
+        else:
+            raise TypeError('Got unexpected type')
 
 
-def print_view_state_set_scalar_bar(*args):
+def set_print_view_state_color_bar(color_bar, name='color_bar'):
     """
     Set a scalar bar that will be included in print_view_state.
     """
 
-    paraview.print_view_state_scalar_bar = args
+    extra_args = get_function_arguments('extra_args',
+        function_name='print_view_state')
+    if extra_args is None:
+        extra_args = []
+        set_function_arguments('print_view_state', 'extra_args', extra_args)
+
+    extra_args.append([name, color_bar])
+
+
+def reset_print_view_state_color_bar():
+    """
+    Reset optional arguments for print_view_state.
+    """
+
+    set_function_arguments('print_view_state', 'extra_args', None)
+
+
+def set_function_arguments(function_name, variable_name, variable_value,
+        overwrite=False):
+    """
+    Set arguments for a function that will be called from within ParaView.
+
+    Args
+    ----
+    function_name: str
+        Name of the function that will use this argument.
+    variable_name: str
+        Name of the variable.
+    variable_value:
+        Name of the value for the variable.
+    overwrite: bool
+        If the variable should be overwritten if it is already set. Otherwise
+        an error will be thrown it an existing variable is overwritten.
+    """
+
+    if not hasattr(paraview, 'pvutils_args'):
+        paraview.pvutils_args = {}
+
+    if function_name not in paraview.pvutils_args.keys():
+        paraview.pvutils_args[function_name] = {}
+
+    variable_dictionary = paraview.pvutils_args[function_name]
+    if variable_name in variable_dictionary.keys() and not overwrite:
+        raise KeyError(('The variable {} in the function {} is ' +
+            'already set!').format(variable_name, function_name))
+
+    variable_dictionary[variable_name] = variable_value
+
+
+def get_function_arguments(variable_name, default_value=None,
+        function_name=None):
+    """
+    Get an argument that has previously been set. If it has not been set, the
+    default value is returned.
+
+    Args
+    ----
+    variable_name: str
+        Name of the variable.
+    default_value:
+        If the variable has not been set, this variable is returned.
+    function_name: str
+        Name of the function that uses this variable. If this argument is not
+        given, the name of the function will be determined from the stack.
+    """
+
+    if function_name is None:
+        import inspect
+        stack = inspect.stack()
+        function_name = stack[1][3]
+
+    if hasattr(paraview, 'pvutils_args'):
+        if function_name in paraview.pvutils_args.keys():
+            if variable_name in paraview.pvutils_args[function_name].keys():
+                return paraview.pvutils_args[function_name][variable_name]
+
+    return default_value
 
 
 def get_size_pixel(size, dpi):
