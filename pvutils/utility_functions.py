@@ -419,7 +419,14 @@ def print_view_state(view, *args):
                 'Orientation',
                 'ScalarBarLength',
                 'ScalarBarThickness',
-                'Position'
+                'Position',
+                'UseCustomLabels',
+                'AddRangeLabels',
+                'DrawAnnotations',
+                'AddRangeAnnotations',
+                'AutomaticAnnotations',
+                'DrawNanAnnotation',
+                'DrawTickLabels'
                 ]
             print('')
             _print_attibutes(arg, attributes, name)
