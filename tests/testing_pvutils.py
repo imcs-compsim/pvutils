@@ -715,6 +715,26 @@ class TestPvutils(unittest.TestCase):
             '{{{1, 2, 3}, {4, 5, 6}, {9, 8, 7}}}'
             )
 
+    def test_von_mises_stress(self):
+        """
+        Test that the VonMises stresses are computed correctly.
+        """
+
+        # Load the solid and apply the VonMises filter.
+        solid = pvutils.load_file(os.path.join(testing_reference,
+            'solid_cube_case', 'solid.case'))
+        scene = pvutils.update_scene()
+        scene.GoToLast()
+        solid_von_mises = pvutils.von_mises_stress(solid, field_type='POINTS',
+            field_name='nodal_2PK_stresses_xyz')
+
+        # Get the stress data and compare with the reference solution.
+        data = pvutils.get_vtk_data_as_numpy(solid_von_mises, point_data=True)
+        stress_data = data['point_data']['von_mises_stress_POINTS']
+        stress_data_ref = np.loadtxt(os.path.join(testing_reference,
+            'solid_von_mises.csv'))
+        self.assertTrue(compare_numpy_arrays(stress_data, stress_data_ref))
+
 
 if __name__ == '__main__':
     # Execution part of script.
