@@ -35,7 +35,8 @@ from .utility_functions import (
     set_print_view_state_color_bar,
     set_timestep,
     setup_view,
-    update_scene
+    update_scene,
+    von_mises_stress
     )
 
 # Load the filter wrappers.
