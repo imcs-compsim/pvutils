@@ -673,32 +673,38 @@ def set_color_range(field, val_min, val_max):
         float(val_max))
 
 
-def von_mises_stress(source):
+def von_mises_stress(source, field_name='nodal_cauchy_stresses_xyz',
+        field_type='POINTS'):
     """
-    Add a cell and node based field with the vonMises stress.
+    Add a field with the vonMises stress.
+
+    Args
+    ----
+    source: pa.Item
+        ParaView item that the filter should be applied to.
+    field_name: str
+        Name of the field. Should be a second-order tensor field.
+    field_type: str:
+        Type of the input field.
     """
 
     # Check if arrays are available.
-    check_data(source, 'nodal_cauchy_stresses_xyz', data_type='POINTS')
-    check_data(source, 'element_cauchy_stresses_xyz', data_type='CELLS')
+    check_data(source, field_name, data_type=field_type)
 
     function = (
         'sqrt(' +
-        '{}_XX^2 + {}_YY^2 + {}_ZZ^2' +
-        '- {}_XX * {}_YY - {}_XX * {}_ZZ - {}_ZZ * {}_YY' +
-        '+ 6*({}_XY^2 + {}_YZ^2 + {}_XZ^2))')
+        '{0}_XX^2 + {0}_YY^2 + {0}_ZZ^2' +
+        '- {0}_XX * {0}_YY - {0}_XX * {0}_ZZ - {0}_ZZ * {0}_YY' +
+        '+ 6*({0}_XY^2 + {0}_YZ^2 + {0}_XZ^2))')
 
-    node_based = pa.Calculator(Input=source)
-    node_based.ResultArrayName = 'sigma_von_mises'
-    node_based.Function = function.format('nodal_cauchy_stresses_xyz')
-    node_based.AttributeType = 'Point Data'
-
-    cell_based = pa.Calculator(Input=node_based)
-    cell_based.ResultArrayName = 'sigma_von_mises'
-    cell_based.Function = function.format('element_cauchy_stresses_xyz')
-    cell_based.AttributeType = 'Cell Data'
-
-    return cell_based
+    calc = pa.Calculator(Input=source)
+    calc.ResultArrayName = 'von_mises_stress_{}'.format(field_type)
+    calc.Function = function.format(field_name)
+    if field_type == 'POINTS':
+        calc.AttributeType = 'Point Data'
+    else:
+        calc.AttributeType = 'Cell Data'
+    return calc
 
 
 def add_coordinate_axes(origin=None, basis=None, scale=1.0, resolution=20,
