@@ -312,30 +312,31 @@ class TestPvutils(unittest.TestCase):
         color_bar.ScalarBarLength = 0.2
         pvutils.set_colorbar_font(color_bar, font_size, dpi, font='TeX')
 
-        # Create the TikZ wrapped image.
-        base_path = os.path.join(testing_temp, self._get_test_name())
-        pvutils.export_to_tikz(
-            os.path.join(testing_temp, self._get_test_name()),
-            dpi=dpi,
-            color_transfer_functions=[
-                color_function_sigma,
-                color_function_kappa
-                ],
-            number_format='$\\pgfmathprintnumber{\\tick}$')
+        if not _is_gitlab():
+            # Create the TikZ wrapped image.
+            base_path = os.path.join(testing_temp, self._get_test_name())
+            pvutils.export_to_tikz(
+                os.path.join(testing_temp, self._get_test_name()),
+                dpi=dpi,
+                color_transfer_functions=[
+                    color_function_sigma,
+                    color_function_kappa
+                    ],
+                number_format='$\\pgfmathprintnumber{\\tick}$')
 
-        # Compare the with the reference image.
-        self._compare_images(base_path + '.png',
-            os.path.join(
-                testing_reference, self._get_test_name() + '_ref.png'))
+            # Compare the with the reference image.
+            self._compare_images(base_path + '.png',
+                os.path.join(
+                    testing_reference, self._get_test_name() + '_ref.png'))
 
-        # Compare the created TikZ code.
-        with open(base_path + '.tex', 'r') as tikz_file:
-            tikz_code = tikz_file.read()
-        with open(os.path.join(
-                    testing_reference, self._get_test_name() + '_ref.tex'),
-                'r') as tikz_file:
-            tikz_code_ref = tikz_file.read()
-        self.assertTrue(tikz_code == tikz_code_ref)
+            # Compare the created TikZ code.
+            with open(base_path + '.tex', 'r') as tikz_file:
+                tikz_code = tikz_file.read()
+            with open(os.path.join(
+                        testing_reference, self._get_test_name() + '_ref.tex'),
+                    'r') as tikz_file:
+                tikz_code_ref = tikz_file.read()
+            self.assertTrue(tikz_code == tikz_code_ref)
 
         # Reset layout and only show the solid.
         pvutils.reset_layout()
