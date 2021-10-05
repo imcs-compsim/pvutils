@@ -198,16 +198,30 @@ class TestPvutils(unittest.TestCase):
             # Compare the created image with the reference image.
             reference_path = os.path.join(testing_reference,
                  '{}_{}ref.png'.format(self._get_test_name(), index_str))
-            test_image = imread(screenshot_path)
-            ref_image = imread(reference_path)
+            self._compare_images(screenshot_path, reference_path)
 
-            # Get the average difference.
-            # https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
-            err = np.sum((test_image.astype("float")
-                - ref_image.astype("float")) ** 2)
-            err /= float(test_image.shape[0] * test_image.shape[1])
+    def _compare_images(self, path_1, path_2):
+        """
+        Compare two images.
 
-            self.assertTrue(err < 5e-4)
+        Args
+        ----
+        path_1, path_2: str
+            Paths to the two images.
+        """
+
+        from matplotlib.image import imread
+
+        test_image = imread(path_1)
+        ref_image = imread(path_2)
+
+        # Get the average difference.
+        # https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
+        err = np.sum((test_image.astype("float")
+            - ref_image.astype("float")) ** 2)
+        err /= float(test_image.shape[0] * test_image.shape[1])
+
+        self.assertTrue(err < 5e-4)
 
     def test_full_script_beam_to_solid_volume_meshtying(self):
         """
@@ -276,11 +290,12 @@ class TestPvutils(unittest.TestCase):
         # Set and place the color map for the solid.
         display = pa.GetDisplayProperties(solid_cut, view=view)
         display.SetScalarBarVisibility(view, True)
-        color_function = pa.GetColorTransferFunction('nodal_2PK_stresses_xyz')
-        color_bar = pa.GetScalarBar(color_function, view)
+        color_function_sigma = pa.GetColorTransferFunction('nodal_2PK_stresses_xyz')
+        color_bar = pa.GetScalarBar(color_function_sigma, view)
         color_bar.Title = '$S_{ZZ}$'
         color_bar.ComponentTitle = ''
         color_bar.WindowLocation = 'AnyLocation'
+        color_bar.Orientation = 'Horizontal'
         color_bar.Position = [0.69, 0.6]
         color_bar.ScalarBarLength = 0.2
         pvutils.set_colorbar_font(color_bar, font_size, dpi, font='TeX')
@@ -288,8 +303,8 @@ class TestPvutils(unittest.TestCase):
         # Set and place the color map for the beam.
         display = pa.GetDisplayProperties(beam, view=view)
         display.SetScalarBarVisibility(view, True)
-        color_function = pa.GetColorTransferFunction('curvature_2_GPs')
-        color_bar = pa.GetScalarBar(color_function, view)
+        color_function_kappa = pa.GetColorTransferFunction('curvature_2_GPs')
+        color_bar = pa.GetScalarBar(color_function_kappa, view)
         color_bar.Title = '$\kappa$'
         color_bar.ComponentTitle = ''
         color_bar.WindowLocation = 'AnyLocation'
@@ -297,14 +312,30 @@ class TestPvutils(unittest.TestCase):
         color_bar.ScalarBarLength = 0.2
         pvutils.set_colorbar_font(color_bar, font_size, dpi, font='TeX')
 
-        # Compare the current view with the reference image.
-        self._save_screenshot_and_compare(view,
-                index=1,
-                ImageResolution=size_pixel,
-                OverrideColorPalette='WhiteBackground',
-                TransparentBackground=0,
-                FontScaling='Do not scale fonts'
-                )
+        # Create the TikZ wrapped image.
+        base_path = os.path.join(testing_temp, self._get_test_name())
+        pvutils.export_to_tikz(
+            os.path.join(testing_temp, self._get_test_name()),
+            dpi=dpi,
+            color_transfer_functions=[
+                color_function_sigma,
+                color_function_kappa
+                ],
+            number_format='$\\pgfmathprintnumber{\\tick}$')
+
+        # Compare the with the reference image.
+        self._compare_images(base_path + '.png',
+            os.path.join(
+                testing_reference, self._get_test_name() + '_ref.png'))
+
+        # Compare the created TikZ code.
+        with open(base_path + '.tex', 'r') as tikz_file:
+            tikz_code = tikz_file.read()
+        with open(os.path.join(
+                    testing_reference, self._get_test_name() + '_ref.tex'),
+                'r') as tikz_file:
+            tikz_code_ref = tikz_file.read()
+        self.assertTrue(tikz_code == tikz_code_ref)
 
         # Reset layout and only show the solid.
         pvutils.reset_layout()
@@ -320,6 +351,7 @@ class TestPvutils(unittest.TestCase):
                 TransparentBackground=0,
                 FontScaling='Do not scale fonts'
                 )
+
 
     def test_time_step(self):
         """
