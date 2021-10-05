@@ -10,6 +10,7 @@ from .utility_functions import (
     check_data,
     contour,
     display,
+    export_to_tikz,
     get_available_timesteps,
     get_base,
     get_bounding_box,
