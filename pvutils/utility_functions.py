@@ -1000,6 +1000,146 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
         points = color_transfer_function.RGBPoints
         return points[0], points[-4]
 
+    def get_tikz_string_continuous(color_transfer_function, title_old):
+        """
+        Get the TikZ code for a continuous color bar.
+        """
+
+        color_bar = pa.GetScalarBar(color_transfer_function, view)
+
+        rel_pos = color_bar.Position
+        min_max = get_min_max_values(color_transfer_function)
+
+        # Get the ticks.
+        tick = []
+        if add_range_labels_old[i] == 1:
+            tick.extend(min_max)
+        tick.extend(color_bar.CustomLabels)
+        tick.sort()
+        tick_str = ','.join(map(str, tick))
+
+        # Add the code that is valid for all types of labels.
+        tikz_code = '''\\begin{{axis}}[
+scale only axis,
+at={{({pos[0]}cm,{pos[1]}cm)}},
+tick label style={{font=\\footnotesize}},
+title={title},
+xticklabel={number_format},
+yticklabel={number_format},
+ymin={min_max[0]},
+ymax={min_max[1]},
+xmin={min_max[0]},
+xmax={min_max[1]},\n'''.format(
+            pos=[rel_to_tikz(rel_pos[j], j) for j in range(2)],
+            min_max=min_max,
+            title=title_old,
+            number_format=number_format
+            )
+
+        if color_bar.Orientation == 'Horizontal':
+            tikz_code += '''ytick=\empty,
+height={height}cm,
+width={width}cm,
+xtick={{{tick}}},
+xtick pos=right,
+xtick align=outside,
+title style={{yshift=10pt,}},\n'''.format(
+                height=dots_to_tikz(color_bar.ScalarBarThickness),
+                width=rel_to_tikz(color_bar.ScalarBarLength, 0),
+                tick=tick_str
+                )
+
+        else:
+            tikz_code += '''xtick=\empty,
+height={height}cm,
+width={width}cm,
+ytick={{{tick}}},
+ytick pos=right,
+ytick align=outside,\n'''.format(
+                width=dots_to_tikz(color_bar.ScalarBarThickness),
+                height=rel_to_tikz(color_bar.ScalarBarLength, 1),
+                tick=tick_str
+                )
+
+        tikz_code += ']\n\end{axis}\n'
+        return tikz_code
+
+    def get_tikz_string_categories(color_transfer_function, title_old):
+        """
+        Get the TikZ code for a category color bar.
+        """
+
+        color_bar = pa.GetScalarBar(color_transfer_function, view)
+
+        rel_pos = color_bar.Position
+        color_bar_thickness = color_bar.ScalarBarThickness
+        color_bar_length = color_bar.ScalarBarLength
+        annotations = color_transfer_function.Annotations
+        n_labels = len(annotations) / 2
+        labels = [int(annotations[2 * i]) for i in range(n_labels)]
+
+        pos = [rel_to_tikz(rel_pos[j], j) for j in range(2)]
+        total_length = rel_to_tikz(color_bar_length, 0)
+        height = dots_to_tikz(color_bar_thickness)
+        distance = dots_to_tikz(4)
+        label_length = (total_length - (n_labels - 1) * distance) / n_labels
+
+        # Create a single axis for each label.
+        tikz_code = '\\node[anchor=south,inner sep=0] at ({pos[0]},{pos[1]}) {{{title}}};'.format(
+            pos=[pos[0] + 0.5 * total_length, pos[1] + height + dots_to_tikz(20)],
+            title=title_old
+            )
+        for i, label in enumerate(labels):
+
+            pos_label = [pos[0] + (label_length + distance) * i, pos[1]]
+
+            # Add the code that is valid for all types of labels.
+            tikz_code += '''\\begin{{axis}}[
+%axis line style={{draw opacity=0}},
+scale only axis,
+at={{({pos_label[0]}cm,{pos_label[1]}cm)}},
+tick label style={{font=\\footnotesize}},
+xticklabel={number_format},
+yticklabel={number_format},
+ymin={min_max[0]},
+ymax={min_max[1]},
+xmin={min_max[0]},
+xmax={min_max[1]},\n'''.format(
+                pos_label=pos_label,
+                min_max=[label - 1, label + 1],
+                number_format=number_format
+                )
+
+            # Get the tick.
+            tick_str = str(label)
+            if color_bar.Orientation == 'Horizontal':
+                tikz_code += '''ytick=\empty,
+height={height}cm,
+width={width}cm,
+xtick={{{tick}}},
+xtick pos=left,
+xtick align=outside,
+title style={{yshift=10pt,}},\n'''.format(
+                    height=height,
+                    width=label_length,
+                    tick=tick_str
+                    )
+
+            else:
+                tikz_code += '''xtick=\empty,
+height={height}cm,
+width={width}cm,
+ytick={{{tick}}},
+ytick pos=left,
+ytick align=outside,\n'''.format(
+                    height=height,
+                    width=label_length,
+                    tick=tick_str
+                    )
+            tikz_code += ']\n\end{axis}\n'
+
+        return tikz_code
+
     if view is None:
         view = get_view()
 
@@ -1011,6 +1151,7 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
     # Set options for colorbars.
     draw_tick_marks_old = []
     draw_tick_labels_old = []
+    draw_annotations_old = []
     add_range_labels_old = []
     title_old = []
     if color_transfer_functions is not None:
@@ -1019,10 +1160,12 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
 
             draw_tick_marks_old.append(color_bar.DrawTickMarks)
             draw_tick_labels_old.append(color_bar.DrawTickLabels)
+            draw_annotations_old.append(color_bar.DrawAnnotations)
             add_range_labels_old.append(color_bar.AddRangeLabels)
             title_old.append(color_bar.Title)
             color_bar.DrawTickMarks = 0
             color_bar.DrawTickLabels = 0
+            color_bar.DrawAnnotations = 0
             color_bar.AddRangeLabels = 0
             color_bar.Title = ''
 
@@ -1050,67 +1193,18 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
 
     if color_transfer_functions is not None:
         for i, color_transfer_function in enumerate(color_transfer_functions):
-            color_bar = pa.GetScalarBar(color_transfer_function, view)
-
-            rel_pos = color_bar.Position
-            min_max = get_min_max_values(color_transfer_function)
-
-            # Get the ticks.
-            tick = []
-            if add_range_labels_old[i] == 1:
-                tick.extend(min_max)
-            tick.extend(color_bar.CustomLabels)
-            tick.sort()
-            tick_str = ','.join(map(str, tick))
-
-            # Add the code that is valid for all types of labels.
-            tikz_code += '''\\begin{{axis}}[
-scale only axis,
-at={{({pos[0]}cm,{pos[1]}cm)}},
-tick label style={{font=\\footnotesize}},
-title={title},
-xticklabel={number_format},
-yticklabel={number_format},
-ymin={min_max[0]},
-ymax={min_max[1]},
-xmin={min_max[0]},
-xmax={min_max[1]},\n'''.format(
-                pos=[rel_to_tikz(rel_pos[j], j) for j in range(2)],
-                min_max=min_max,
-                title=title_old[i],
-                number_format=number_format
-                )
-
-            if color_bar.Orientation == 'Horizontal':
-                tikz_code += '''ytick=\empty,
-height={height}cm,
-width={width}cm,
-xtick={{{tick}}},
-xtick pos=right,
-xtick align=outside,
-title style={{yshift=10pt,}},\n'''.format(
-                    height=dots_to_tikz(color_bar.ScalarBarThickness),
-                    width=rel_to_tikz(color_bar.ScalarBarLength, 0),
-                    tick=tick_str
-                    )
-
+            if color_transfer_function.InterpretValuesAsCategories == 1:
+                tikz_code += get_tikz_string_categories(
+                    color_transfer_function, title_old[i])
             else:
-                tikz_code += '''xtick=\empty,
-height={height}cm,
-width={width}cm,
-ytick={{{tick}}},
-ytick pos=right,
-ytick align=outside,\n'''.format(
-                    width=dots_to_tikz(color_bar.ScalarBarThickness),
-                    height=rel_to_tikz(color_bar.ScalarBarLength, 1),
-                    tick=tick_str
-                    )
-
-            tikz_code += ']\n\end{axis}\n'
+                tikz_code += get_tikz_string_continuous(
+                    color_transfer_function, title_old[i])
 
             # Reset the initial values for the color bar.
+            color_bar = pa.GetScalarBar(color_transfer_function, view)
             color_bar.DrawTickMarks = draw_tick_marks_old[i]
             color_bar.DrawTickLabels = draw_tick_labels_old[i]
+            color_bar.DrawAnnotations = draw_annotations_old[i]
             color_bar.AddRangeLabels = add_range_labels_old[i]
             color_bar.Title = title_old[i]
 
