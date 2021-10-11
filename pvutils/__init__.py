@@ -31,6 +31,7 @@ from .utility_functions import (
     reset_layout,
     reset_paraview,
     reset_print_view_state_color_bar,
+    set_categorized_colorbar,
     set_color_range,
     set_colorbar_font,
     set_function_arguments,

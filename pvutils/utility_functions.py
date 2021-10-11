@@ -961,6 +961,43 @@ def list_to_mathematica_string(data, name=None, string_format='{:.15f}'):
         return '{} = {};'.format(name, data_string)
 
 
+def set_categorized_colorbar(color_transfer_functions, data_labels):
+    """
+    Set a categorized colorbar.
+    """
+
+    # Color scheme (from python3):
+    # import matplotlib.pyplot as plt
+    # plt.get_cmap('name').colors
+    colors = (
+        (0.8941176470588236, 0.10196078431372549, 0.10980392156862745),
+        (0.21568627450980393, 0.49411764705882355, 0.7215686274509804),
+        (0.30196078431372547, 0.6862745098039216, 0.2901960784313726),
+        (0.596078431372549, 0.3058823529411765, 0.6392156862745098),
+        (1.0, 0.4980392156862745, 0.0),
+        (1.0, 1.0, 0.2),
+        (0.6509803921568628, 0.33725490196078434, 0.1568627450980392),
+        (0.9686274509803922, 0.5058823529411764, 0.7490196078431373),
+        (0.6, 0.6, 0.6))
+
+    if len(data_labels) > len(colors):
+        raise ValueError('Colormap has to have at least as many entries as '
+            + 'the labels.')
+
+    annotations = []
+    indexed_colors = []
+    indexed_opacities = []
+    for i in range(len(data_labels)):
+        annotations.extend([str(data_labels[i])] * 2)
+        indexed_colors.extend(list(colors[i]))
+        indexed_opacities.append(1.0)
+
+    color_transfer_functions.Annotations = annotations
+    color_transfer_functions.IndexedColors = indexed_colors
+    color_transfer_functions.IndexedOpacities = indexed_opacities
+    color_transfer_functions.InterpretValuesAsCategories = 1
+
+
 def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
         number_format='{$\\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\\mathrm{e}{##1}}}]{\\tick}$}'):
     """
