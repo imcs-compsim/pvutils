@@ -1127,7 +1127,7 @@ ytick align=outside,\n'''.format(
 
             # Add the code that is valid for all types of labels.
             tikz_code += '''\\begin{{axis}}[
-%axis line style={{draw opacity=0}},
+axis line style={{draw opacity=0}},
 scale only axis,
 tick label style={{font=\\footnotesize}},
 xticklabel={number_format},
