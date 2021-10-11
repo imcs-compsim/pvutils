@@ -338,14 +338,14 @@ class TestPvutils(unittest.TestCase):
                 tikz_code_ref = tikz_file.read()
             self.assertTrue(tikz_code == tikz_code_ref)
 
-        # Reset layout and only show the solid.
-        pvutils.reset_layout()
-        pvutils.display(solid_cut, representation='Surface With Edges',
-                    line_color=[1, 1, 1])
-        view = pvutils.get_view()
-        view.ViewSize = size_pixel
+            # Reset layout and only show the solid.
+            pvutils.reset_layout()
+            pvutils.display(solid_cut, representation='Surface With Edges',
+                        line_color=[1, 1, 1])
+            view = pvutils.get_view()
+            view.ViewSize = size_pixel
 
-        self._save_screenshot_and_compare(view,
+            self._save_screenshot_and_compare(view,
                 index=2,
                 ImageResolution=size_pixel,
                 OverrideColorPalette='WhiteBackground',
@@ -353,6 +353,109 @@ class TestPvutils(unittest.TestCase):
                 FontScaling='Do not scale fonts'
                 )
 
+
+    def test_category_color_bar(self):
+        """
+        Load a solid file and set the output to the MPI rank. Categoize the
+        color bar and create the tikz output.
+        """
+
+        # Load the solid and beam mesh.
+        solid = pvutils.load_file(os.path.join(testing_reference,
+            'solid_cuboid_pvd', 'solid_cuboid.pvd'))
+        scene = pvutils.update_scene()
+        scene.GoToLast()
+
+        pvutils.contour(solid, field='element_owner', data_type='CELLS')
+        display = pvutils.get_display(solid)
+        view = pvutils.get_view()
+        display.SetScalarBarVisibility(view, True)
+        ctf = pa.GetColorTransferFunction('element_owner')
+        pvutils.set_categorized_colorbar(ctf, [0, 1, 2])
+
+        view.ViewSize = [400, 400]
+        view.CameraPosition = [3.77219, -4.39767, 3.48162]
+        view.CameraFocalPoint = [0.00761271, 0.464986, 0.847497]
+        view.CameraViewUp = [-0.237728, 0.313898, 0.919214]
+        view.CameraViewAngle = 30
+        view.CameraParallelScale = 1.73
+        view.OrientationAxesVisibility = 0
+        view.CameraParallelProjection = 0
+        view.InteractionMode = '3D'
+
+        if not _is_gitlab():
+
+            color_bar = pa.GetScalarBar(ctf, view)
+            color_bar.Title = 'PID'
+            color_bar.ComponentTitle = ''
+            color_bar.WindowLocation = 'AnyLocation'
+            color_bar.Orientation = 'Vertical'
+            color_bar.ScalarBarLength = 0.33
+            color_bar.ScalarBarThickness = 16
+            color_bar.Position = [0.7425, 0.25]
+            color_bar.UseCustomLabels = 0
+            color_bar.AddRangeLabels = 1
+            color_bar.DrawAnnotations = 1
+            color_bar.AddRangeAnnotations = 0
+            color_bar.AutomaticAnnotations = 0
+            color_bar.DrawNanAnnotation = 0
+            color_bar.DrawTickLabels = 1
+
+            base_path = os.path.join(testing_temp, self._get_test_name())
+            pvutils.export_to_tikz(
+                os.path.join(base_path + '_1'),
+                dpi=300,
+                color_transfer_functions=[ctf])
+
+            # Compare the with the reference image.
+            self._compare_images(base_path + '_1.png',
+                os.path.join(
+                    testing_reference, self._get_test_name() + '_1_ref.png'))
+
+            # Compare the created TikZ code.
+            with open(base_path + '_1.tex', 'r') as tikz_file:
+                tikz_code = tikz_file.read()
+            with open(os.path.join(
+                    testing_reference, self._get_test_name() + '_1_ref.tex'),
+                    'r') as tikz_file:
+                tikz_code_ref = tikz_file.read()
+            self.assertTrue(tikz_code == tikz_code_ref)
+
+            ctf = pa.GetColorTransferFunction('element_owner')
+            color_bar = pa.GetScalarBar(ctf, view)
+            color_bar.Title = 'PID'
+            color_bar.ComponentTitle = ''
+            color_bar.WindowLocation = 'AnyLocation'
+            color_bar.Orientation = 'Horizontal'
+            color_bar.ScalarBarLength = 0.33
+            color_bar.ScalarBarThickness = 16
+            color_bar.Position = [0.5, 0.25]
+            color_bar.UseCustomLabels = 0
+            color_bar.AddRangeLabels = 1
+            color_bar.DrawAnnotations = 1
+            color_bar.AddRangeAnnotations = 0
+            color_bar.AutomaticAnnotations = 0
+            color_bar.DrawNanAnnotation = 0
+            color_bar.DrawTickLabels = 1
+
+            pvutils.export_to_tikz(
+                os.path.join(base_path + '_2'),
+                dpi=300,
+                color_transfer_functions=[ctf])
+
+            # Compare the with the reference image.
+            self._compare_images(base_path + '_2.png',
+                os.path.join(
+                    testing_reference, self._get_test_name() + '_2_ref.png'))
+
+            # Compare the created TikZ code.
+            with open(base_path + '_2.tex', 'r') as tikz_file:
+                tikz_code = tikz_file.read()
+            with open(os.path.join(
+                    testing_reference, self._get_test_name() + '_2_ref.tex'),
+                    'r') as tikz_file:
+                tikz_code_ref = tikz_file.read()
+            self.assertTrue(tikz_code == tikz_code_ref)
 
     def test_time_step(self):
         """

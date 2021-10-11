@@ -1122,19 +1122,13 @@ ytick align=outside,\n'''.format(
         label_length = (total_length - (n_labels - 1) * distance) / n_labels
 
         # Create a single axis for each label.
-        tikz_code = '\\node[anchor=south,inner sep=0] at ({pos[0]},{pos[1]}) {{{title}}};'.format(
-            pos=[pos[0] + 0.5 * total_length, pos[1] + height + dots_to_tikz(20)],
-            title=title_old
-            )
+        tikz_code = ''
         for i, label in enumerate(labels):
-
-            pos_label = [pos[0] + (label_length + distance) * i, pos[1]]
 
             # Add the code that is valid for all types of labels.
             tikz_code += '''\\begin{{axis}}[
 %axis line style={{draw opacity=0}},
 scale only axis,
-at={{({pos_label[0]}cm,{pos_label[1]}cm)}},
 tick label style={{font=\\footnotesize}},
 xticklabel={number_format},
 yticklabel={number_format},
@@ -1142,7 +1136,6 @@ ymin={min_max[0]},
 ymax={min_max[1]},
 xmin={min_max[0]},
 xmax={min_max[1]},\n'''.format(
-                pos_label=pos_label,
                 min_max=[label - 1, label + 1],
                 number_format=number_format
                 )
@@ -1150,30 +1143,41 @@ xmax={min_max[1]},\n'''.format(
             # Get the tick.
             tick_str = str(label)
             if color_bar.Orientation == 'Horizontal':
+                pos_label = [pos[0] + (label_length + distance) * i, pos[1]]
+                pos_title = [pos[0] + 0.5 * total_length,
+                    pos[1] + height + dots_to_tikz(20)]
+                pos_align = 'south'
                 tikz_code += '''ytick=\empty,
 height={height}cm,
 width={width}cm,
 xtick={{{tick}}},
 xtick pos=left,
-xtick align=outside,
-title style={{yshift=10pt,}},\n'''.format(
+xtick align=outside,\n'''.format(
                     height=height,
                     width=label_length,
                     tick=tick_str
                     )
 
             else:
+                pos_label = [pos[0], pos[1] + (label_length + distance) * i]
+                pos_title = [pos[0] + height + dots_to_tikz(20),
+                    pos[1] + 0.5 * total_length]
+                pos_align = 'west'
                 tikz_code += '''xtick=\empty,
 height={height}cm,
 width={width}cm,
 ytick={{{tick}}},
 ytick pos=left,
 ytick align=outside,\n'''.format(
-                    height=height,
-                    width=label_length,
+                    height=label_length,
+                    width=height,
                     tick=tick_str
                     )
+            tikz_code += 'at={{({pos_label[0]}cm,{pos_label[1]}cm)}},\n'.format(
+                pos_label=pos_label)
             tikz_code += ']\n\end{axis}\n'
+        tikz_code = '\\node[anchor={pos_align},inner sep=0] at ({pos[0]},{pos[1]}) {{{title}}};'.format(
+            pos=pos_title, title=title_old, pos_align=pos_align) + tikz_code
 
         return tikz_code
 

@@ -1,0 +1,66 @@
+%% This file was created with pvutils
+%% Use the following includes in the LaTeX header:
+%\usepackage{tikz}
+%\usepackage{pgfplots}
+%% Optional:
+%\pgfplotsset{compat=1.16}
+\begin{tikzpicture}
+\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[scale=0.24]{category_color_bar_1.png}};
+\node[anchor=west,inner sep=0] at (2.8194,1.40546666667) {PID};\begin{axis}[
+%axis line style={draw opacity=0},
+scale only axis,
+tick label style={font=\footnotesize},
+xticklabel={$\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\mathrm{e}{##1}}}]{\tick}$},
+yticklabel={$\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\mathrm{e}{##1}}}]{\tick}$},
+ymin=-1,
+ymax=1,
+xmin=-1,
+xmax=1,
+xtick=\empty,
+height=0.349955555556cm,
+width=0.135466666667cm,
+ytick={0},
+ytick pos=left,
+ytick align=outside,
+at={(2.5146cm,0.846666666667cm)},
+]
+\end{axis}
+\begin{axis}[
+%axis line style={draw opacity=0},
+scale only axis,
+tick label style={font=\footnotesize},
+xticklabel={$\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\mathrm{e}{##1}}}]{\tick}$},
+yticklabel={$\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\mathrm{e}{##1}}}]{\tick}$},
+ymin=0,
+ymax=2,
+xmin=0,
+xmax=2,
+xtick=\empty,
+height=0.349955555556cm,
+width=0.135466666667cm,
+ytick={1},
+ytick pos=left,
+ytick align=outside,
+at={(2.5146cm,1.23048888889cm)},
+]
+\end{axis}
+\begin{axis}[
+%axis line style={draw opacity=0},
+scale only axis,
+tick label style={font=\footnotesize},
+xticklabel={$\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\mathrm{e}{##1}}}]{\tick}$},
+yticklabel={$\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\mathrm{e}{##1}}}]{\tick}$},
+ymin=1,
+ymax=3,
+xmin=1,
+xmax=3,
+xtick=\empty,
+height=0.349955555556cm,
+width=0.135466666667cm,
+ytick={2},
+ytick pos=left,
+ytick align=outside,
+at={(2.5146cm,1.61431111111cm)},
+]
+\end{axis}
+\end{tikzpicture}%
