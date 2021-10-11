@@ -1037,7 +1037,13 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
         )
 
     # Create the TikZ code
-    tikz_code = '''\\begin{{tikzpicture}}
+    tikz_code = '''%% This file was created with pvutils
+%% Use the following includes in the LaTeX header:
+%\\usepackage{{tikz}}
+%\\usepackage{{pgfplots}}
+%% Optional:
+%\\pgfplotsset{{compat=1.16}}
+\\begin{{tikzpicture}}
 \\node[anchor=south west,inner sep=0] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{image_name}}}}};\n'''.format(
         scale=72.0 / dpi,
         image_name=image_name)
@@ -1108,7 +1114,7 @@ ytick align=outside,\n'''.format(
             color_bar.AddRangeLabels = add_range_labels_old[i]
             color_bar.Title = title_old[i]
 
-    tikz_code += '\end{tikzpicture}'
+    tikz_code += '\end{tikzpicture}%'
 
     # Write TikZ code to file.
     with open(tikz_name_full, 'w') as text_file:
