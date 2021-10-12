@@ -245,6 +245,38 @@ def reset_paraview():
     pa.Connect()
 
 
+def reset_layout():
+    """
+    Closes the current layout and opens a new clean one. All the sources stay
+    loaded.
+    """
+
+    # Get the old layout and its name.
+    old_layout = pa.GetLayout()
+    old_view = get_view()
+    layouts = pa.GetLayouts()
+    for key in layouts.keys():
+        name, _id = key
+        if layouts[key] == old_layout:
+            old_name = name
+            break
+    else:
+        raise ValueError('Could not get the layout name!')
+
+    # Create the new layout.
+    new_layout = pa.CreateLayout('temp layout')
+    new_view = pa.CreateView('RenderView')
+    new_layout.AssignView(0, new_view)
+
+    # Delete the old stuff.
+    pa.Delete(old_view)
+    del old_view
+    pa.RemoveLayout(old_layout)
+
+    # Rename the new layout.
+    pa.RenameLayout(old_name, new_layout)
+
+
 def programmable_filter(source, name, **kwargs):
     """
     Apply a programmable filter from this git repository.

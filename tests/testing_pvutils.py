@@ -161,7 +161,7 @@ class TestPvutils(unittest.TestCase):
                 + 'format').format(name))
         return split_name[1]
 
-    def _save_screenshot_and_compare(self, view, **kwargs):
+    def _save_screenshot_and_compare(self, view, index=None, **kwargs):
         """
         Save the view to a screenshot and compare it with the reference image.
         The reference image is stored in the 'reference=files' directory. When
@@ -173,6 +173,9 @@ class TestPvutils(unittest.TestCase):
         ----
         view: ParaView view object
             View that will be written to an image.
+        index: int
+            If multiple images are to be compared in one test, the index can
+            be given here.
         kwargs:
             Will be passed to pa.SaveScreenshot.
         """
@@ -181,14 +184,20 @@ class TestPvutils(unittest.TestCase):
 
             from matplotlib.image import imread
 
+            # Additional string for multiple images in one test.
+            if index is not None:
+                index_str = '{}_'.format(index)
+            else:
+                index_str = ''
+
             # Export screenshot.
             screenshot_path = os.path.join(testing_temp,
-                '{}_temp.png'.format(self._get_test_name()))
+                '{}_{}temp.png'.format(self._get_test_name(), index_str))
             pa.SaveScreenshot(screenshot_path, view, **kwargs)
 
             # Compare the created image with the reference image.
             reference_path = os.path.join(testing_reference,
-                 '{}_ref.png'.format(self._get_test_name()))
+                 '{}_{}ref.png'.format(self._get_test_name(), index_str))
             test_image = imread(screenshot_path)
             ref_image = imread(reference_path)
 
@@ -290,6 +299,22 @@ class TestPvutils(unittest.TestCase):
 
         # Compare the current view with the reference image.
         self._save_screenshot_and_compare(view,
+                index=1,
+                ImageResolution=size_pixel,
+                OverrideColorPalette='WhiteBackground',
+                TransparentBackground=0,
+                FontScaling='Do not scale fonts'
+                )
+
+        # Reset layout and only show the solid.
+        pvutils.reset_layout()
+        pvutils.display(solid_cut, representation='Surface With Edges',
+                    line_color=[1, 1, 1])
+        view = pvutils.get_view()
+        view.ViewSize = size_pixel
+
+        self._save_screenshot_and_compare(view,
+                index=2,
                 ImageResolution=size_pixel,
                 OverrideColorPalette='WhiteBackground',
                 TransparentBackground=0,

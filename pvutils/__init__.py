@@ -27,6 +27,7 @@ from .utility_functions import (
     print_view_state,
     programmable_filter,
     programmable_source,
+    reset_layout,
     reset_paraview,
     reset_print_view_state_color_bar,
     set_color_range,
