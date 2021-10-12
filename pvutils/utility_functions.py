@@ -966,6 +966,11 @@ def set_categorized_colorbar(color_transfer_functions, data_labels):
     Set a categorized colorbar.
     """
 
+    # When python3 is used this construct will be obsolete.
+    if sys.version_info >= (3, 0):
+        raise ValueError('The color bar in set_categorized_colorbar should be '
+            + 'adapted to python3.')
+
     # Color scheme (from python3):
     # import matplotlib.pyplot as plt
     # plt.get_cmap('name').colors
