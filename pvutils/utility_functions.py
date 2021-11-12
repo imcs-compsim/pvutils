@@ -1006,6 +1006,7 @@ def set_categorized_colorbar(color_transfer_functions, data_labels):
 
 
 def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
+        figure_path='',
         number_format='{$\\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\\mathrm{e}{##1}}}]{\\tick}$}'):
     """
     Export a screenshot and wrap the color bars inside a TikZ axis.
@@ -1020,6 +1021,9 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
         Desired resolution of image in dots per inch.
     color_transfer_functions: [color_transfer_function]
         A list of the color transfer functions that should be wrapped by TikZ.
+    figure_path: str
+        Relative path to figures in the TeX document structure. Default is
+        empty.
     number_format: str
         Number format to be used for the TeX ticks.
     """
@@ -1241,11 +1245,13 @@ ytick align=outside,\n'''.format(
 %\\usepackage{{pgfplots}}
 %% Optional:
 %\\pgfplotsset{{compat=1.16}}
+{{\\normalsize% Sometimes in figure environments a smaller font is selected -> we want the default one.
 \\begin{{tikzpicture}}
 % The -0.2pt here are needed, so the immage is really placed at the origin.
-\\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{image_name}}}}};\n'''.format(
+\\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{figure_path}{image_name}}}}};\n'''.format(
         scale=72.0 / dpi,
-        image_name=image_name)
+        image_name=image_name,
+        figure_path=figure_path)
 
     if color_transfer_functions is not None:
         for i, color_transfer_function in enumerate(color_transfer_functions):
@@ -1264,7 +1270,7 @@ ytick align=outside,\n'''.format(
             color_bar.AddRangeLabels = add_range_labels_old[i]
             color_bar.Title = title_old[i]
 
-    tikz_code += '\end{tikzpicture}%'
+    tikz_code += '\end{tikzpicture}%\n}%'
 
     # Write TikZ code to file.
     with open(tikz_name_full, 'w') as text_file:
