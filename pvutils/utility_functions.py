@@ -16,6 +16,10 @@ import pvutils
 from vtk.util import numpy_support as VN
 
 
+# How many inches are in a cm.
+INCH = 2.54
+
+
 def _print_attibutes(obj, attributes, variable_name):
     """
     Print attributes of an object, given by a list of strings.
@@ -578,9 +582,7 @@ def get_size_pixel(size, dpi):
     """
     Convert a output size in cm to a size in pixel.
     """
-
-    inch = 2.54
-    return (np.array(size) / inch * dpi).astype(int)
+    return (np.array(size) / INCH * dpi).astype(int)
 
 
 def is_pvpython():
@@ -1022,17 +1024,24 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
         Number format to be used for the TeX ticks.
     """
 
+    def rel_to_dot(val, direction):
+        """
+        Convert a relative value of the image to a pixel value. It seems like
+        ParaView uses the floor value of the floating point result.
+        """
+        return np.floor(view.ViewSize[direction] * val)
+
     def rel_to_tikz(val, direction):
         """
-        Convert a horizontal positioning to TikZ (cm).
+        Convert a relative positioning on the image to TikZ (cm).
         """
-        return view.ViewSize[direction] * val / dpi * 2.54
+        return dots_to_tikz(rel_to_dot(val, direction))
 
     def dots_to_tikz(val):
         """
         Convert a distance in pt to cm.
         """
-        return float(val) / dpi * 2.54
+        return float(val) / dpi * INCH
 
     def get_min_max_values(color_transfer_function):
         """
@@ -1233,7 +1242,8 @@ ytick align=outside,\n'''.format(
 %% Optional:
 %\\pgfplotsset{{compat=1.16}}
 \\begin{{tikzpicture}}
-\\node[anchor=south west,inner sep=0] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{image_name}}}}};\n'''.format(
+% The -0.2pt here are needed, so the immage is really placed at the origin.
+\\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{image_name}}}}};\n'''.format(
         scale=72.0 / dpi,
         image_name=image_name)
 

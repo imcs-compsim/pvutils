@@ -5,7 +5,8 @@
 %% Optional:
 %\pgfplotsset{compat=1.16}
 \begin{tikzpicture}
-\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[scale=0.24]{category_color_bar_2.png}};
+% The -0.2pt here are needed, so the immage is really placed at the origin.
+\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {\includegraphics[scale=0.24]{category_color_bar_2.png}};
 \node[anchor=south,inner sep=0] at (2.25213333333,1.15146666667) {PID};\begin{axis}[
 axis line style={draw opacity=0},
 scale only axis,
