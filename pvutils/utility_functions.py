@@ -1076,6 +1076,8 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
         # Add the code that is valid for all types of labels.
         tikz_code = '''\\begin{{axis}}[
 scale only axis,
+scaled x ticks=false,
+scaled y ticks=false,
 at={{({pos[0]}cm,{pos[1]}cm)}},
 tick label style={{font=\\footnotesize}},
 title={title},
