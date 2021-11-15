@@ -327,7 +327,7 @@ class TestPvutils(unittest.TestCase):
             # Compare the with the reference image.
             self._compare_images(base_path + '.png',
                 os.path.join(
-                    testing_reference, self._get_test_name() + '_ref.png'))
+                    testing_reference, self._get_test_name() + '_1_ref.png'))
 
             # Compare the created TikZ code.
             with open(base_path + '.tex', 'r') as tikz_file:
