@@ -241,6 +241,7 @@ def reset_paraview():
     https://stackoverflow.com/questions/48580653/paraview-programmatically-reset-session
     """
 
+    reset_function_arguments()
     pa.Disconnect()
     pa.Connect()
 
@@ -449,6 +450,7 @@ def print_view_state(view, *args):
                 'ComponentTitle',
                 'WindowLocation',
                 'Orientation',
+                'HorizontalTitle',
                 'ScalarBarLength',
                 'ScalarBarThickness',
                 'Position',
@@ -486,7 +488,20 @@ def reset_print_view_state_color_bar():
     Reset optional arguments for print_view_state.
     """
 
-    set_function_arguments('print_view_state', 'extra_args', None)
+    delete_function_arguments('print_view_state', 'extra_args')
+
+
+def delete_function_arguments(function_name, variable_name):
+    """
+    Remove an argument for a function that will be called from within
+    ParaView.
+    """
+
+    if hasattr(paraview, 'pvutils_args'):
+        if function_name in paraview.pvutils_args.keys():
+            variable_dictionary = paraview.pvutils_args[function_name]
+            if variable_name in variable_dictionary.keys():
+                del variable_dictionary[variable_name]
 
 
 def set_function_arguments(function_name, variable_name, variable_value,
@@ -519,6 +534,14 @@ def set_function_arguments(function_name, variable_name, variable_value,
             'already set!').format(variable_name, function_name))
 
     variable_dictionary[variable_name] = variable_value
+
+
+def reset_function_arguments():
+    """
+    Reset all function arguments for functions called from within ParaView.
+    """
+    if hasattr(paraview, 'pvutils_args'):
+        paraview.pvutils_args = {}
 
 
 def get_function_arguments(variable_name, default_value=None,
