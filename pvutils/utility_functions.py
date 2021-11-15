@@ -459,6 +459,7 @@ def print_view_state(view, *args):
                 'ScalarBarThickness',
                 'Position',
                 'UseCustomLabels',
+                'CustomLabels',
                 'AddRangeLabels',
                 'DrawAnnotations',
                 'AddRangeAnnotations',
