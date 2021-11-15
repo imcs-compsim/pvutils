@@ -493,7 +493,7 @@ def reset_print_view_state_color_bar():
 
 def delete_function_arguments(function_name, variable_name):
     """
-    Remove an arguments for a function that will be called from within
+    Remove an argument for a function that will be called from within
     ParaView.
     """
 
@@ -537,7 +537,9 @@ def set_function_arguments(function_name, variable_name, variable_value,
 
 
 def reset_function_arguments():
-    """Reset all function arguments."""
+    """
+    Reset all function arguments for functions called from within ParaView.
+    """
     if hasattr(paraview, 'pvutils_args'):
         paraview.pvutils_args = {}
 
