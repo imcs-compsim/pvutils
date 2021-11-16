@@ -1249,7 +1249,7 @@ ytick align=outside,\n'''.format(
 %\\usepackage{{pgfplots}}
 %% Optional:
 %\\pgfplotsset{{compat=1.16}}
-{{\\normalsize% Sometimes in figure environments a smaller font is selected -> we want the default one.
+%{{\\normalsize% Sometimes in figure environments a smaller font is selected -> uncomment this to activate the default font size
 \\begin{{tikzpicture}}
 % The -0.2pt here are needed, so the immage is really placed at the origin.
 \\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{figure_path}{image_name}}}}};\n'''.format(
@@ -1274,7 +1274,7 @@ ytick align=outside,\n'''.format(
             color_bar.AddRangeLabels = add_range_labels_old[i]
             color_bar.Title = title_old[i]
 
-    tikz_code += '\end{tikzpicture}%\n}%'
+    tikz_code += '\end{tikzpicture}%\n%}%'
 
     # Write TikZ code to file.
     with open(tikz_name_full, 'w') as text_file:
