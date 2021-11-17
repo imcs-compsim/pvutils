@@ -16,7 +16,7 @@ import pvutils
 from vtk.util import numpy_support as VN
 
 
-# How many inches are in a cm.
+# Inch to centimeter conversion.
 INCH = 2.54
 
 
