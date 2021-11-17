@@ -290,29 +290,47 @@ class TestPvutils(unittest.TestCase):
         # Set and place the color map for the solid.
         display = pa.GetDisplayProperties(solid_cut, view=view)
         display.SetScalarBarVisibility(view, True)
-        color_function_sigma = pa.GetColorTransferFunction('nodal_2PK_stresses_xyz')
-        color_bar = pa.GetScalarBar(color_function_sigma, view)
-        color_bar.Title = '$S_{ZZ}$'
-        color_bar.ComponentTitle = ''
-        color_bar.WindowLocation = 'AnyLocation'
-        color_bar.Orientation = 'Horizontal'
-        color_bar.Position = [0.69, 0.6]
-        color_bar.ScalarBarLength = 0.2
-        pvutils.set_colorbar_font(color_bar, font_size, dpi, font='TeX')
+        color_function_sigma = pa.GetColorTransferFunction(
+            'nodal_2PK_stresses_xyz')
+        color_bar_stress = pa.GetScalarBar(color_function_sigma, view)
+        color_bar_stress.Title = '$S_{ZZ}$'
+        color_bar_stress.ComponentTitle = ''
+        color_bar_stress.WindowLocation = 'AnyLocation'
+        color_bar_stress.Position = [0.69, 0.6]
+        color_bar_stress.ScalarBarLength = 0.2
+        pvutils.set_colorbar_font(color_bar_stress, font_size, dpi, font='TeX')
 
         # Set and place the color map for the beam.
         display = pa.GetDisplayProperties(beam, view=view)
         display.SetScalarBarVisibility(view, True)
         color_function_kappa = pa.GetColorTransferFunction('curvature_2_GPs')
-        color_bar = pa.GetScalarBar(color_function_kappa, view)
-        color_bar.Title = '$\kappa$'
-        color_bar.ComponentTitle = ''
-        color_bar.WindowLocation = 'AnyLocation'
-        color_bar.Position = [0.69, 0.2]
-        color_bar.ScalarBarLength = 0.2
-        pvutils.set_colorbar_font(color_bar, font_size, dpi, font='TeX')
+        color_bar_kappa = pa.GetScalarBar(color_function_kappa, view)
+        color_bar_kappa.Title = '$\kappa$'
+        color_bar_kappa.ComponentTitle = ''
+        color_bar_kappa.WindowLocation = 'AnyLocation'
+        color_bar_kappa.Position = [0.69, 0.2]
+        color_bar_kappa.ScalarBarLength = 0.2
+        pvutils.set_colorbar_font(color_bar_kappa, font_size, dpi, font='TeX')
 
         if not _is_gitlab():
+
+            # Compare the current view with the reference image.
+            self._save_screenshot_and_compare(view,
+                    index=1,
+                    ImageResolution=size_pixel,
+                    OverrideColorPalette='WhiteBackground',
+                    TransparentBackground=0,
+                    FontScaling='Do not scale fonts'
+                    )
+
+            # For the TikZ images, set one color bar to be horizontal, so both
+            # cases are tested. Change the placement of the color bar, so
+            # ParaView updates the position (this is not done by just changing
+            # the orientation.
+            color_bar_stress.Orientation = 'Horizontal'
+            color_bar_stress.Position = [0.7, 0.6]
+            color_bar_stress.Position = [0.69, 0.6]
+
             # Create the TikZ wrapped image.
             base_path = os.path.join(testing_temp, self._get_test_name())
             pvutils.export_to_tikz(
@@ -327,13 +345,13 @@ class TestPvutils(unittest.TestCase):
             # Compare the with the reference image.
             self._compare_images(base_path + '.png',
                 os.path.join(
-                    testing_reference, self._get_test_name() + '_1_ref.png'))
+                    testing_reference, self._get_test_name() + '_2_ref.png'))
 
             # Compare the created TikZ code.
             with open(base_path + '.tex', 'r') as tikz_file:
                 tikz_code = tikz_file.read()
             with open(os.path.join(
-                        testing_reference, self._get_test_name() + '_ref.tex'),
+                    testing_reference, self._get_test_name() + '_ref.tex'),
                     'r') as tikz_file:
                 tikz_code_ref = tikz_file.read()
             self.assertTrue(tikz_code == tikz_code_ref)
@@ -346,7 +364,7 @@ class TestPvutils(unittest.TestCase):
             view.ViewSize = size_pixel
 
             self._save_screenshot_and_compare(view,
-                index=2,
+                index=3,
                 ImageResolution=size_pixel,
                 OverrideColorPalette='WhiteBackground',
                 TransparentBackground=0,
