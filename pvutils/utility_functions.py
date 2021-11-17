@@ -16,6 +16,10 @@ import pvutils
 from vtk.util import numpy_support as VN
 
 
+# Inch to centimeter conversion.
+INCH = 2.54
+
+
 def _print_attibutes(obj, attributes, variable_name):
     """
     Print attributes of an object, given by a list of strings.
@@ -455,6 +459,7 @@ def print_view_state(view, *args):
                 'ScalarBarThickness',
                 'Position',
                 'UseCustomLabels',
+                'CustomLabels',
                 'AddRangeLabels',
                 'DrawAnnotations',
                 'AddRangeAnnotations',
@@ -578,9 +583,7 @@ def get_size_pixel(size, dpi):
     """
     Convert a output size in cm to a size in pixel.
     """
-
-    inch = 2.54
-    return (np.array(size) / inch * dpi).astype(int)
+    return (np.array(size) / INCH * dpi).astype(int)
 
 
 def is_pvpython():
@@ -657,6 +660,7 @@ def set_timestep(time, fail_on_not_available_time=True):
     scene = pa.GetAnimationScene()
     scene.TimeKeeper.Time = time
 
+    # TODO: Activate this function in here.
     # This render command is disabled as it resulted in failing pipelines in
     # GitLab.
     # pa.Render()
@@ -959,3 +963,319 @@ def list_to_mathematica_string(data, name=None, string_format='{:.15f}'):
         return data_string
     else:
         return '{} = {};'.format(name, data_string)
+
+
+def set_categorized_colorbar(color_transfer_functions, data_labels):
+    """
+    Set a categorized colorbar.
+    """
+
+    # When python3 is used this construct will be obsolete.
+    if sys.version_info >= (3, 0):
+        raise ValueError('The color bar in set_categorized_colorbar should be '
+            + 'adapted to python3.')
+
+    # Color scheme (from python3):
+    # import matplotlib.pyplot as plt
+    # plt.get_cmap('name').colors
+    colors = (
+        (0.8941176470588236, 0.10196078431372549, 0.10980392156862745),
+        (0.21568627450980393, 0.49411764705882355, 0.7215686274509804),
+        (0.30196078431372547, 0.6862745098039216, 0.2901960784313726),
+        (0.596078431372549, 0.3058823529411765, 0.6392156862745098),
+        (1.0, 0.4980392156862745, 0.0),
+        (1.0, 1.0, 0.2),
+        (0.6509803921568628, 0.33725490196078434, 0.1568627450980392),
+        (0.9686274509803922, 0.5058823529411764, 0.7490196078431373),
+        (0.6, 0.6, 0.6))
+
+    if len(data_labels) > len(colors):
+        raise ValueError('Colormap has to have at least as many entries as '
+            + 'the labels.')
+
+    annotations = []
+    indexed_colors = []
+    indexed_opacities = []
+    for i in range(len(data_labels)):
+        annotations.extend([str(data_labels[i])] * 2)
+        indexed_colors.extend(list(colors[i]))
+        indexed_opacities.append(1.0)
+
+    color_transfer_functions.Annotations = annotations
+    color_transfer_functions.IndexedColors = indexed_colors
+    color_transfer_functions.IndexedOpacities = indexed_opacities
+    color_transfer_functions.InterpretValuesAsCategories = 1
+
+
+def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
+        figure_path='',
+        number_format='{$\\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\\mathrm{e}{##1}}}]{\\tick}$}'):
+    """
+    Export a screenshot and wrap the color bars inside a TikZ axis.
+
+    Args
+    ----
+    name: str
+        Name of the output files. Can include directory paths.
+    view: pa.View
+        Active ParaView view.
+    dpi: int
+        Desired resolution of image in dots per inch.
+    color_transfer_functions: [color_transfer_function]
+        A list of the color transfer functions that should be wrapped by TikZ.
+    figure_path: str
+        Relative path to figures in the TeX document structure. Default is
+        empty.
+    number_format: str
+        Number format to be used for the TeX ticks.
+    """
+
+    def rel_to_dot(val, direction):
+        """
+        Convert a relative value of the image to a pixel value. It seems like
+        ParaView uses the floor value of the floating point result.
+        """
+        return np.floor(view.ViewSize[direction] * val)
+
+    def rel_to_tikz(val, direction):
+        """
+        Convert a relative positioning on the image to TikZ (cm).
+        """
+        return dots_to_tikz(rel_to_dot(val, direction))
+
+    def dots_to_tikz(val):
+        """
+        Convert a distance in pt to cm.
+        """
+        return float(val) / dpi * INCH
+
+    def get_min_max_values(color_transfer_function):
+        """
+        Return the min and maximum value for a given color transfer function.
+        """
+
+        points = color_transfer_function.RGBPoints
+        return points[0], points[-4]
+
+    def get_tikz_string_continuous(color_transfer_function, title_old):
+        """
+        Get the TikZ code for a continuous color bar.
+        """
+
+        color_bar = pa.GetScalarBar(color_transfer_function, view)
+
+        rel_pos = color_bar.Position
+        min_max = get_min_max_values(color_transfer_function)
+
+        # Get the ticks.
+        tick = []
+        if add_range_labels_old[i] == 1:
+            tick.extend(min_max)
+        tick.extend(color_bar.CustomLabels)
+        tick.sort()
+        tick_str = ','.join(map(str, tick))
+
+        # Add the code that is valid for all types of labels.
+        tikz_code = '''\\begin{{axis}}[
+scale only axis,
+scaled x ticks=false,
+scaled y ticks=false,
+at={{({pos[0]}cm,{pos[1]}cm)}},
+tick label style={{font=\\footnotesize}},
+title={title},
+xticklabel={number_format},
+yticklabel={number_format},
+ymin={min_max[0]},
+ymax={min_max[1]},
+xmin={min_max[0]},
+xmax={min_max[1]},\n'''.format(
+            pos=[rel_to_tikz(rel_pos[j], j) for j in range(2)],
+            min_max=min_max,
+            title=title_old,
+            number_format=number_format
+            )
+
+        if color_bar.Orientation == 'Horizontal':
+            tikz_code += '''ytick=\empty,
+height={height}cm,
+width={width}cm,
+xtick={{{tick}}},
+xtick pos=right,
+xtick align=outside,
+title style={{yshift=10pt,}},\n'''.format(
+                height=dots_to_tikz(color_bar.ScalarBarThickness),
+                width=rel_to_tikz(color_bar.ScalarBarLength, 0),
+                tick=tick_str
+                )
+
+        else:
+            tikz_code += '''xtick=\empty,
+height={height}cm,
+width={width}cm,
+ytick={{{tick}}},
+ytick pos=right,
+ytick align=outside,\n'''.format(
+                width=dots_to_tikz(color_bar.ScalarBarThickness),
+                height=rel_to_tikz(color_bar.ScalarBarLength, 1),
+                tick=tick_str
+                )
+
+        tikz_code += ']\n\end{axis}\n'
+        return tikz_code
+
+    def get_tikz_string_categories(color_transfer_function, title_old):
+        """
+        Get the TikZ code for a category color bar.
+        """
+
+        color_bar = pa.GetScalarBar(color_transfer_function, view)
+
+        rel_pos = color_bar.Position
+        color_bar_thickness = color_bar.ScalarBarThickness
+        color_bar_length = color_bar.ScalarBarLength
+        annotations = color_transfer_function.Annotations
+        n_labels = len(annotations) / 2
+        labels = [int(annotations[2 * i]) for i in range(n_labels)]
+
+        pos = [rel_to_tikz(rel_pos[j], j) for j in range(2)]
+        total_length = rel_to_tikz(color_bar_length, 0)
+        height = dots_to_tikz(color_bar_thickness)
+        distance = dots_to_tikz(4)
+        label_length = (total_length - (n_labels - 1) * distance) / n_labels
+
+        # Create a single axis for each label.
+        tikz_code = ''
+        for i, label in enumerate(labels):
+
+            # Add the code that is valid for all types of labels.
+            tikz_code += '''\\begin{{axis}}[
+axis line style={{draw opacity=0}},
+scale only axis,
+tick label style={{font=\\footnotesize}},
+xticklabel={number_format},
+yticklabel={number_format},
+ymin={min_max[0]},
+ymax={min_max[1]},
+xmin={min_max[0]},
+xmax={min_max[1]},\n'''.format(
+                min_max=[label - 1, label + 1],
+                number_format=number_format
+                )
+
+            # Get the tick.
+            tick_str = str(label)
+            if color_bar.Orientation == 'Horizontal':
+                pos_label = [pos[0] + (label_length + distance) * i, pos[1]]
+                pos_title = [pos[0] + 0.5 * total_length,
+                    pos[1] + height + dots_to_tikz(20)]
+                pos_align = 'south'
+                tikz_code += '''ytick=\empty,
+height={height}cm,
+width={width}cm,
+xtick={{{tick}}},
+xtick pos=left,
+xtick align=outside,\n'''.format(
+                    height=height,
+                    width=label_length,
+                    tick=tick_str
+                    )
+
+            else:
+                pos_label = [pos[0], pos[1] + (label_length + distance) * i]
+                pos_title = [pos[0] + height + dots_to_tikz(20),
+                    pos[1] + 0.5 * total_length]
+                pos_align = 'west'
+                tikz_code += '''xtick=\empty,
+height={height}cm,
+width={width}cm,
+ytick={{{tick}}},
+ytick pos=left,
+ytick align=outside,\n'''.format(
+                    height=label_length,
+                    width=height,
+                    tick=tick_str
+                    )
+            tikz_code += 'at={{({pos_label[0]}cm,{pos_label[1]}cm)}},\n'.format(
+                pos_label=pos_label)
+            tikz_code += ']\n\end{axis}\n'
+        tikz_code = '\\node[anchor={pos_align},inner sep=0] at ({pos[0]},{pos[1]}) {{{title}}};'.format(
+            pos=pos_title, title=title_old, pos_align=pos_align) + tikz_code
+
+        return tikz_code
+
+    if view is None:
+        view = get_view()
+
+    # Name of image and TikZ file.
+    image_name_full = name + '.png'
+    image_name = os.path.split(image_name_full)[-1]
+    tikz_name_full = name + '.tex'
+
+    # Set options for colorbars.
+    draw_tick_marks_old = []
+    draw_tick_labels_old = []
+    draw_annotations_old = []
+    add_range_labels_old = []
+    title_old = []
+    if color_transfer_functions is not None:
+        for color_transfer_function in color_transfer_functions:
+            color_bar = pa.GetScalarBar(color_transfer_function, view)
+
+            draw_tick_marks_old.append(color_bar.DrawTickMarks)
+            draw_tick_labels_old.append(color_bar.DrawTickLabels)
+            draw_annotations_old.append(color_bar.DrawAnnotations)
+            add_range_labels_old.append(color_bar.AddRangeLabels)
+            title_old.append(color_bar.Title)
+            color_bar.DrawTickMarks = 0
+            color_bar.DrawTickLabels = 0
+            color_bar.DrawAnnotations = 0
+            color_bar.AddRangeLabels = 0
+            color_bar.Title = ''
+
+    # Save the screenshot.
+    pa.SaveScreenshot(
+        image_name_full,
+        view,
+        ImageResolution=view.ViewSize,
+        OverrideColorPalette='WhiteBackground',
+        TransparentBackground=0,
+        FontScaling='Do not scale fonts'
+        )
+
+    # Create the TikZ code
+    tikz_code = '''%% This file was created with pvutils
+%% Use the following includes in the LaTeX header:
+%\\usepackage{{tikz}}
+%\\usepackage{{pgfplots}}
+%% Optional:
+%\\pgfplotsset{{compat=1.16}}
+%{{\\normalsize% Sometimes in figure environments a smaller font is selected -> uncomment this to activate the default font size
+\\begin{{tikzpicture}}
+% The -0.2pt here are needed, so the immage is really placed at the origin.
+\\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{figure_path}{image_name}}}}};\n'''.format(
+        scale=72.0 / dpi,
+        image_name=image_name,
+        figure_path=figure_path)
+
+    if color_transfer_functions is not None:
+        for i, color_transfer_function in enumerate(color_transfer_functions):
+            if color_transfer_function.InterpretValuesAsCategories == 1:
+                tikz_code += get_tikz_string_categories(
+                    color_transfer_function, title_old[i])
+            else:
+                tikz_code += get_tikz_string_continuous(
+                    color_transfer_function, title_old[i])
+
+            # Reset the initial values for the color bar.
+            color_bar = pa.GetScalarBar(color_transfer_function, view)
+            color_bar.DrawTickMarks = draw_tick_marks_old[i]
+            color_bar.DrawTickLabels = draw_tick_labels_old[i]
+            color_bar.DrawAnnotations = draw_annotations_old[i]
+            color_bar.AddRangeLabels = add_range_labels_old[i]
+            color_bar.Title = title_old[i]
+
+    tikz_code += '\end{tikzpicture}%\n%}%'
+
+    # Write TikZ code to file.
+    with open(tikz_name_full, 'w') as text_file:
+        text_file.write(tikz_code)

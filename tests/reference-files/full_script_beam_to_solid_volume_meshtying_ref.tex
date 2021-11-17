@@ -1,0 +1,55 @@
+%% This file was created with pvutils
+%% Use the following includes in the LaTeX header:
+%\usepackage{tikz}
+%\usepackage{pgfplots}
+%% Optional:
+%\pgfplotsset{compat=1.16}
+%{\normalsize% Sometimes in figure environments a smaller font is selected -> uncomment this to activate the default font size
+\begin{tikzpicture}
+% The -0.2pt here are needed, so the immage is really placed at the origin.
+\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {\includegraphics[scale=0.24]{full_script_beam_to_solid_volume_meshtying.png}};
+\begin{axis}[
+scale only axis,
+scaled x ticks=false,
+scaled y ticks=false,
+at={(4.13173333333cm,3.58986666667cm)},
+tick label style={font=\footnotesize},
+title=$S_{ZZ}$,
+xticklabel=$\pgfmathprintnumber{\tick}$,
+yticklabel=$\pgfmathprintnumber{\tick}$,
+ymin=-0.143233627081,
+ymax=0.120632722974,
+xmin=-0.143233627081,
+xmax=0.120632722974,
+ytick=\empty,
+height=0.135466666667cm,
+width=1.1938cm,
+xtick={-0.143233627081,0.120632722974},
+xtick pos=right,
+xtick align=outside,
+title style={yshift=10pt,},
+]
+\end{axis}
+\begin{axis}[
+scale only axis,
+scaled x ticks=false,
+scaled y ticks=false,
+at={(4.13173333333cm,1.1938cm)},
+tick label style={font=\footnotesize},
+title=$\kappa$,
+xticklabel=$\pgfmathprintnumber{\tick}$,
+yticklabel=$\pgfmathprintnumber{\tick}$,
+ymin=-0.00356449262729,
+ymax=0.00466251107135,
+xmin=-0.00356449262729,
+xmax=0.00466251107135,
+xtick=\empty,
+height=1.1938cm,
+width=0.135466666667cm,
+ytick={-0.00356449262729,0.00466251107135},
+ytick pos=right,
+ytick align=outside,
+]
+\end{axis}
+\end{tikzpicture}%
+%}%
