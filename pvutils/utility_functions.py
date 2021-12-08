@@ -1252,10 +1252,9 @@ ytick align=outside,\n'''.format(
 %{{\\normalsize% Sometimes in figure environments a smaller font is selected -> uncomment this to activate the default font size
 \\begin{{tikzpicture}}
 % The -0.2pt here are needed, so the immage is really placed at the origin.
-\\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{figure_path}{image_name}}}}};\n'''.format(
+\\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{image_path}}}}};\n'''.format(
         scale=72.0 / dpi,
-        image_name=image_name,
-        figure_path=figure_path)
+        image_path=os.path.join(figure_path, image_name))
 
     if color_transfer_functions is not None:
         for i, color_transfer_function in enumerate(color_transfer_functions):
