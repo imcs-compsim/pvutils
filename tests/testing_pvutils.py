@@ -16,6 +16,30 @@ import pvutils
 import paraview.simple as pa
 import vtk
 from vtk.util import numpy_support as vtk_numpy
+import blender
+
+
+def compare_dict(dict_1, dict_2):
+    """
+    Compare two dictionaries.
+    """
+
+    # Compare the data.
+    if not len(dict_1.keys()) == len(dict_2.keys()):
+        print('The two dictionaries do not have the same lenght')
+        return False
+    for key in dict_1.keys():
+        if isinstance(dict_1[key], dict):
+            if not compare_dict(dict_1[key], dict_2[key]):
+                return False
+        else:
+            if not compare_numpy_arrays(
+                    np.array(dict_1[key]),
+                    np.array(dict_2[key])
+                    ):
+                print('Arrays "{}" are not the same'.format(key))
+                return False
+    return True
 
 
 def compare_numpy_arrays(array_1, array_2, tol=1e-12):
@@ -370,7 +394,6 @@ class TestPvutils(unittest.TestCase):
                 TransparentBackground=0,
                 FontScaling='Do not scale fonts'
                 )
-
 
     def test_category_color_bar(self):
         """
@@ -913,6 +936,65 @@ class TestPvutils(unittest.TestCase):
         stress_data_ref = np.loadtxt(os.path.join(testing_reference,
             'solid_von_mises.csv'))
         self.assertTrue(compare_numpy_arrays(stress_data, stress_data_ref))
+
+    def test_blender_surface(self):
+        """
+        Test the export of a surface to blender.
+        """
+
+        # Load the solid file.
+        solid = pvutils.load_file(os.path.join(testing_reference,
+            'elbow', 'structure.pvd'))
+
+        # Unite double nodes.
+        solid = pa.CleantoGrid(Input=solid)
+
+        # Extract the surface of the body.
+        solid_surface = pa.ExtractSurface(Input=solid)
+
+        # Apply the displacement.
+        solid_surface = pvutils.warp(solid_surface)
+
+        # Add a cell group.
+        solid_surface = pa.Calculator(Input=solid_surface)
+        solid_surface.ResultArrayName = 'blender_cell_group'
+        solid_surface.Function = 'element_gid < 25'
+        solid_surface.AttributeType = 'Cell Data'
+
+        # Export to blender.
+        pa.Show(solid_surface)
+        blender.surface_to_blender(solid_surface, 'surface', testing_temp)
+
+        # Load the reference array.
+        execfile(os.path.join(testing_reference, 'blender_surface_ref.py'))
+
+        # Compare to the created array.
+        surface = np.load(
+            os.path.join(testing_temp, 'surface_data.npy')).item()
+        self.assertTrue(compare_dict(locals()['surface_ref'], surface))
+
+    def test_blender_fiber(self):
+        """
+        Test the export of a fiber to blender.
+        """
+
+        # Load the beam file.
+        beam = pvutils.BeamDisplay(os.path.join(testing_reference,
+            'elbow', 'structure-beams.pvd'),
+            merge_poly_lines=True,
+            merge_polylines_max_angle=np.pi / 6.0)
+
+        # Export to blender.
+        blender.fibers_to_blender(
+            beam.beam_merge_poly_line,
+            testing_temp + '/fiber')
+
+        # Load the reference array.
+        execfile(os.path.join(testing_reference, 'blender_fiber_ref.py'))
+
+        # Compare to the created array.
+        fiber = np.load(os.path.join(testing_temp, 'fiber.npy')).item()
+        self.assertTrue(compare_dict(locals()['fiber_ref'], fiber))
 
 
 if __name__ == '__main__':
