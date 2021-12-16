@@ -1011,7 +1011,7 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
         figure_path='',
         number_format='{$\\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\\mathrm{e}{##1}}}]{\\tick}$}'):
     """
-    Export a screenshot and wrap the color bars inside a TikZ axis.
+    Export a screenshot and wrap the color bars inside a TikZ axis. Colorbar configuration is extracted from ParaView's colorbar object.
 
     Args
     ----
@@ -1067,6 +1067,17 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
         rel_pos = color_bar.Position
         min_max = get_min_max_values(color_transfer_function)
 
+        # Assume color bar annotations on top/right of the colorbar
+        xtick_pos = "right"
+        tick_label_style = "above"
+        yshift = 10 # in pt
+        title_style = "above"
+        if color_bar.TextPosition == "Ticks left/bottom, annotations right/top":
+            xtick_pos = "left"
+            tick_label_style = "below"
+            yshift = -25
+            title_style = "below"
+
         # Get the ticks.
         tick = []
         if add_range_labels_old[i] == 1:
@@ -1100,12 +1111,17 @@ xmax={min_max[1]},\n'''.format(
 height={height}cm,
 width={width}cm,
 xtick={{{tick}}},
-xtick pos=right,
+xtick pos={xtick_pos},
 xtick align=outside,
-title style={{yshift=10pt,}},\n'''.format(
+tick label style={tick_label_style},
+title style={{yshift={yshift}pt,{title_style}}},\n'''.format(
                 height=dots_to_tikz(color_bar.ScalarBarThickness),
                 width=rel_to_tikz(color_bar.ScalarBarLength, 0),
-                tick=tick_str
+                tick=tick_str,
+                xtick_pos=xtick_pos,
+                tick_label_style=tick_label_style,
+                yshift=yshift,
+                title_style=title_style
                 )
 
         else:
