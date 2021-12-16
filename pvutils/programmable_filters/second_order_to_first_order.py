@@ -2,7 +2,7 @@
 This converts second order cells to first order cells.
 
 Use with programmable filter in paraview and execute with:
->> execfile('path to file')
+>> exec(open('path to file').read())
 """
 
 # Import paraview moudles.

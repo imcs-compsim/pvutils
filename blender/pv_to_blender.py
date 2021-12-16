@@ -41,7 +41,7 @@ class ThirdOrderCurve(object):
         # Coefficient matrix.
         self.coefficiens = np.zeros([4, 3])
 
-    def GetTangent(self, cell_positions, xi):
+    def get_tangent(self, cell_positions, xi):
         """
         Calculate the tangent.
         """
@@ -174,7 +174,18 @@ def fibers_to_blender(item, file_name, time_steps=None, n_segments=5,
 
     # Get the output data.
     n_fibers = len(vtk_connectivity)
-    n_elements_per_fiber = [len(vtk_connectivity[i]) / n_segments
+
+    def get_n_elements_per_fiber(i):
+        n_connectivity = len(vtk_connectivity[i])
+        if (n_connectivity - 1) % n_segments == 0:
+            return len(vtk_connectivity[i]) // n_segments
+        else:
+            print(n_connectivity)
+            print(n_segments)
+            raise ValueError(
+                'Number of points and number of segments does not match!')
+
+    n_elements_per_fiber = [get_n_elements_per_fiber(i)
         for i in range(n_fibers)]
     n_elements_total = np.sum(n_elements_per_fiber)
     n_points_total = n_elements_total + n_fibers
@@ -233,7 +244,7 @@ def fibers_to_blender(item, file_name, time_steps=None, n_segments=5,
                     coordinates[i_time, temp] = cell_positions[i_local]
                     # The scaling is to match the tangent definition in
                     # blender.
-                    tangents[i_time, temp] = curve.GetTangent(cell_positions,
+                    tangents[i_time, temp] = curve.get_tangent(cell_positions,
                         xi_local) * 2.0 / 3.0
 
         print('Got fiber coordinates at time {}'.format(time))

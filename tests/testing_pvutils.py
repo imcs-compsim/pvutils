@@ -276,11 +276,11 @@ class TestPvutils(unittest.TestCase):
 
         # The solid has some unwanted lines in it. Use the add_id filter to get
         # the cell ids and apply a threshold to the ids.
-        solid_filter = pvutils.programmable_filter(solid, 'add_id')
-        solid_filter = pa.Threshold(Input=solid_filter)
-        pa.UpdatePipeline()
-        solid_filter.Scalars = ['CELLS', 'cell_id']
-        solid_filter.ThresholdRange = [0, 111]
+        solid_filter = pvutils.programmable_filter(solid,
+            pvutils_filter='add_id')
+        solid_filter = pvutils.threshold(solid_filter, 'cell_id', 'CELLS',
+            [0, 111])
+
         pvutils.display(solid_filter, solid_color=[0.0, 0.0, 0.0],
             line_width=2, representation='Outline')
 
@@ -734,7 +734,7 @@ class TestPvutils(unittest.TestCase):
 
         # Apply filter.
         raw_filtered = pvutils.programmable_filter(raw,
-            'second_order_to_first_order')
+            pvutils_filter='second_order_to_first_order')
 
         # Compare the vtk file with the reference file.
         self.assertTrue(compare_data(
@@ -966,11 +966,13 @@ class TestPvutils(unittest.TestCase):
         blender.surface_to_blender(solid_surface, 'surface', testing_temp)
 
         # Load the reference array.
-        execfile(os.path.join(testing_reference, 'blender_surface_ref.py'))
+        exec(open(os.path.join(testing_reference, 'blender_surface_ref.py')
+            ).read())
 
         # Compare to the created array.
         surface = np.load(
-            os.path.join(testing_temp, 'surface_data.npy')).item()
+            os.path.join(testing_temp, 'surface_data.npy'),
+            allow_pickle=True).item()
         self.assertTrue(compare_dict(locals()['surface_ref'], surface))
 
     def test_blender_fiber(self):
@@ -990,10 +992,13 @@ class TestPvutils(unittest.TestCase):
             testing_temp + '/fiber')
 
         # Load the reference array.
-        execfile(os.path.join(testing_reference, 'blender_fiber_ref.py'))
+        exec(open(os.path.join(testing_reference, 'blender_fiber_ref.py')
+            ).read())
 
         # Compare to the created array.
-        fiber = np.load(os.path.join(testing_temp, 'fiber.npy')).item()
+        fiber = np.load(
+            os.path.join(testing_temp, 'fiber.npy'),
+            allow_pickle=True).item()
         self.assertTrue(compare_dict(locals()['fiber_ref'], fiber))
 
 

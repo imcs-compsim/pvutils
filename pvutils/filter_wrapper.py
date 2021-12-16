@@ -8,7 +8,7 @@ Function wrappers for ParaView functions.
 import paraview.simple as pa
 
 # Import pvutils functions.
-import utility_functions
+from . import utility_functions
 
 
 def glyph(data):
