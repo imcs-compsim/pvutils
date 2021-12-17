@@ -1009,7 +1009,8 @@ def set_categorized_colorbar(color_transfer_functions, data_labels):
 
 def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
         figure_path='',
-        number_format='{$\\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\\mathrm{e}{##1}}}]{\\tick}$}'):
+        number_format='{$\\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\\mathrm{e}{##1}}}]{\\tick}$}',
+        add_tikz_code_outside_axis=''):
     """
     Export a screenshot and wrap the color bars inside a TikZ axis. Colorbar configuration is extracted from ParaView's colorbar object.
 
@@ -1028,6 +1029,8 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
         empty.
     number_format: str
         Number format to be used for the TeX ticks.
+    add_tikz_code_outside_axis: str
+        To be inserted into the tikzpicture outside the scope of the axis
     """
 
     def rel_to_dot(val, direction):
@@ -1289,6 +1292,7 @@ ytick align=outside,\n'''.format(
             color_bar.AddRangeLabels = add_range_labels_old[i]
             color_bar.Title = title_old[i]
 
+    tikz_code += add_tikz_code_outside_axis
     tikz_code += '\end{tikzpicture}%\n%}%'
 
     # Write TikZ code to file.
