@@ -64,6 +64,13 @@ def surface_to_blender(item, name, base_dir, time_steps=None,
     constant for all time steps. It is assumed, that the source has already an
     applied warp filter, i.e. the point coordinates are already at the current
     position.
+
+    Note: To convert a volume to its boundary surfaces the following ParaView
+        filters have to be applied:
+            - CleantoGrid -> (optional for BACI output) Removes double nodes,
+                so the volume cells are connected to each other.
+            - ExtractSurface -> Extracts the boundaries of the volume, i.e.,
+                the surfaces.
     """
 
     # If no time steps are given, use all available.
