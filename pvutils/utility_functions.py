@@ -282,15 +282,57 @@ def reset_layout():
     pa.RenameLayout(old_name, new_layout)
 
 
-def programmable_filter(source, name, **kwargs):
+def get_filter_script_path(pvutils_name, path, pvutils_prefix):
     """
-    Apply a programmable filter from this git repository.
+    Return the path to a filter in this repository or return the given path.
+    The arguments are mutually exclusive.
     """
 
-    filter_path = os.path.join(
-        os.path.dirname(__file__),
-        'programmable_filters',
-        '{}.py'.format(name))
+    if (pvutils_name is None and path is None):
+        raise ValueError('Either a filter in the pvutils repository or a path '
+            'have to be given.')
+    elif (pvutils_name is not None and path is not None):
+        raise ValueError('Both, a filter in the pvutils repository and a path '
+            'are given, the arguments are mutually exclusive.')
+
+    if pvutils_name is not None:
+        filter_path = os.path.join(
+            os.path.dirname(__file__),
+            pvutils_prefix,
+            '{}.py'.format(pvutils_name))
+    else:
+        filter_path = path
+
+    if not os.path.isfile(filter_path):
+        raise ValueError('The filter path "{}" does not exist'.format(
+            filter_path))
+    else:
+        return (
+            os.path.abspath(filter_path),
+            os.path.splitext(os.path.basename(filter_path))[0]
+            )
+
+
+def programmable_filter(source, pvutils_filter=None, path=None, **kwargs):
+    """
+    Apply a programmable filter, either from this git repository or from a
+    given path.
+
+    Args
+    ----
+    source: ParaView data
+        The source that the filter is applied to.
+    pvutils_filter: str
+        Name of a programmable filter in this repository.
+    path: str
+        Path to a filter script.
+    """
+
+    if sys.version_info >= (3, 0):
+        raise ValueError('Adapth the signature to ensure keyword arguments')
+
+    filter_path, name = get_filter_script_path(pvutils_filter, path,
+        'programmable_filters')
 
     # Store the kwargs in a variable in the namespace of the ParaView python
     # module. This variable can be retrieved by the programmable filter. The
@@ -310,15 +352,27 @@ def programmable_filter(source, name, **kwargs):
     return pv_filter
 
 
-def programmable_source(name, output_data='vtkUnstructuredGrid', **kwargs):
+def programmable_source(pvutils_filter=None, path=None,
+        output_data='vtkUnstructuredGrid', **kwargs):
     """
-    Apply a programmable source filter from this git repository.
+    Apply a programmable source filter, either from this git repository or from
+    a given path.
+
+    Args
+    ----
+    source: ParaView data
+        The source that the filter is applied to.
+    pvutils_filter: str
+        Name of a programmable source filter in this repository.
+    path: str
+        Path to a filter script.
     """
 
-    filter_path = os.path.join(
-        os.path.dirname(__file__),
-        'programmable_source',
-        '{}.py'.format(name))
+    if sys.version_info >= (3, 0):
+        raise ValueError('Adapth the signature to ensure keyword arguments')
+
+    filter_path, name = get_filter_script_path(pvutils_filter, path,
+        'programmable_source')
 
     # Store the kwargs in a variable in the namespace of the ParaView python
     # module. This variable can be retrieved by the programmable source. The
