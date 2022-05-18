@@ -9,7 +9,7 @@ A set of functions that should simplify the usability of `python` scripts in Par
 ## ParaView version
 
 Unfortunately the ParaView scripting interface changes with minor version.
-The current version of this module is developed with [ParaView 5.6.0](https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.6&type=binary&os=Linux&downloadFile=ParaView-5.6.0-MPI-Linux-64bit.tar.gz).
+The current version of this module is developed with [ParaView 5.10.1](https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-MPI-Linux-Python3.9-x86_64.tar.gz).
 
 
 ## Execute scripts with `pvutils`

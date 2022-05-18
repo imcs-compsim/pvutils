@@ -26,7 +26,7 @@ def compare_dict(dict_1, dict_2):
 
     # Compare the data.
     if not len(dict_1.keys()) == len(dict_2.keys()):
-        print('The two dictionaries do not have the same lenght')
+        print('The two dictionaries do not have the same length')
         return False
     for key in dict_1.keys():
         if isinstance(dict_1[key], dict):
@@ -319,7 +319,7 @@ class TestPvutils(unittest.TestCase):
         color_bar_stress = pa.GetScalarBar(color_function_sigma, view)
         color_bar_stress.Title = '$S_{ZZ}$'
         color_bar_stress.ComponentTitle = ''
-        color_bar_stress.WindowLocation = 'AnyLocation'
+        color_bar_stress.WindowLocation = 'Any Location'
         color_bar_stress.Position = [0.69, 0.6]
         color_bar_stress.ScalarBarLength = 0.2
         pvutils.set_colorbar_font(color_bar_stress, font_size, dpi, font='TeX')
@@ -331,7 +331,7 @@ class TestPvutils(unittest.TestCase):
         color_bar_kappa = pa.GetScalarBar(color_function_kappa, view)
         color_bar_kappa.Title = '$\kappa$'
         color_bar_kappa.ComponentTitle = ''
-        color_bar_kappa.WindowLocation = 'AnyLocation'
+        color_bar_kappa.WindowLocation = 'Any Location'
         color_bar_kappa.Position = [0.69, 0.2]
         color_bar_kappa.ScalarBarLength = 0.2
         pvutils.set_colorbar_font(color_bar_kappa, font_size, dpi, font='TeX')
@@ -429,7 +429,7 @@ class TestPvutils(unittest.TestCase):
             color_bar = pa.GetScalarBar(ctf, view)
             color_bar.Title = 'PID'
             color_bar.ComponentTitle = ''
-            color_bar.WindowLocation = 'AnyLocation'
+            color_bar.WindowLocation = 'Any Location'
             color_bar.Orientation = 'Vertical'
             color_bar.ScalarBarLength = 0.33
             color_bar.ScalarBarThickness = 16
@@ -466,7 +466,7 @@ class TestPvutils(unittest.TestCase):
             color_bar = pa.GetScalarBar(ctf, view)
             color_bar.Title = 'PID'
             color_bar.ComponentTitle = ''
-            color_bar.WindowLocation = 'AnyLocation'
+            color_bar.WindowLocation = 'Any Location'
             color_bar.Orientation = 'Horizontal'
             color_bar.ScalarBarLength = 0.33
             color_bar.ScalarBarThickness = 16
@@ -879,9 +879,8 @@ class TestPvutils(unittest.TestCase):
         raw_file = os.path.join(testing_reference, 'solid_bending_test',
             'solid_bending_test.pvtu')
         raw = pvutils.load_file(raw_file)
-        threshold = pa.Threshold(Input=raw)
-        threshold.Scalars = ['CELLS', 'element_gid']
-        threshold.ThresholdRange = [1.0, 127.0]
+        threshold = pvutils.threshold(raw, 'element_gid', 'CELLS',
+            [1.0, 127.0])
 
         bounding_box = np.array(pvutils.get_bounding_box(threshold))
         bounding_box_ref = [[-5.0, 5.0], [1.0, 8.0], [-0.1, 0.1]]

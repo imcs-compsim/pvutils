@@ -116,15 +116,21 @@ def threshold(data, field='displacement', data_type='POINTS',
 
     # This show and hide is needed, because otherwise the scalar data settings
     # in the threshold will not be applied correctly (ParaView bug).
+    # Todo: check if this fixes it
+    # pa.UpdatePipeline()
     pa.Show(data)
     pa.Hide(data)
 
-    if threshold_range is None:
-        threshold_range = [-1.0e+12, 1.0e+12]
-
     threshold = pa.Threshold(Input=data)
     threshold.Scalars = [data_type, field]
-    threshold.ThresholdRange = threshold_range
+
+    if threshold_range is None:
+        threshold.LowerThreshold = -1.0e+12
+        threshold.UpperThreshold = 1.0e+12
+    else:
+        threshold.LowerThreshold = threshold_range[0]
+        threshold.UpperThreshold = threshold_range[1]
+
     return threshold
 
 
