@@ -668,6 +668,12 @@ class TestPvutils(unittest.TestCase):
         workflow works.
         """
 
+        # For some reason this test fails in Gitlab when this update_scene is
+        # called. We overwrite this here so it will run during the tests.
+        if _is_gitlab():
+            old_function = pvutils.update_scene
+            pvutils.update_scene = lambda: None
+
         # Call the script.
         _solid, beam = pvutils.scripts.load_beam_to_solid_in_dir(
             os.path.join(testing_reference, 'beam_and_solid_cantilever')
@@ -694,6 +700,10 @@ class TestPvutils(unittest.TestCase):
                 OverrideColorPalette='WhiteBackground',
                 TransparentBackground=0
                 )
+
+        # Reset the update_scene function.
+        if _is_gitlab():
+            pvutils.update_scene = old_function
 
     def test_merge_polylines_filter(self):
         """

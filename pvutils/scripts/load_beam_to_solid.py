@@ -34,6 +34,7 @@ def load_beam_to_solid(solid_path, beam_path):
     view = pvutils.get_view()
     view.Update()
     view.ResetCamera()
+
     pvutils.update_scene()
 
     # Return the created objects.

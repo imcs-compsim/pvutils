@@ -16,6 +16,9 @@ variables:
     # Flag that GitLab testing is active
     GITLAB_TESTING: 1
 
+    # Path to ParaView
+    PARAVIEW_PATH: "/imcs/public/compsim/opt/ParaView-5.10.1-MPI-Linux-Python3.9-x86_64"
+
 
 #------------------------------------------------------------------------------
 # Templates for the testing jobs.
@@ -43,16 +46,14 @@ variables:
 # Actual jobs for testing.
 #------------------------------------------------------------------------------
 
-5.6.0-pvpython:
+5.10.1-pvpython:
     << : *pvutils-testing
     variables:
-        PARAVIEW_PATH: "/imcs/public/compsim/opt/ParaView-5.6.0-MPI-Linux-64bit"
         GITLAB_TESTING_COMMAND: "${PARAVIEW_PATH}/bin/pvpython "
 
-5.6.0-system-python:
+5.10.1-system-python:
     << : *pvutils-testing
     variables:
-        PARAVIEW_PATH: "/imcs/public/compsim/opt/ParaView-5.6.0-MPI-Linux-64bit"
-        GITLAB_TESTING_COMMAND: "python2 "
-        APPEND_TO_PYTHONPATH: "${PARAVIEW_PATH}/lib/python2.7/site-packages"
+        GITLAB_TESTING_COMMAND: "/hdd/gitlab-runner/lib/spack/opt/spack/linux-ubuntu20.04-cascadelake/gcc-9.4.0/python-3.9.12-knt7uewenwz43ktwmtsn6zavs7u2i7qx/bin/python3 "
+        APPEND_TO_PYTHONPATH: "${PARAVIEW_PATH}/lib/python3.9/site-packages"
         APPEND_TO_LD_LIBRARY_PATH: "${PARAVIEW_PATH}/lib"
