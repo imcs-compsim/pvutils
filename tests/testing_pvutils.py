@@ -322,7 +322,7 @@ class TestPvutils(unittest.TestCase):
         color_bar_stress.WindowLocation = 'Any Location'
         color_bar_stress.Position = [0.69, 0.6]
         color_bar_stress.ScalarBarLength = 0.2
-        pvutils.set_colorbar_font(color_bar_stress, font_size, dpi, font='TeX')
+        pvutils.set_colorbar_font(color_bar_stress, font_size, dpi)
 
         # Set and place the color map for the beam.
         display = pa.GetDisplayProperties(beam, view=view)
@@ -334,7 +334,7 @@ class TestPvutils(unittest.TestCase):
         color_bar_kappa.WindowLocation = 'Any Location'
         color_bar_kappa.Position = [0.69, 0.2]
         color_bar_kappa.ScalarBarLength = 0.2
-        pvutils.set_colorbar_font(color_bar_kappa, font_size, dpi, font='TeX')
+        pvutils.set_colorbar_font(color_bar_kappa, font_size, dpi)
 
         if not _is_gitlab():
 

@@ -641,9 +641,9 @@ def is_pvpython():
     return not sys.argv[0] == ''
 
 
-def set_colorbar_font(color_bar, font_size, dpi, font=None):
+def set_colorbar_font(color_bar, font_size, dpi):
     """
-    Set the font options for the a color bar.
+    Set the font options for color_bar.
     This only makes sense if the screenshots are exported with the option:
         FontScaling='Do not scale fonts'
     """
@@ -654,15 +654,6 @@ def set_colorbar_font(color_bar, font_size, dpi, font=None):
 
     color_bar.TitleFontSize = font_size_pixel[0]
     color_bar.LabelFontSize = font_size_pixel[1]
-
-    if font == 'TeX':
-        dirname = os.path.dirname(__file__)
-        font_file = os.path.join(dirname, '..', 'utilities',
-            'latin-modern-regular.ttf')
-        color_bar.TitleFontFamily = 'File'
-        color_bar.TitleFontFile = font_file
-        color_bar.LabelFontFamily = 'File'
-        color_bar.LabelFontFile = font_file
 
 
 def get_available_timesteps():
