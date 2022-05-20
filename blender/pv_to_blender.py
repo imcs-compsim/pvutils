@@ -180,8 +180,6 @@ def fibers_to_blender(item, file_name, time_steps=None, n_segments=5,
         if (n_connectivity - 1) % n_segments == 0:
             return len(vtk_connectivity[i]) // n_segments
         else:
-            print(n_connectivity)
-            print(n_segments)
             raise ValueError(
                 'Number of points and number of segments does not match!')
 
