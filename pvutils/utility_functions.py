@@ -689,6 +689,9 @@ def set_timestep(time, fail_on_not_available_time=True):
         will be thrown.
     """
 
+    # TODO: check if this function also works:
+    # pa.UpdatePipeline(time)
+
     if fail_on_not_available_time:
         # Check that the given time is a time step in the current state.
         times = get_available_timesteps()
