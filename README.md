@@ -26,7 +26,6 @@ If the script uses `pvutils` the path to the root `pvutils` directory has to be 
 ## Testing
 
 A change in the repository also starts a pipeline in GitLab.
-Tests that require a graphical output (e.g. everything that writes an image) can not be performed via GitLab, therefore a local run of `tests/test_local.sh` should be performed before EVERY commit.
 
 The unit tests are defined in `tests/testing.pvutils.py`.
 
