@@ -4,7 +4,7 @@ nodes from that cell (nodal points for beams). It also keeps all point data
 values.
 
 Use with programmable filter in paraview and execute with:
->> execfile('path to file')
+>> exec(open('path to file').read())
 """
 
 # Import paraview moudles.

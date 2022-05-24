@@ -26,7 +26,7 @@ def compare_dict(dict_1, dict_2):
 
     # Compare the data.
     if not len(dict_1.keys()) == len(dict_2.keys()):
-        print('The two dictionaries do not have the same lenght')
+        print('The two dictionaries do not have the same length')
         return False
     for key in dict_1.keys():
         if isinstance(dict_1[key], dict):
@@ -154,14 +154,6 @@ def _get_file_hash(path):
     return hasher.hexdigest()
 
 
-def _is_gitlab():
-    """Check if the environment variable for gitlab testing is set."""
-    if os.getenv('GITLAB_TESTING', '0') == '1':
-        return True
-    else:
-        return False
-
-
 class TestPvutils(unittest.TestCase):
     """Test various stuff from the pvutils module."""
 
@@ -188,10 +180,7 @@ class TestPvutils(unittest.TestCase):
     def _save_screenshot_and_compare(self, view, index=None, **kwargs):
         """
         Save the view to a screenshot and compare it with the reference image.
-        The reference image is stored in the 'reference=files' directory. When
-        the testing is performed via GitLab, this part is skipped, as currently
-        we can not open a X window and therefore create screenshots with the
-        GitLab runner.
+        The reference image is stored in the 'reference=files' directory.
 
         Args
         ----
@@ -204,25 +193,23 @@ class TestPvutils(unittest.TestCase):
             Will be passed to pa.SaveScreenshot.
         """
 
-        if not _is_gitlab():
+        from matplotlib.image import imread
 
-            from matplotlib.image import imread
+        # Additional string for multiple images in one test.
+        if index is not None:
+            index_str = '{}_'.format(index)
+        else:
+            index_str = ''
 
-            # Additional string for multiple images in one test.
-            if index is not None:
-                index_str = '{}_'.format(index)
-            else:
-                index_str = ''
+        # Export screenshot.
+        screenshot_path = os.path.join(testing_temp,
+            '{}_{}temp.png'.format(self._get_test_name(), index_str))
+        pa.SaveScreenshot(screenshot_path, view, **kwargs)
 
-            # Export screenshot.
-            screenshot_path = os.path.join(testing_temp,
-                '{}_{}temp.png'.format(self._get_test_name(), index_str))
-            pa.SaveScreenshot(screenshot_path, view, **kwargs)
-
-            # Compare the created image with the reference image.
-            reference_path = os.path.join(testing_reference,
-                 '{}_{}ref.png'.format(self._get_test_name(), index_str))
-            self._compare_images(screenshot_path, reference_path)
+        # Compare the created image with the reference image.
+        reference_path = os.path.join(testing_reference,
+             '{}_{}ref.png'.format(self._get_test_name(), index_str))
+        self._compare_images(screenshot_path, reference_path)
 
     def _compare_images(self, path_1, path_2):
         """
@@ -276,11 +263,11 @@ class TestPvutils(unittest.TestCase):
 
         # The solid has some unwanted lines in it. Use the add_id filter to get
         # the cell ids and apply a threshold to the ids.
-        solid_filter = pvutils.programmable_filter(solid, 'add_id')
-        solid_filter = pa.Threshold(Input=solid_filter)
-        pa.UpdatePipeline()
-        solid_filter.Scalars = ['CELLS', 'cell_id']
-        solid_filter.ThresholdRange = [0, 111]
+        solid_filter = pvutils.programmable_filter(solid,
+            pvutils_filter='add_id')
+        solid_filter = pvutils.threshold(solid_filter, 'cell_id', 'CELLS',
+            [0, 111])
+
         pvutils.display(solid_filter, solid_color=[0.0, 0.0, 0.0],
             line_width=2, representation='Outline')
 
@@ -319,10 +306,10 @@ class TestPvutils(unittest.TestCase):
         color_bar_stress = pa.GetScalarBar(color_function_sigma, view)
         color_bar_stress.Title = '$S_{ZZ}$'
         color_bar_stress.ComponentTitle = ''
-        color_bar_stress.WindowLocation = 'AnyLocation'
+        color_bar_stress.WindowLocation = 'Any Location'
         color_bar_stress.Position = [0.69, 0.6]
         color_bar_stress.ScalarBarLength = 0.2
-        pvutils.set_colorbar_font(color_bar_stress, font_size, dpi, font='TeX')
+        pvutils.set_colorbar_font(color_bar_stress, font_size, dpi)
 
         # Set and place the color map for the beam.
         display = pa.GetDisplayProperties(beam, view=view)
@@ -331,69 +318,67 @@ class TestPvutils(unittest.TestCase):
         color_bar_kappa = pa.GetScalarBar(color_function_kappa, view)
         color_bar_kappa.Title = '$\kappa$'
         color_bar_kappa.ComponentTitle = ''
-        color_bar_kappa.WindowLocation = 'AnyLocation'
+        color_bar_kappa.WindowLocation = 'Any Location'
         color_bar_kappa.Position = [0.69, 0.2]
         color_bar_kappa.ScalarBarLength = 0.2
-        pvutils.set_colorbar_font(color_bar_kappa, font_size, dpi, font='TeX')
+        pvutils.set_colorbar_font(color_bar_kappa, font_size, dpi)
 
-        if not _is_gitlab():
-
-            # Compare the current view with the reference image.
-            self._save_screenshot_and_compare(view,
-                    index=1,
-                    ImageResolution=size_pixel,
-                    OverrideColorPalette='WhiteBackground',
-                    TransparentBackground=0,
-                    FontScaling='Do not scale fonts'
-                    )
-
-            # For the TikZ images, set one color bar to be horizontal, so both
-            # cases are tested. Change the placement of the color bar, so
-            # ParaView updates the position (this is not done by just changing
-            # the orientation.
-            color_bar_stress.Orientation = 'Horizontal'
-            color_bar_stress.Position = [0.7, 0.6]
-            color_bar_stress.Position = [0.69, 0.6]
-
-            # Create the TikZ wrapped image.
-            base_path = os.path.join(testing_temp, self._get_test_name())
-            pvutils.export_to_tikz(
-                os.path.join(testing_temp, self._get_test_name()),
-                dpi=dpi,
-                color_transfer_functions=[
-                    color_function_sigma,
-                    color_function_kappa
-                    ],
-                number_format='$\\pgfmathprintnumber{\\tick}$')
-
-            # Compare the with the reference image.
-            self._compare_images(base_path + '.png',
-                os.path.join(
-                    testing_reference, self._get_test_name() + '_2_ref.png'))
-
-            # Compare the created TikZ code.
-            with open(base_path + '.tex', 'r') as tikz_file:
-                tikz_code = tikz_file.read()
-            with open(os.path.join(
-                    testing_reference, self._get_test_name() + '_ref.tex'),
-                    'r') as tikz_file:
-                tikz_code_ref = tikz_file.read()
-            self.assertTrue(tikz_code == tikz_code_ref)
-
-            # Reset layout and only show the solid.
-            pvutils.reset_layout()
-            pvutils.display(solid_cut, representation='Surface With Edges',
-                        line_color=[1, 1, 1])
-            view = pvutils.get_view()
-            view.ViewSize = size_pixel
-
-            self._save_screenshot_and_compare(view,
-                index=3,
+        # Compare the current view with the reference image.
+        self._save_screenshot_and_compare(view,
+                index=1,
                 ImageResolution=size_pixel,
                 OverrideColorPalette='WhiteBackground',
                 TransparentBackground=0,
                 FontScaling='Do not scale fonts'
                 )
+
+        # For the TikZ images, set one color bar to be horizontal, so both
+        # cases are tested. Change the placement of the color bar, so
+        # ParaView updates the position (this is not done by just changing
+        # the orientation.
+        color_bar_stress.Orientation = 'Horizontal'
+        color_bar_stress.Position = [0.7, 0.6]
+        color_bar_stress.Position = [0.69, 0.6]
+
+        # Create the TikZ wrapped image.
+        base_path = os.path.join(testing_temp, self._get_test_name())
+        pvutils.export_to_tikz(
+            os.path.join(testing_temp, self._get_test_name()),
+            dpi=dpi,
+            color_transfer_functions=[
+                color_function_sigma,
+                color_function_kappa
+                ],
+            number_format='$\\pgfmathprintnumber{\\tick}$')
+
+        # Compare the with the reference image.
+        self._compare_images(base_path + '.png',
+            os.path.join(
+                testing_reference, self._get_test_name() + '_2_ref.png'))
+
+        # Compare the created TikZ code.
+        with open(base_path + '.tex', 'r') as tikz_file:
+            tikz_code = tikz_file.read()
+        with open(os.path.join(
+                testing_reference, self._get_test_name() + '_ref.tex'),
+                'r') as tikz_file:
+            tikz_code_ref = tikz_file.read()
+        self.assertTrue(tikz_code == tikz_code_ref)
+
+        # Reset layout and only show the solid.
+        pvutils.reset_layout()
+        pvutils.display(solid_cut, representation='Surface With Edges',
+                    line_color=[1, 1, 1])
+        view = pvutils.get_view()
+        view.ViewSize = size_pixel
+
+        self._save_screenshot_and_compare(view,
+            index=3,
+            ImageResolution=size_pixel,
+            OverrideColorPalette='WhiteBackground',
+            TransparentBackground=0,
+            FontScaling='Do not scale fonts'
+            )
 
     def test_category_color_bar(self):
         """
@@ -424,79 +409,77 @@ class TestPvutils(unittest.TestCase):
         view.CameraParallelProjection = 0
         view.InteractionMode = '3D'
 
-        if not _is_gitlab():
+        color_bar = pa.GetScalarBar(ctf, view)
+        color_bar.Title = 'PID'
+        color_bar.ComponentTitle = ''
+        color_bar.WindowLocation = 'Any Location'
+        color_bar.Orientation = 'Vertical'
+        color_bar.ScalarBarLength = 0.33
+        color_bar.ScalarBarThickness = 16
+        color_bar.Position = [0.7425, 0.25]
+        color_bar.UseCustomLabels = 0
+        color_bar.AddRangeLabels = 1
+        color_bar.DrawAnnotations = 1
+        color_bar.AddRangeAnnotations = 0
+        color_bar.AutomaticAnnotations = 0
+        color_bar.DrawNanAnnotation = 0
+        color_bar.DrawTickLabels = 1
 
-            color_bar = pa.GetScalarBar(ctf, view)
-            color_bar.Title = 'PID'
-            color_bar.ComponentTitle = ''
-            color_bar.WindowLocation = 'AnyLocation'
-            color_bar.Orientation = 'Vertical'
-            color_bar.ScalarBarLength = 0.33
-            color_bar.ScalarBarThickness = 16
-            color_bar.Position = [0.7425, 0.25]
-            color_bar.UseCustomLabels = 0
-            color_bar.AddRangeLabels = 1
-            color_bar.DrawAnnotations = 1
-            color_bar.AddRangeAnnotations = 0
-            color_bar.AutomaticAnnotations = 0
-            color_bar.DrawNanAnnotation = 0
-            color_bar.DrawTickLabels = 1
+        base_path = os.path.join(testing_temp, self._get_test_name())
+        pvutils.export_to_tikz(
+            os.path.join(base_path + '_1'),
+            dpi=300,
+            color_transfer_functions=[ctf])
 
-            base_path = os.path.join(testing_temp, self._get_test_name())
-            pvutils.export_to_tikz(
-                os.path.join(base_path + '_1'),
-                dpi=300,
-                color_transfer_functions=[ctf])
+        # Compare the with the reference image.
+        self._compare_images(base_path + '_1.png',
+            os.path.join(
+                testing_reference, self._get_test_name() + '_1_ref.png'))
 
-            # Compare the with the reference image.
-            self._compare_images(base_path + '_1.png',
-                os.path.join(
-                    testing_reference, self._get_test_name() + '_1_ref.png'))
+        # Compare the created TikZ code.
+        with open(base_path + '_1.tex', 'r') as tikz_file:
+            tikz_code = tikz_file.read()
+        with open(os.path.join(
+                testing_reference, self._get_test_name() + '_1_ref.tex'),
+                'r') as tikz_file:
+            tikz_code_ref = tikz_file.read()
+        self.assertTrue(tikz_code == tikz_code_ref)
 
-            # Compare the created TikZ code.
-            with open(base_path + '_1.tex', 'r') as tikz_file:
-                tikz_code = tikz_file.read()
-            with open(os.path.join(
-                    testing_reference, self._get_test_name() + '_1_ref.tex'),
-                    'r') as tikz_file:
-                tikz_code_ref = tikz_file.read()
-            self.assertTrue(tikz_code == tikz_code_ref)
+        ctf = pa.GetColorTransferFunction('element_owner')
+        color_bar = pa.GetScalarBar(ctf, view)
+        color_bar.Title = 'PID'
+        color_bar.ComponentTitle = ''
+        color_bar.WindowLocation = 'Any Location'
+        color_bar.Orientation = 'Horizontal'
+        color_bar.ScalarBarLength = 0.33
+        color_bar.ScalarBarThickness = 16
+        color_bar.Position = [0.5, 0.25]
+        color_bar.UseCustomLabels = 0
+        color_bar.AddRangeLabels = 1
+        color_bar.DrawAnnotations = 1
+        color_bar.AddRangeAnnotations = 0
+        color_bar.AutomaticAnnotations = 0
+        color_bar.DrawNanAnnotation = 0
+        color_bar.DrawTickLabels = 1
 
-            ctf = pa.GetColorTransferFunction('element_owner')
-            color_bar = pa.GetScalarBar(ctf, view)
-            color_bar.Title = 'PID'
-            color_bar.ComponentTitle = ''
-            color_bar.WindowLocation = 'AnyLocation'
-            color_bar.Orientation = 'Horizontal'
-            color_bar.ScalarBarLength = 0.33
-            color_bar.ScalarBarThickness = 16
-            color_bar.Position = [0.5, 0.25]
-            color_bar.UseCustomLabels = 0
-            color_bar.AddRangeLabels = 1
-            color_bar.DrawAnnotations = 1
-            color_bar.AddRangeAnnotations = 0
-            color_bar.AutomaticAnnotations = 0
-            color_bar.DrawNanAnnotation = 0
-            color_bar.DrawTickLabels = 1
+        pvutils.export_to_tikz(
+            os.path.join(base_path + '_2'),
+            dpi=300,
+            color_transfer_functions=[ctf])
 
-            pvutils.export_to_tikz(
-                os.path.join(base_path + '_2'),
-                dpi=300,
-                color_transfer_functions=[ctf])
+        # Compare the with the reference image.
+        self._compare_images(base_path + '_2.png',
+            os.path.join(
+                testing_reference, self._get_test_name() + '_2_ref.png'))
 
-            # Compare the with the reference image.
-            self._compare_images(base_path + '_2.png',
-                os.path.join(
-                    testing_reference, self._get_test_name() + '_2_ref.png'))
-
-            # Compare the created TikZ code.
-            with open(base_path + '_2.tex', 'r') as tikz_file:
-                tikz_code = tikz_file.read()
-            with open(os.path.join(
-                    testing_reference, self._get_test_name() + '_2_ref.tex'),
-                    'r') as tikz_file:
-                tikz_code_ref = tikz_file.read()
-            self.assertTrue(tikz_code == tikz_code_ref)
+        # Compare the created TikZ code.
+        with open(base_path + '_2.tex', 'r') as tikz_file:
+            tikz_code = tikz_file.read()
+        with open(os.path.join(
+                testing_reference, self._get_test_name() + '_2_ref.tex'),
+                'r') as tikz_file:
+            tikz_code_ref = tikz_file.read()
+        self.assertTrue(tikz_code == tikz_code_ref)
 
     def test_time_step(self):
         """
@@ -517,40 +500,37 @@ class TestPvutils(unittest.TestCase):
             )
         self.assertTrue(time_step_error < 1e-10)
 
-        # The rest will only be tested locally since it requires an X window
-        # (for the temporal time filter).
-        if not _is_gitlab():
-            # Apply filters to the meshes and display them. The temporal
-            # interpolator is applied, so both meshes have the same
-            # displacement (interpolated).
-            three_steps = pvutils.temporal_interpolator(three_steps)
-            three_steps = pvutils.transform(three_steps, translate=[0, 0, 2])
-            three_steps = pvutils.warp(three_steps)
-            pvutils.display(three_steps)
-            four_steps = pvutils.warp(four_steps)
-            pvutils.display(four_steps)
+        # Apply filters to the meshes and display them. The temporal
+        # interpolator is applied, so both meshes have the same
+        # displacement (interpolated).
+        three_steps = pvutils.temporal_interpolator(three_steps)
+        three_steps = pvutils.transform(three_steps, translate=[0, 0, 2])
+        three_steps = pvutils.warp(three_steps)
+        pvutils.display(three_steps)
+        four_steps = pvutils.warp(four_steps)
+        pvutils.display(four_steps)
 
-            # Set the time. The three step mesh will be interpolated, as it
-            # does not have a discrete time step here.
-            pvutils.set_timestep(0.9, fail_on_not_available_time=True)
+        # Set the time. The three step mesh will be interpolated, as it
+        # does not have a discrete time step here.
+        pvutils.set_timestep(0.9, fail_on_not_available_time=True)
 
-            # Set the view.
-            view = pa.GetActiveViewOrCreate('RenderView')
-            view.CameraPosition = [11.429, 2.4, 1]
-            view.CameraFocalPoint = [0, 2.4, 1]
-            view.CameraViewUp = [0, 0, 1]
-            view.CameraViewAngle = 30
-            view.CameraParallelScale = 2.95804
-            view.OrientationAxesVisibility = 0
-            view.CameraParallelProjection = 0
-            view.InteractionMode = '2D'
-            view.ViewSize = [400, 400]
+        # Set the view.
+        view = pa.GetActiveViewOrCreate('RenderView')
+        view.CameraPosition = [11.429, 2.4, 1]
+        view.CameraFocalPoint = [0, 2.4, 1]
+        view.CameraViewUp = [0, 0, 1]
+        view.CameraViewAngle = 30
+        view.CameraParallelScale = 2.95804
+        view.OrientationAxesVisibility = 0
+        view.CameraParallelProjection = 0
+        view.InteractionMode = '2D'
+        view.ViewSize = [400, 400]
 
-            # Compare the current view with the reference image.
-            self._save_screenshot_and_compare(view,
-                    OverrideColorPalette='WhiteBackground',
-                    TransparentBackground=0
-                    )
+        # Compare the current view with the reference image.
+        self._save_screenshot_and_compare(view,
+                OverrideColorPalette='WhiteBackground',
+                TransparentBackground=0
+                )
 
     def test_set_color_range(self):
         """
@@ -734,7 +714,7 @@ class TestPvutils(unittest.TestCase):
 
         # Apply filter.
         raw_filtered = pvutils.programmable_filter(raw,
-            'second_order_to_first_order')
+            pvutils_filter='second_order_to_first_order')
 
         # Compare the vtk file with the reference file.
         self.assertTrue(compare_data(
@@ -879,9 +859,8 @@ class TestPvutils(unittest.TestCase):
         raw_file = os.path.join(testing_reference, 'solid_bending_test',
             'solid_bending_test.pvtu')
         raw = pvutils.load_file(raw_file)
-        threshold = pa.Threshold(Input=raw)
-        threshold.Scalars = ['CELLS', 'element_gid']
-        threshold.ThresholdRange = [1.0, 127.0]
+        threshold = pvutils.threshold(raw, 'element_gid', 'CELLS',
+            [1.0, 127.0])
 
         bounding_box = np.array(pvutils.get_bounding_box(threshold))
         bounding_box_ref = [[-5.0, 5.0], [1.0, 8.0], [-0.1, 0.1]]
@@ -966,11 +945,13 @@ class TestPvutils(unittest.TestCase):
         blender.surface_to_blender(solid_surface, 'surface', testing_temp)
 
         # Load the reference array.
-        execfile(os.path.join(testing_reference, 'blender_surface_ref.py'))
+        exec(open(os.path.join(testing_reference, 'blender_surface_ref.py')
+            ).read())
 
         # Compare to the created array.
         surface = np.load(
-            os.path.join(testing_temp, 'surface_data.npy')).item()
+            os.path.join(testing_temp, 'surface_data.npy'),
+            allow_pickle=True).item()
         self.assertTrue(compare_dict(locals()['surface_ref'], surface))
 
     def test_blender_fiber(self):
@@ -990,10 +971,13 @@ class TestPvutils(unittest.TestCase):
             testing_temp + '/fiber')
 
         # Load the reference array.
-        execfile(os.path.join(testing_reference, 'blender_fiber_ref.py'))
+        exec(open(os.path.join(testing_reference, 'blender_fiber_ref.py')
+            ).read())
 
         # Compare to the created array.
-        fiber = np.load(os.path.join(testing_temp, 'fiber.npy')).item()
+        fiber = np.load(
+            os.path.join(testing_temp, 'fiber.npy'),
+            allow_pickle=True).item()
         self.assertTrue(compare_dict(locals()['fiber_ref'], fiber))
 
 

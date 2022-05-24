@@ -59,4 +59,4 @@ from .utility_classes import (
     )
 
 # Load scripts.
-import scripts
+from . import scripts

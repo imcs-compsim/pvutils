@@ -9,7 +9,7 @@ A set of functions that should simplify the usability of `python` scripts in Par
 ## ParaView version
 
 Unfortunately the ParaView scripting interface changes with minor version.
-The current version of this module is developed with [ParaView 5.6.0](https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.6&type=binary&os=Linux&downloadFile=ParaView-5.6.0-MPI-Linux-64bit.tar.gz).
+The current version of this module is developed with [ParaView 5.10.1](https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-MPI-Linux-Python3.9-x86_64.tar.gz).
 
 
 ## Execute scripts with `pvutils`
@@ -26,7 +26,6 @@ If the script uses `pvutils` the path to the root `pvutils` directory has to be 
 ## Testing
 
 A change in the repository also starts a pipeline in GitLab.
-Tests that require a graphical output (e.g. everything that writes an image) can not be performed via GitLab, therefore a local run of `tests/test_local.sh` should be performed before EVERY commit.
 
 The unit tests are defined in `tests/testing.pvutils.py`.
 

@@ -7,8 +7,8 @@ Load a beam into ParaView.
 import os
 
 # Local imports.
-import utility_functions
-import filter_wrapper
+from . import utility_functions
+from . import filter_wrapper
 
 # ParaView imports.
 import paraview.simple as pa
@@ -58,7 +58,7 @@ class BeamDisplay(object):
             self.beam_clean_to_grid = pa.CleantoGrid(
                 Input=self.beam_cell_to_point)
             self.beam_merge_poly_line = utility_functions.programmable_filter(
-                self.beam_clean_to_grid, 'merge_polylines',
+                self.beam_clean_to_grid, pvutils_filter='merge_polylines',
                 max_angle=merge_polylines_max_angle)
             next_input = self.beam_merge_poly_line
         else:
@@ -87,7 +87,8 @@ class BeamDisplay(object):
         # Display the nodes as spheres
         if nodes:
             self.endpoints = utility_functions.programmable_filter(
-                self.beam_cell_to_point, 'get_polyline_endpoints')
+                self.beam_cell_to_point,
+                pvutils_filter='get_polyline_endpoints')
 
             self.nodes = filter_wrapper.glyph(self.endpoints)
             self.nodes.GlyphType = 'Sphere'

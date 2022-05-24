@@ -14,10 +14,15 @@ ${PARAVIEW_PATH}/bin/pvpython testing_pvutils.py
 
 # Test with system python.
 echo ""
-echo "Test pvutils with system python"
-export PYTHONPATH="${ORIGINAL_PYTHONPATH}:${PARAVIEW_PATH}/lib/python2.7/site-packages"
-export LD_LIBRARY_PATH="${ORIGINAL_LD_LIBRARY_PATH}:${PARAVIEW_PATH}/lib"
-python2 testing_pvutils.py
+if [ -z ${PYTHON_EXE+x} ];
+then
+    echo "Python executable is not set, tests will be skipped"
+else
+    echo "Test pvutils with system python"
+    export PYTHONPATH="${ORIGINAL_PYTHONPATH}:${PARAVIEW_PATH}/lib/python3.9/site-packages"
+    export LD_LIBRARY_PATH="${ORIGINAL_LD_LIBRARY_PATH}:${PARAVIEW_PATH}/lib"
+    ${PYTHON_EXE} testing_pvutils.py
+fi
 
 # Test with paraview. This will open a GUI that has to be closed by the user.
 echo ""

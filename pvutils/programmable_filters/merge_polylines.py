@@ -4,7 +4,7 @@ the connectivity of the nodes has to be resolved (CleanToGrid filter). Also it
 is advisable to use the cell to point data filter before applying this one.
 
 Use with programmable filter in paraview and execute with:
->> execfile('path to file')
+>> exec(open('path to file').read())
 """
 
 # Import paraview moudles.

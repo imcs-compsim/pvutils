@@ -8,12 +8,14 @@ Functions to simplify the use of scripts in ParaView.
 import os
 import sys
 import numpy as np
+from vtk.util import numpy_support as VN
 
 # Import ParaView module.
 import paraview
 import paraview.simple as pa
-import pvutils
-from vtk.util import numpy_support as VN
+
+# Import pvutils.
+from . import filter_wrapper
 
 
 # Inch to centimeter conversion.
@@ -313,7 +315,7 @@ def get_filter_script_path(pvutils_name, path, pvutils_prefix):
             )
 
 
-def programmable_filter(source, pvutils_filter=None, path=None, **kwargs):
+def programmable_filter(source, *, pvutils_filter=None, path=None, **kwargs):
     """
     Apply a programmable filter, either from this git repository or from a
     given path.
@@ -327,9 +329,6 @@ def programmable_filter(source, pvutils_filter=None, path=None, **kwargs):
     path: str
         Path to a filter script.
     """
-
-    if sys.version_info >= (3, 0):
-        raise ValueError('Adapth the signature to ensure keyword arguments')
 
     filter_path, name = get_filter_script_path(pvutils_filter, path,
         'programmable_filters')
@@ -347,12 +346,12 @@ def programmable_filter(source, pvutils_filter=None, path=None, **kwargs):
     pv_filter = pa.ProgrammableFilter(Input=source)
     pv_filter.Script = (
         'kwargs_id = {}\n'.format(kwargs_id) +
-        'execfile("{}")'.format(filter_path))
+        'exec(open("{}").read())'.format(filter_path))
     pa.RenameSource(name, pv_filter)
     return pv_filter
 
 
-def programmable_source(pvutils_filter=None, path=None,
+def programmable_source(*, pvutils_filter=None, path=None,
         output_data='vtkUnstructuredGrid', **kwargs):
     """
     Apply a programmable source filter, either from this git repository or from
@@ -360,16 +359,11 @@ def programmable_source(pvutils_filter=None, path=None,
 
     Args
     ----
-    source: ParaView data
-        The source that the filter is applied to.
     pvutils_filter: str
         Name of a programmable source filter in this repository.
     path: str
         Path to a filter script.
     """
-
-    if sys.version_info >= (3, 0):
-        raise ValueError('Adapth the signature to ensure keyword arguments')
 
     filter_path, name = get_filter_script_path(pvutils_filter, path,
         'programmable_source')
@@ -388,7 +382,7 @@ def programmable_source(pvutils_filter=None, path=None,
     pv_source.OutputDataSetType = output_data
     pv_source.Script = (
         'kwargs_id = {}\n'.format(kwargs_id) +
-        'execfile("{}")'.format(filter_path)
+        'exec(open("{}").read())'.format(filter_path)
         )
     pa.RenameSource(name, pv_source)
     return pv_source
@@ -647,9 +641,9 @@ def is_pvpython():
     return not sys.argv[0] == ''
 
 
-def set_colorbar_font(color_bar, font_size, dpi, font=None):
+def set_colorbar_font(color_bar, font_size, dpi):
     """
-    Set the font options for the a color bar.
+    Set the font options for color_bar.
     This only makes sense if the screenshots are exported with the option:
         FontScaling='Do not scale fonts'
     """
@@ -660,15 +654,6 @@ def set_colorbar_font(color_bar, font_size, dpi, font=None):
 
     color_bar.TitleFontSize = font_size_pixel[0]
     color_bar.LabelFontSize = font_size_pixel[1]
-
-    if font == 'TeX':
-        dirname = os.path.dirname(__file__)
-        font_file = os.path.join(dirname, '..', 'utilities',
-            'latin-modern-regular.ttf')
-        color_bar.TitleFontFamily = 'File'
-        color_bar.TitleFontFile = font_file
-        color_bar.LabelFontFamily = 'File'
-        color_bar.LabelFontFile = font_file
 
 
 def get_available_timesteps():
@@ -703,6 +688,9 @@ def set_timestep(time, fail_on_not_available_time=True):
         If this is true and the given time does not exist in ParaView an error
         will be thrown.
     """
+
+    # TODO: check if this function also works:
+    # pa.UpdatePipeline(time)
 
     if fail_on_not_available_time:
         # Check that the given time is a time step in the current state.
@@ -857,10 +845,11 @@ def add_coordinate_axes(origin=None, basis=None, scale=1.0, resolution=20,
             [0, 1, 0],
             [0, 0, 1]
             ]
-    sorce = programmable_source('axes', origin=origin, basis=basis)
+    sorce = programmable_source(pvutils_filter='axes', origin=origin,
+        basis=basis)
     base_glyphs = []
     for i, base in enumerate(basis):
-        base_glyph = pvutils.glyph(sorce)
+        base_glyph = filter_wrapper.glyph(sorce)
         base_glyph.GlyphType = 'Arrow'
         base_glyph.OrientationArray = ['POINTS', 'base_{}'.format(i + 1)]
         base_glyph.ScaleArray = ['POINTS', 'base_{}'.format(i + 1)]
@@ -1024,24 +1013,8 @@ def set_categorized_colorbar(color_transfer_functions, data_labels):
     Set a categorized colorbar.
     """
 
-    # When python3 is used this construct will be obsolete.
-    if sys.version_info >= (3, 0):
-        raise ValueError('The color bar in set_categorized_colorbar should be '
-            + 'adapted to python3.')
-
-    # Color scheme (from python3):
-    # import matplotlib.pyplot as plt
-    # plt.get_cmap('name').colors
-    colors = (
-        (0.8941176470588236, 0.10196078431372549, 0.10980392156862745),
-        (0.21568627450980393, 0.49411764705882355, 0.7215686274509804),
-        (0.30196078431372547, 0.6862745098039216, 0.2901960784313726),
-        (0.596078431372549, 0.3058823529411765, 0.6392156862745098),
-        (1.0, 0.4980392156862745, 0.0),
-        (1.0, 1.0, 0.2),
-        (0.6509803921568628, 0.33725490196078434, 0.1568627450980392),
-        (0.9686274509803922, 0.5058823529411764, 0.7490196078431373),
-        (0.6, 0.6, 0.6))
+    import matplotlib.pyplot as plt
+    colors = plt.get_cmap('Set1').colors
 
     if len(data_labels) > len(colors):
         raise ValueError('Colormap has to have at least as many entries as '
@@ -1188,7 +1161,10 @@ ytick align=outside,\n'''.format(
         color_bar_thickness = color_bar.ScalarBarThickness
         color_bar_length = color_bar.ScalarBarLength
         annotations = color_transfer_function.Annotations
-        n_labels = len(annotations) / 2
+        if len(annotations) % 2 == 0:
+            n_labels = len(annotations) // 2
+        else:
+            raise ValueError('Number of annotations should be dividable by 2')
         labels = [int(annotations[2 * i]) for i in range(n_labels)]
 
         pos = [rel_to_tikz(rel_pos[j], j) for j in range(2)]
