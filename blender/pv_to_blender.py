@@ -12,49 +12,7 @@ import pvutils
 
 # Import paraview module.
 import paraview.simple as pa
-
-
-class ThirdOrderCurve(object):
-    """
-    This class helps to evaluate the tangent on a third order curve that is
-    only given by discrete points (4 are needed).
-    """
-
-    def __init__(self, n_segments=5):
-        """
-        Setup the class and the interpolation variables.
-        """
-
-        # Parameter positions of the points that will be given.
-        self.xi = np.array(
-            [-1, -1 + 2.0 / n_segments, 1 - 2.0 / n_segments, 1])
-
-        # Interpolation matrix.
-        A = np.zeros([4, 4])
-        for i_row in range(4):
-            for i_col in range(4):
-                A[i_row, i_col] = self.xi[i_row] ** i_col
-
-        # Inverted interpolation matrix.
-        self.A_inv = np.linalg.inv(A)
-
-        # Coefficient matrix.
-        self.coefficiens = np.zeros([4, 3])
-
-    def get_tangent(self, cell_positions, xi):
-        """
-        Calculate the tangent.
-        """
-
-        for i_dir in range(3):
-            self.coefficiens[:, i_dir] = np.dot(
-                self.A_inv, cell_positions[:, i_dir])
-
-        temp = np.zeros(3)
-        for i_coeff in range(1, 4):
-            temp += (self.coefficiens[i_coeff, :] * xi ** (i_coeff - 1) *
-                i_coeff)
-        return temp
+from pvutils.utility_classes import Polynomial3DCurve
 
 
 def surface_to_blender(item, name, base_dir, time_steps=None,
@@ -220,7 +178,7 @@ def fibers_to_blender(item, file_name, time_steps=None, n_segments=5,
                 cell_to_point[cell_index, 1] = -1
             cell_index += 1
 
-    curve = ThirdOrderCurve()
+    curve = Polynomial3DCurve()
     for i_time, time in enumerate(time_steps):
         if set_time_step_function is None:
             pvutils.set_timestep(time)
@@ -242,7 +200,7 @@ def fibers_to_blender(item, file_name, time_steps=None, n_segments=5,
                     coordinates[i_time, temp] = cell_positions[i_local]
                     # The scaling is to match the tangent definition in
                     # blender.
-                    tangents[i_time, temp] = curve.get_tangent(cell_positions,
+                    tangents[i_time, temp] = curve.eval_rp(cell_positions,
                         xi_local) * 2.0 / 3.0
 
         print('Got fiber coordinates at time {}'.format(time))

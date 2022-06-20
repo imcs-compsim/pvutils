@@ -5,6 +5,7 @@ Load a beam into ParaView.
 
 # Python imports.
 import os
+import numpy as np
 
 # Local imports.
 from . import utility_functions
@@ -121,3 +122,70 @@ class BeamDisplay(object):
 
         # Set the beam tube as active element.
         pa.SetActiveSource(self.beam_tube)
+
+
+class Polynomial3DCurve(object):
+    """
+    This class helps get the polynomial representation of a third- order curve
+    in 3D space.
+    """
+
+    def __init__(self, n_segments=5, order=3):
+        """
+        Setup the class and the interpolation variables.
+
+        Args
+        ----
+        n_segments: int
+            Number of segments used to visualize the curve. It is assumed that
+            the segmentation points are equidistant in the parameter space.
+        order: int
+            Polynomial order of the curve.
+        """
+
+        self.order = order
+
+        # Parameter positions of the points that will be given.
+        self.xi = np.array(
+            [-1, -1 + 2.0 / n_segments, 1 - 2.0 / n_segments, 1])
+
+        # Interpolation matrix.
+        A = np.zeros([self.order + 1, self.order + 1])
+        for i_row in range(self.order + 1):
+            for i_col in range(self.order + 1):
+                A[i_row, i_col] = self.xi[i_row] ** i_col
+
+        # Inverted interpolation matrix.
+        self.A_inv = np.linalg.inv(A)
+
+        # Coefficient matrix.
+        self.coefficiens = np.zeros([self.order + 1, 3])
+
+    def eval_r(self, cell_positions, xi):
+        """
+        Evaluate the position on the curve at xi.
+        """
+
+        for i_dir in range(3):
+            self.coefficiens[:, i_dir] = np.dot(
+                self.A_inv, cell_positions[:, i_dir])
+
+        temp = np.zeros(3)
+        for i_coeff in range(self.order + 1):
+            temp += self.coefficiens[i_coeff, :] * xi ** i_coeff
+        return temp
+
+    def eval_rp(self, cell_positions, xi):
+        """
+        Calculate the derivative of the position at xi.
+        """
+
+        for i_dir in range(3):
+            self.coefficiens[:, i_dir] = np.dot(
+                self.A_inv, cell_positions[:, i_dir])
+
+        temp = np.zeros(3)
+        for i_coeff in range(1, self.order + 1):
+            temp += (self.coefficiens[i_coeff, :] * xi ** (i_coeff - 1) *
+                i_coeff)
+        return temp

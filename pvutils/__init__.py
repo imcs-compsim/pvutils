@@ -55,7 +55,8 @@ from .filter_wrapper import (
 
 # Load utility classes.
 from .utility_classes import (
-    BeamDisplay
+    BeamDisplay,
+    Polynomial3DCurve
     )
 
 # Load scripts.
