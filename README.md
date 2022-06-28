@@ -18,7 +18,7 @@ Three different ways exist to execute a python ParaView script
 
 - `<path to ParaView>/bin/pvpython <path to script>`: execute the script with the ParaView internal python interpreter. Per default no grapical window is opened.
 - `<path to ParaView>/bin/paraview --script=<path to script>`: execute the script with the default ParaView application. A GUI will be opened.
-- `python2 <path to script>`: execute the script with the system python interpreter. For this to work, certain path have to be in the environment variables. For details regarding the paths, have a look in the files `.gitlab.yml` and `tests/test_local.sh`.
+- `python3 <path to script>`: execute the script with the system python interpreter. For this to work, certain path have to be in the environment variables. For details regarding the paths, have a look in the files `.gitlab.yml` and `tests/test_local.sh`.
 
 If the script uses `pvutils` the path to the root `pvutils` directory has to be in `PYTHONPATH`.
 
