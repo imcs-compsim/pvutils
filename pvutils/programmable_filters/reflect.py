@@ -16,9 +16,9 @@ normal_vector = np.array([1.0, 0.0, 0.0])
 if hasattr(paraview, 'programmable_filter_kwargs'):
     pv_dir = paraview.programmable_filter_kwargs[kwargs_id]
     if 'origin' in pv_dir.keys():
-        origin = pv_dir['origin']
+        origin = np.array(pv_dir['origin'])
     if 'normal_vector' in pv_dir.keys():
-        normal_vector = pv_dir['normal_vector']
+        normal_vector = np.array(pv_dir['normal_vector'])
 
 # Get input and output objects.
 pdi = self.GetInput()
