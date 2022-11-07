@@ -37,6 +37,8 @@ variables:
         - echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH
         # Run tests.
         - "cd tests"
+        - "echo \"Testing with the following command\""
+        - "echo ${GITLAB_TESTING_COMMAND}"
         - "${GITLAB_TESTING_COMMAND}testing_pvutils.py"
     tags:
         - "imcs-all"
