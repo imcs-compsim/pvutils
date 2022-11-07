@@ -37,7 +37,9 @@ variables:
         - echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH
         # Run tests.
         - "cd tests"
-        - "${GITLAB_TESTING_COMMAND}testing_pvutils.py"
+        - "echo \"Testing with the following command\""
+        - "echo ${GITLAB_TESTING_COMMAND}"
+        - "${GITLAB_TESTING_COMMAND} testing_pvutils.py"
     tags:
         - "imcs-all"
 
@@ -49,11 +51,11 @@ variables:
 5.10.1-pvpython:
     << : *pvutils-testing
     variables:
-        GITLAB_TESTING_COMMAND: "${PARAVIEW_PATH}/bin/pvpython "
+        GITLAB_TESTING_COMMAND: "${PARAVIEW_PATH}/bin/pvpython"
 
 5.10.1-system-python:
     << : *pvutils-testing
     variables:
-        GITLAB_TESTING_COMMAND: "/hdd/gitlab-runner/lib/spack/opt/spack/linux-ubuntu20.04-cascadelake/gcc-9.4.0/python-3.9.12-knt7uewenwz43ktwmtsn6zavs7u2i7qx/bin/python3 "
+        GITLAB_TESTING_COMMAND: "/hdd/gitlab-runner/lib/spack/opt/spack/linux-ubuntu20.04-broadwell/gcc-9.4.0/python-3.9.15-ul7tj5r5qn3unewqfwxrlu3blvmrec4u/bin/python3"
         APPEND_TO_PYTHONPATH: "${PARAVIEW_PATH}/lib/python3.9/site-packages"
         APPEND_TO_LD_LIBRARY_PATH: "${PARAVIEW_PATH}/lib"
