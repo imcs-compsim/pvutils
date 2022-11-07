@@ -33,9 +33,9 @@ fPoly={polynomx,polynomy};
 (*Connection between the 2nd and 3rd Bezier points and the tangents of the curve -> The vector from the first to the second (and third to fourth) Bezier point is 2/3 the length of the tangent*)
 
 
-t=D[fPoly,\[Xi]];
-Simplify[t/.\[Xi]->-1]
-Simplify[t/.\[Xi]->1]
+tangent=D[fPoly,\[Xi]];
+Simplify[tangent/.\[Xi]->-1]
+Simplify[tangent/.\[Xi]->1]
 
 
 (* ::Text:: *)
