@@ -171,9 +171,7 @@ class TestPvutils(unittest.TestCase):
         split_name = name.split(".")[-1].split("_", 1)
         if not split_name[0] == "test":
             raise ValueError(
-                ("The test name {} does not match the expected format").format(
-                    name
-                )
+                ("The test name {} does not match the expected format").format(name)
             )
         return split_name[1]
 
@@ -1058,7 +1056,7 @@ if __name__ == "__main__":
     pa._DisableFirstRenderCameraReset()
 
     # Define the testing paths.
-    testing_path = os.path.abspath(os.getcwd())
+    testing_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     testing_reference = os.path.join(testing_path, "reference-files")
     testing_temp = os.path.join(testing_path, "testing-tmp")
 
