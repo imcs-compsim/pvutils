@@ -31,7 +31,7 @@ def glyph(data):
     return glyph
 
 
-def warp(data, field='displacement', scale_factor=1.0):
+def warp(data, field="displacement", scale_factor=1.0):
     """
     Warp the data by a vector field.
 
@@ -52,7 +52,7 @@ def warp(data, field='displacement', scale_factor=1.0):
 
     utility_functions.check_data(data, field, dimension=3)
     warp = pa.WarpByVector(Input=data)
-    warp.Vectors = ['POINTS', field]
+    warp.Vectors = ["POINTS", field]
     warp.ScaleFactor = scale_factor
     return warp
 
@@ -92,8 +92,7 @@ def transform(data, translate=None, rotate=None, scale=None):
     return transform
 
 
-def threshold(data, field='displacement', data_type='POINTS',
-        threshold_range=None):
+def threshold(data, field="displacement", data_type="POINTS", threshold_range=None):
     """
     Apply a 'Threshold' filter to a ParaView item.
 
@@ -125,8 +124,8 @@ def threshold(data, field='displacement', data_type='POINTS',
     threshold.Scalars = [data_type, field]
 
     if threshold_range is None:
-        threshold.LowerThreshold = -1.0e+12
-        threshold.UpperThreshold = 1.0e+12
+        threshold.LowerThreshold = -1.0e12
+        threshold.UpperThreshold = 1.0e12
     else:
         threshold.LowerThreshold = threshold_range[0]
         threshold.UpperThreshold = threshold_range[1]
@@ -174,10 +173,10 @@ def tube(data, slices=8):
     Apply the tube filter to a beam.
     """
 
-    utility_functions.check_data(data, 'cross_section_radius', dimension=1)
+    utility_functions.check_data(data, "cross_section_radius", dimension=1)
     tube = pa.Tube(Input=data)
-    tube.Scalars = [None, 'cross_section_radius']
-    tube.VaryRadius = 'By Absolute Scalar'
+    tube.Scalars = [None, "cross_section_radius"]
+    tube.VaryRadius = "By Absolute Scalar"
     tube.NumberofSides = slices
     return tube
 

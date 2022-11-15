@@ -26,17 +26,14 @@ def compare_dict(dict_1, dict_2):
 
     # Compare the data.
     if not len(dict_1.keys()) == len(dict_2.keys()):
-        print('The two dictionaries do not have the same length')
+        print("The two dictionaries do not have the same length")
         return False
     for key in dict_1.keys():
         if isinstance(dict_1[key], dict):
             if not compare_dict(dict_1[key], dict_2[key]):
                 return False
         else:
-            if not compare_numpy_arrays(
-                    np.array(dict_1[key]),
-                    np.array(dict_2[key])
-                    ):
+            if not compare_numpy_arrays(np.array(dict_1[key]), np.array(dict_2[key])):
                 print('Arrays "{}" are not the same'.format(key))
                 return False
     return True
@@ -74,9 +71,9 @@ def compare_data(data1, data2, raise_error=False, tol_float=None):
 
         diff = vtk_numpy.vtk_to_numpy(array1) - vtk_numpy.vtk_to_numpy(array2)
         if not np.max(np.abs(diff)) < tol_float:
-            error_string = 'VTK array comparison failed!'
+            error_string = "VTK array comparison failed!"
             if name is not None:
-                error_string += ' Name of the array: {}'.format(name)
+                error_string += " Name of the array: {}".format(name)
             raise ValueError(error_string)
 
     def compare_data_sets(data1, data2):
@@ -86,7 +83,7 @@ def compare_data(data1, data2, raise_error=False, tol_float=None):
 
         # Both data sets need to have the same number of arrays.
         if not data1.GetNumberOfArrays() == data2.GetNumberOfArrays():
-            raise ValueError('Length of vtk data objects do not match!')
+            raise ValueError("Length of vtk data objects do not match!")
 
         # Compare each array.
         for i in range(data1.GetNumberOfArrays()):
@@ -104,8 +101,8 @@ def compare_data(data1, data2, raise_error=False, tol_float=None):
         compare_arrays(
             data1.GetPoints().GetData(),
             data2.GetPoints().GetData(),
-            name='point_positions'
-            )
+            name="point_positions",
+        )
 
         # Compare the cell and point data of the array.
         compare_data_sets(data1.GetCellData(), data2.GetCellData())
@@ -115,13 +112,13 @@ def compare_data(data1, data2, raise_error=False, tol_float=None):
         compare_arrays(
             data1.GetCells().GetData(),
             data2.GetCells().GetData(),
-            name='cell_connectivity')
+            name="cell_connectivity",
+        )
 
         # Compare the cell types.
         compare_arrays(
-            data1.GetCellTypesArray(),
-            data2.GetCellTypesArray(),
-            name='cell_type')
+            data1.GetCellTypesArray(), data2.GetCellTypesArray(), name="cell_type"
+        )
 
     except Exception as error:
         if raise_error:
@@ -148,7 +145,7 @@ def _empty_temp_testing_directory():
 def _get_file_hash(path):
     """Return the md5 hash of a file."""
     hasher = hashlib.md5()
-    with open(path, 'rb') as f:
+    with open(path, "rb") as f:
         buf = f.read()
         hasher.update(buf)
     return hasher.hexdigest()
@@ -171,10 +168,13 @@ class TestPvutils(unittest.TestCase):
         """
 
         name = unittest.TestCase.id(self)
-        split_name = name.split('.')[-1].split('_', 1)
-        if not split_name[0] == 'test':
-            raise ValueError(('The test name {} does not match the expected '
-                + 'format').format(name))
+        split_name = name.split(".")[-1].split("_", 1)
+        if not split_name[0] == "test":
+            raise ValueError(
+                ("The test name {} does not match the expected format").format(
+                    name
+                )
+            )
         return split_name[1]
 
     def _save_screenshot_and_compare(self, view, index=None, **kwargs):
@@ -197,18 +197,20 @@ class TestPvutils(unittest.TestCase):
 
         # Additional string for multiple images in one test.
         if index is not None:
-            index_str = '{}_'.format(index)
+            index_str = "{}_".format(index)
         else:
-            index_str = ''
+            index_str = ""
 
         # Export screenshot.
-        screenshot_path = os.path.join(testing_temp,
-            '{}_{}temp.png'.format(self._get_test_name(), index_str))
+        screenshot_path = os.path.join(
+            testing_temp, "{}_{}temp.png".format(self._get_test_name(), index_str)
+        )
         pa.SaveScreenshot(screenshot_path, view, **kwargs)
 
         # Compare the created image with the reference image.
-        reference_path = os.path.join(testing_reference,
-             '{}_{}ref.png'.format(self._get_test_name(), index_str))
+        reference_path = os.path.join(
+            testing_reference, "{}_{}ref.png".format(self._get_test_name(), index_str)
+        )
         self._compare_images(screenshot_path, reference_path)
 
     def _compare_images(self, path_1, path_2):
@@ -228,8 +230,7 @@ class TestPvutils(unittest.TestCase):
 
         # Get the average difference.
         # https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
-        err = np.sum((test_image.astype("float")
-            - ref_image.astype("float")) ** 2)
+        err = np.sum((test_image.astype("float") - ref_image.astype("float")) ** 2)
         err /= float(test_image.shape[0] * test_image.shape[1])
 
         self.assertTrue(err < 5e-4)
@@ -242,15 +243,17 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load the solid and beam mesh.
-        solid = pvutils.load_file(os.path.join(testing_reference,
-            'solid_cube_case', 'solid.case'))
-        beam = pvutils.load_file(os.path.join(testing_reference,
-            'beam_helix_pvd', 'beam.pvd'))
+        solid = pvutils.load_file(
+            os.path.join(testing_reference, "solid_cube_case", "solid.case")
+        )
+        beam = pvutils.load_file(
+            os.path.join(testing_reference, "beam_helix_pvd", "beam.pvd")
+        )
         scene = pvutils.update_scene()
         scene.GoToLast()
 
         # Test that the correct name can be read from the source.
-        self.assertEqual('solid', pvutils.get_source_name(solid))
+        self.assertEqual("solid", pvutils.get_source_name(solid))
 
         # Apply the tube filter to the beam and display the curvature.
         scale_factor = 50.0
@@ -259,30 +262,33 @@ class TestPvutils(unittest.TestCase):
         beam = pa.ExtractSurface(Input=beam)
         beam = pvutils.tube(beam, slices=20)
         pvutils.display(beam)
-        pvutils.contour(beam, 'curvature_2_GPs', vector_type='Y')
+        pvutils.contour(beam, "curvature_2_GPs", vector_type="Y")
 
         # The solid has some unwanted lines in it. Use the add_id filter to get
         # the cell ids and apply a threshold to the ids.
-        solid_filter = pvutils.programmable_filter(solid,
-            pvutils_filter='add_id')
-        solid_filter = pvutils.threshold(solid_filter, 'cell_id', 'CELLS',
-            [0, 111])
+        solid_filter = pvutils.programmable_filter(solid, pvutils_filter="add_id")
+        solid_filter = pvutils.threshold(solid_filter, "cell_id", "CELLS", [0, 111])
 
-        pvutils.display(solid_filter, solid_color=[0.0, 0.0, 0.0],
-            line_width=2, representation='Outline')
+        pvutils.display(
+            solid_filter,
+            solid_color=[0.0, 0.0, 0.0],
+            line_width=2,
+            representation="Outline",
+        )
 
         # Cut half of the solid, so the beam inside it will be visible.
         solid_cut = pa.Clip(Input=solid_filter)
-        solid_cut.ClipType = 'Plane'
+        solid_cut.ClipType = "Plane"
         solid_cut.ClipType.Origin = [0.00001, -0.00001, 0.0]
         solid_cut.ClipType.Normal = [1.0, -1.0, 0.0]
         solid_cut = pvutils.warp(solid_cut, scale_factor=scale_factor)
-        pvutils.contour(solid_cut, 'nodal_2PK_stresses_xyz', vector_type='ZZ')
-        pvutils.display(solid_cut, representation='Surface With Edges',
-            line_color=[1, 1, 1])
+        pvutils.contour(solid_cut, "nodal_2PK_stresses_xyz", vector_type="ZZ")
+        pvutils.display(
+            solid_cut, representation="Surface With Edges", line_color=[1, 1, 1]
+        )
 
         # Set the view options.
-        view = pa.GetActiveViewOrCreate('RenderView')
+        view = pa.GetActiveViewOrCreate("RenderView")
         view.CameraPosition = [2.76685, -3.24653, 2.75741]
         view.CameraFocalPoint = [0.304706, 0.19705, 0.957474]
         view.CameraViewUp = [-0.230935, 0.320594, 0.918634]
@@ -301,12 +307,11 @@ class TestPvutils(unittest.TestCase):
         # Set and place the color map for the solid.
         display = pa.GetDisplayProperties(solid_cut, view=view)
         display.SetScalarBarVisibility(view, True)
-        color_function_sigma = pa.GetColorTransferFunction(
-            'nodal_2PK_stresses_xyz')
+        color_function_sigma = pa.GetColorTransferFunction("nodal_2PK_stresses_xyz")
         color_bar_stress = pa.GetScalarBar(color_function_sigma, view)
-        color_bar_stress.Title = '$S_{ZZ}$'
-        color_bar_stress.ComponentTitle = ''
-        color_bar_stress.WindowLocation = 'Any Location'
+        color_bar_stress.Title = "$S_{ZZ}$"
+        color_bar_stress.ComponentTitle = ""
+        color_bar_stress.WindowLocation = "Any Location"
         color_bar_stress.Position = [0.69, 0.6]
         color_bar_stress.ScalarBarLength = 0.2
         pvutils.set_colorbar_font(color_bar_stress, font_size, dpi)
@@ -314,29 +319,30 @@ class TestPvutils(unittest.TestCase):
         # Set and place the color map for the beam.
         display = pa.GetDisplayProperties(beam, view=view)
         display.SetScalarBarVisibility(view, True)
-        color_function_kappa = pa.GetColorTransferFunction('curvature_2_GPs')
+        color_function_kappa = pa.GetColorTransferFunction("curvature_2_GPs")
         color_bar_kappa = pa.GetScalarBar(color_function_kappa, view)
-        color_bar_kappa.Title = '$\kappa$'
-        color_bar_kappa.ComponentTitle = ''
-        color_bar_kappa.WindowLocation = 'Any Location'
+        color_bar_kappa.Title = "$\kappa$"
+        color_bar_kappa.ComponentTitle = ""
+        color_bar_kappa.WindowLocation = "Any Location"
         color_bar_kappa.Position = [0.69, 0.2]
         color_bar_kappa.ScalarBarLength = 0.2
         pvutils.set_colorbar_font(color_bar_kappa, font_size, dpi)
 
         # Compare the current view with the reference image.
-        self._save_screenshot_and_compare(view,
-                index=1,
-                ImageResolution=size_pixel,
-                OverrideColorPalette='WhiteBackground',
-                TransparentBackground=0,
-                FontScaling='Do not scale fonts'
-                )
+        self._save_screenshot_and_compare(
+            view,
+            index=1,
+            ImageResolution=size_pixel,
+            OverrideColorPalette="WhiteBackground",
+            TransparentBackground=0,
+            FontScaling="Do not scale fonts",
+        )
 
         # For the TikZ images, set one color bar to be horizontal, so both
         # cases are tested. Change the placement of the color bar, so
         # ParaView updates the position (this is not done by just changing
         # the orientation.
-        color_bar_stress.Orientation = 'Horizontal'
+        color_bar_stress.Orientation = "Horizontal"
         color_bar_stress.Position = [0.7, 0.6]
         color_bar_stress.Position = [0.69, 0.6]
 
@@ -345,40 +351,41 @@ class TestPvutils(unittest.TestCase):
         pvutils.export_to_tikz(
             os.path.join(testing_temp, self._get_test_name()),
             dpi=dpi,
-            color_transfer_functions=[
-                color_function_sigma,
-                color_function_kappa
-                ],
-            number_format='$\\pgfmathprintnumber{\\tick}$')
+            color_transfer_functions=[color_function_sigma, color_function_kappa],
+            number_format="$\\pgfmathprintnumber{\\tick}$",
+        )
 
         # Compare the with the reference image.
-        self._compare_images(base_path + '.png',
-            os.path.join(
-                testing_reference, self._get_test_name() + '_2_ref.png'))
+        self._compare_images(
+            base_path + ".png",
+            os.path.join(testing_reference, self._get_test_name() + "_2_ref.png"),
+        )
 
         # Compare the created TikZ code.
-        with open(base_path + '.tex', 'r') as tikz_file:
+        with open(base_path + ".tex", "r") as tikz_file:
             tikz_code = tikz_file.read()
-        with open(os.path.join(
-                testing_reference, self._get_test_name() + '_ref.tex'),
-                'r') as tikz_file:
+        with open(
+            os.path.join(testing_reference, self._get_test_name() + "_ref.tex"), "r"
+        ) as tikz_file:
             tikz_code_ref = tikz_file.read()
         self.assertTrue(tikz_code == tikz_code_ref)
 
         # Reset layout and only show the solid.
         pvutils.reset_layout()
-        pvutils.display(solid_cut, representation='Surface With Edges',
-                    line_color=[1, 1, 1])
+        pvutils.display(
+            solid_cut, representation="Surface With Edges", line_color=[1, 1, 1]
+        )
         view = pvutils.get_view()
         view.ViewSize = size_pixel
 
-        self._save_screenshot_and_compare(view,
+        self._save_screenshot_and_compare(
+            view,
             index=3,
             ImageResolution=size_pixel,
-            OverrideColorPalette='WhiteBackground',
+            OverrideColorPalette="WhiteBackground",
             TransparentBackground=0,
-            FontScaling='Do not scale fonts'
-            )
+            FontScaling="Do not scale fonts",
+        )
 
     def test_category_color_bar(self):
         """
@@ -387,16 +394,17 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load the solid and beam mesh.
-        solid = pvutils.load_file(os.path.join(testing_reference,
-            'solid_cuboid_pvd', 'solid_cuboid.pvd'))
+        solid = pvutils.load_file(
+            os.path.join(testing_reference, "solid_cuboid_pvd", "solid_cuboid.pvd")
+        )
         scene = pvutils.update_scene()
         scene.GoToLast()
 
-        pvutils.contour(solid, field='element_owner', data_type='CELLS')
+        pvutils.contour(solid, field="element_owner", data_type="CELLS")
         display = pvutils.get_display(solid)
         view = pvutils.get_view()
         display.SetScalarBarVisibility(view, True)
-        ctf = pa.GetColorTransferFunction('element_owner')
+        ctf = pa.GetColorTransferFunction("element_owner")
         pvutils.set_categorized_colorbar(ctf, [0, 1, 2])
 
         view.ViewSize = [400, 400]
@@ -407,13 +415,13 @@ class TestPvutils(unittest.TestCase):
         view.CameraParallelScale = 1.73
         view.OrientationAxesVisibility = 0
         view.CameraParallelProjection = 0
-        view.InteractionMode = '3D'
+        view.InteractionMode = "3D"
 
         color_bar = pa.GetScalarBar(ctf, view)
-        color_bar.Title = 'PID'
-        color_bar.ComponentTitle = ''
-        color_bar.WindowLocation = 'Any Location'
-        color_bar.Orientation = 'Vertical'
+        color_bar.Title = "PID"
+        color_bar.ComponentTitle = ""
+        color_bar.WindowLocation = "Any Location"
+        color_bar.Orientation = "Vertical"
         color_bar.ScalarBarLength = 0.33
         color_bar.ScalarBarThickness = 16
         color_bar.Position = [0.7425, 0.25]
@@ -427,30 +435,30 @@ class TestPvutils(unittest.TestCase):
 
         base_path = os.path.join(testing_temp, self._get_test_name())
         pvutils.export_to_tikz(
-            os.path.join(base_path + '_1'),
-            dpi=300,
-            color_transfer_functions=[ctf])
+            os.path.join(base_path + "_1"), dpi=300, color_transfer_functions=[ctf]
+        )
 
         # Compare the with the reference image.
-        self._compare_images(base_path + '_1.png',
-            os.path.join(
-                testing_reference, self._get_test_name() + '_1_ref.png'))
+        self._compare_images(
+            base_path + "_1.png",
+            os.path.join(testing_reference, self._get_test_name() + "_1_ref.png"),
+        )
 
         # Compare the created TikZ code.
-        with open(base_path + '_1.tex', 'r') as tikz_file:
+        with open(base_path + "_1.tex", "r") as tikz_file:
             tikz_code = tikz_file.read()
-        with open(os.path.join(
-                testing_reference, self._get_test_name() + '_1_ref.tex'),
-                'r') as tikz_file:
+        with open(
+            os.path.join(testing_reference, self._get_test_name() + "_1_ref.tex"), "r"
+        ) as tikz_file:
             tikz_code_ref = tikz_file.read()
         self.assertTrue(tikz_code == tikz_code_ref)
 
-        ctf = pa.GetColorTransferFunction('element_owner')
+        ctf = pa.GetColorTransferFunction("element_owner")
         color_bar = pa.GetScalarBar(ctf, view)
-        color_bar.Title = 'PID'
-        color_bar.ComponentTitle = ''
-        color_bar.WindowLocation = 'Any Location'
-        color_bar.Orientation = 'Horizontal'
+        color_bar.Title = "PID"
+        color_bar.ComponentTitle = ""
+        color_bar.WindowLocation = "Any Location"
+        color_bar.Orientation = "Horizontal"
         color_bar.ScalarBarLength = 0.33
         color_bar.ScalarBarThickness = 16
         color_bar.Position = [0.5, 0.25]
@@ -463,21 +471,21 @@ class TestPvutils(unittest.TestCase):
         color_bar.DrawTickLabels = 1
 
         pvutils.export_to_tikz(
-            os.path.join(base_path + '_2'),
-            dpi=300,
-            color_transfer_functions=[ctf])
+            os.path.join(base_path + "_2"), dpi=300, color_transfer_functions=[ctf]
+        )
 
         # Compare the with the reference image.
-        self._compare_images(base_path + '_2.png',
-            os.path.join(
-                testing_reference, self._get_test_name() + '_2_ref.png'))
+        self._compare_images(
+            base_path + "_2.png",
+            os.path.join(testing_reference, self._get_test_name() + "_2_ref.png"),
+        )
 
         # Compare the created TikZ code.
-        with open(base_path + '_2.tex', 'r') as tikz_file:
+        with open(base_path + "_2.tex", "r") as tikz_file:
             tikz_code = tikz_file.read()
-        with open(os.path.join(
-                testing_reference, self._get_test_name() + '_2_ref.tex'),
-                'r') as tikz_file:
+        with open(
+            os.path.join(testing_reference, self._get_test_name() + "_2_ref.tex"), "r"
+        ) as tikz_file:
             tikz_code_ref = tikz_file.read()
         self.assertTrue(tikz_code == tikz_code_ref)
 
@@ -488,16 +496,25 @@ class TestPvutils(unittest.TestCase):
         per time step) displacement.
         """
 
-        three_steps = pvutils.load_file(os.path.join(testing_reference,
-            'solid_cantilever_pvd', 'solid_cantilever_3-steps.pvd'))
-        four_steps = pvutils.load_file(os.path.join(testing_reference,
-            'solid_cantilever_pvd', 'solid_cantilever_4-steps.pvd'))
+        three_steps = pvutils.load_file(
+            os.path.join(
+                testing_reference,
+                "solid_cantilever_pvd",
+                "solid_cantilever_3-steps.pvd",
+            )
+        )
+        four_steps = pvutils.load_file(
+            os.path.join(
+                testing_reference,
+                "solid_cantilever_pvd",
+                "solid_cantilever_4-steps.pvd",
+            )
+        )
 
         # Check if all time steps are found.
         time_step_error = np.linalg.norm(
-            np.array(pvutils.get_available_timesteps())
-            - [0.3, 0.4, 0.6, 0.8, 0.9, 1.2]
-            )
+            np.array(pvutils.get_available_timesteps()) - [0.3, 0.4, 0.6, 0.8, 0.9, 1.2]
+        )
         self.assertTrue(time_step_error < 1e-10)
 
         # Apply filters to the meshes and display them. The temporal
@@ -515,7 +532,7 @@ class TestPvutils(unittest.TestCase):
         pvutils.set_timestep(0.9, fail_on_not_available_time=True)
 
         # Set the view.
-        view = pa.GetActiveViewOrCreate('RenderView')
+        view = pa.GetActiveViewOrCreate("RenderView")
         view.CameraPosition = [11.429, 2.4, 1]
         view.CameraFocalPoint = [0, 2.4, 1]
         view.CameraViewUp = [0, 0, 1]
@@ -523,14 +540,13 @@ class TestPvutils(unittest.TestCase):
         view.CameraParallelScale = 2.95804
         view.OrientationAxesVisibility = 0
         view.CameraParallelProjection = 0
-        view.InteractionMode = '2D'
+        view.InteractionMode = "2D"
         view.ViewSize = [400, 400]
 
         # Compare the current view with the reference image.
-        self._save_screenshot_and_compare(view,
-                OverrideColorPalette='WhiteBackground',
-                TransparentBackground=0
-                )
+        self._save_screenshot_and_compare(
+            view, OverrideColorPalette="WhiteBackground", TransparentBackground=0
+        )
 
     def test_set_color_range(self):
         """
@@ -538,15 +554,20 @@ class TestPvutils(unittest.TestCase):
         set a user-defined color range, generate and compare a screenshot.
         """
 
-        vtk_data = pvutils.load_file(os.path.join(testing_reference,
-            'solid_bending_test', 'solid_bending_test.pvtu'))
-        pvutils.contour(vtk_data, field='displacement', data_type='POINTS',
-            vector_type='Magnitude')
-        pvutils.display(vtk_data, representation='Surface With Edges',
-            line_color=[0.0, 0.0, 0.0])
+        vtk_data = pvutils.load_file(
+            os.path.join(
+                testing_reference, "solid_bending_test", "solid_bending_test.pvtu"
+            )
+        )
+        pvutils.contour(
+            vtk_data, field="displacement", data_type="POINTS", vector_type="Magnitude"
+        )
+        pvutils.display(
+            vtk_data, representation="Surface With Edges", line_color=[0.0, 0.0, 0.0]
+        )
 
         # Set the view.
-        view = pa.GetActiveViewOrCreate('RenderView')
+        view = pa.GetActiveViewOrCreate("RenderView")
         view.CameraPosition = [11.429, 2.4, 1]
         view.CameraFocalPoint = [0, 2.4, 1]
         view.CameraViewUp = [0, 0, 1]
@@ -554,16 +575,15 @@ class TestPvutils(unittest.TestCase):
         view.CameraParallelScale = 2.95804
         view.OrientationAxesVisibility = 0
         view.CameraParallelProjection = 0
-        view.InteractionMode = '2D'
+        view.InteractionMode = "2D"
         view.ViewSize = [400, 400]
 
-        pvutils.set_color_range(field='displacement', val_min=-3.0, val_max=10)
+        pvutils.set_color_range(field="displacement", val_min=-3.0, val_max=10)
 
         # Compare the current view with the reference image.
-        self._save_screenshot_and_compare(view,
-                OverrideColorPalette='WhiteBackground',
-                TransparentBackground=0
-                )
+        self._save_screenshot_and_compare(
+            view, OverrideColorPalette="WhiteBackground", TransparentBackground=0
+        )
 
     def test_clip(self):
         """
@@ -571,20 +591,31 @@ class TestPvutils(unittest.TestCase):
         clip it, generate and compare a screenshot.
         """
 
-        vtk_data = pvutils.load_file(os.path.join(testing_reference,
-            'solid_bending_test', 'solid_bending_test.pvtu'))
-        clipped_data = pvutils.clip(vtk_data, clip_type='Plane',
-            origin=[1.1, 4.5, 0.2], normal=[1.0, 0.2, 0.3], invert=False)
+        vtk_data = pvutils.load_file(
+            os.path.join(
+                testing_reference, "solid_bending_test", "solid_bending_test.pvtu"
+            )
+        )
+        clipped_data = pvutils.clip(
+            vtk_data,
+            clip_type="Plane",
+            origin=[1.1, 4.5, 0.2],
+            normal=[1.0, 0.2, 0.3],
+            invert=False,
+        )
         pa.Show(clipped_data)
 
-        ref_file = os.path.join(testing_reference, 'clip_vtk', 'clip.vtu')
+        ref_file = os.path.join(testing_reference, "clip_vtk", "clip.vtu")
         ref_data = pvutils.load_file(ref_file)
 
         # Compare the vtk file with the reference file.
-        self.assertTrue(compare_data(
-            pa.servermanager.Fetch(clipped_data),
-            pa.servermanager.Fetch(ref_data),
-            raise_error=True))
+        self.assertTrue(
+            compare_data(
+                pa.servermanager.Fetch(clipped_data),
+                pa.servermanager.Fetch(ref_data),
+                raise_error=True,
+            )
+        )
 
     def test_beam_display(self):
         """
@@ -592,9 +623,12 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load the beam.
-        beam = pvutils.BeamDisplay(os.path.join(testing_reference,
-            'beam_cantilever_pvd', 'cantilever.pvd'), segments=30,
-            factor_nodes=4, factor_triads=10)
+        beam = pvutils.BeamDisplay(
+            os.path.join(testing_reference, "beam_cantilever_pvd", "cantilever.pvd"),
+            segments=30,
+            factor_nodes=4,
+            factor_triads=10,
+        )
 
         # Set the view.
         view = pvutils.get_view()
@@ -606,7 +640,7 @@ class TestPvutils(unittest.TestCase):
         view.OrientationAxesVisibility = 1
         view.CameraParallelProjection = 0
         view.ViewSize = [600, 800]
-        view.InteractionMode = '3D'
+        view.InteractionMode = "3D"
 
         # Color the beam parts.
         pvutils.contour(beam.beam_tube)
@@ -615,10 +649,9 @@ class TestPvutils(unittest.TestCase):
             pvutils.contour(triad)
 
         # Compare the current view with the reference image.
-        self._save_screenshot_and_compare(view,
-                OverrideColorPalette='WhiteBackground',
-                TransparentBackground=0
-                )
+        self._save_screenshot_and_compare(
+            view, OverrideColorPalette="WhiteBackground", TransparentBackground=0
+        )
 
     def test_get_parents(self):
         """
@@ -626,20 +659,29 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load a beam representation and get the parents of some entries.
-        beam = pvutils.BeamDisplay(os.path.join(testing_reference,
-            'beam_cantilever_pvd', 'cantilever.pvd'), segments=30,
-            factor_nodes=4, factor_triads=10)
+        beam = pvutils.BeamDisplay(
+            os.path.join(testing_reference, "beam_cantilever_pvd", "cantilever.pvd"),
+            segments=30,
+            factor_nodes=4,
+            factor_triads=10,
+        )
         node_parents = pvutils.get_parents(beam.nodes)
         tube_parents = pvutils.get_parents(beam.beam_tube)
 
         # Compare with the expected parents.
-        self.assertEqual(node_parents,
-            [beam.nodes, beam.endpoints, beam.beam_cell_to_point, beam.beam])
-        self.assertEqual(tube_parents,
+        self.assertEqual(
+            node_parents,
+            [beam.nodes, beam.endpoints, beam.beam_cell_to_point, beam.beam],
+        )
+        self.assertEqual(
+            tube_parents,
             [
-                beam.beam_tube, beam.beam_extract_surface,
-                beam.beam_cell_to_point, beam.beam
-            ])
+                beam.beam_tube,
+                beam.beam_extract_surface,
+                beam.beam_cell_to_point,
+                beam.beam,
+            ],
+        )
 
     def test_script_load_beam_to_solid(self):
         """
@@ -650,8 +692,8 @@ class TestPvutils(unittest.TestCase):
 
         # Call the script.
         _solid, beam = pvutils.scripts.load_beam_to_solid_in_dir(
-            os.path.join(testing_reference, 'beam_and_solid_cantilever')
-            )
+            os.path.join(testing_reference, "beam_and_solid_cantilever")
+        )
 
         # Display some features on the beam.
         pvutils.contour(beam.nodes)
@@ -667,60 +709,69 @@ class TestPvutils(unittest.TestCase):
         view.OrientationAxesVisibility = 0
         view.CameraParallelProjection = 0
         view.ViewSize = [696, 654]
-        view.InteractionMode = '3D'
+        view.InteractionMode = "3D"
 
         # Compare the current view with the reference image.
-        self._save_screenshot_and_compare(view,
-                OverrideColorPalette='WhiteBackground',
-                TransparentBackground=0
-                )
+        self._save_screenshot_and_compare(
+            view, OverrideColorPalette="WhiteBackground", TransparentBackground=0
+        )
 
     def test_merge_polylines_filter(self):
         """
         Test the merge polylines programmable filter.
         """
 
-        raw_file = os.path.join(testing_reference,
-            'merge_polylines_raw_beam.vtu')
-        ref_file = os.path.join(testing_reference,
-            'merge_polylines_reference.vtu')
+        raw_file = os.path.join(testing_reference, "merge_polylines_raw_beam.vtu")
+        ref_file = os.path.join(testing_reference, "merge_polylines_reference.vtu")
 
         # Load the beam (with the merge polylines filter)
-        beam = pvutils.BeamDisplay(raw_file, merge_poly_lines=True,
-            merge_polylines_max_angle=2 * np.pi)
+        beam = pvutils.BeamDisplay(
+            raw_file, merge_poly_lines=True, merge_polylines_max_angle=2 * np.pi
+        )
 
         # Load the reference file.
         beam_ref = pvutils.load_file(ref_file)
 
         # Compare the vtk file with the reference file.
-        self.assertTrue(compare_data(
-            pa.servermanager.Fetch(beam_ref),
-            pa.servermanager.Fetch(beam.beam_merge_poly_line),
-            raise_error=True))
+        self.assertTrue(
+            compare_data(
+                pa.servermanager.Fetch(beam_ref),
+                pa.servermanager.Fetch(beam.beam_merge_poly_line),
+                raise_error=True,
+            )
+        )
 
     def test_second_order_to_first_order(self):
         """
         Test the second_order_to_first_order programmable filter.
         """
 
-        raw_file = os.path.join(testing_reference, 'solid_bending_test',
-            'solid_bending_test.pvtu')
-        ref_file = os.path.join(testing_reference, 'solid_bending_test',
-            'solid_bending_test_only_first_order_elements.vtu')
+        raw_file = os.path.join(
+            testing_reference, "solid_bending_test", "solid_bending_test.pvtu"
+        )
+        ref_file = os.path.join(
+            testing_reference,
+            "solid_bending_test",
+            "solid_bending_test_only_first_order_elements.vtu",
+        )
 
         # Load both files.
         raw = pvutils.load_file(raw_file)
         ref = pvutils.load_file(ref_file)
 
         # Apply filter.
-        raw_filtered = pvutils.programmable_filter(raw,
-            pvutils_filter='second_order_to_first_order')
+        raw_filtered = pvutils.programmable_filter(
+            raw, pvutils_filter="second_order_to_first_order"
+        )
 
         # Compare the vtk file with the reference file.
-        self.assertTrue(compare_data(
-            pa.servermanager.Fetch(raw_filtered),
-            pa.servermanager.Fetch(ref),
-            raise_error=True))
+        self.assertTrue(
+            compare_data(
+                pa.servermanager.Fetch(raw_filtered),
+                pa.servermanager.Fetch(ref),
+                raise_error=True,
+            )
+        )
 
     def test_add_coordinate_axes(self):
         """
@@ -731,19 +782,23 @@ class TestPvutils(unittest.TestCase):
         coordinate_axis = pvutils.add_coordinate_axes(
             origin=[1, 2, 3],
             basis=[[1, 1, 1], [0, 1, 0], [0, 0, 1], [-1, 0, 0]],
-            scale=4.0, resolution=4)
-        group_glyphs = pa.GroupDatasets(Input=coordinate_axis['base_glyphs'])
+            scale=4.0,
+            resolution=4,
+        )
+        group_glyphs = pa.GroupDatasets(Input=coordinate_axis["base_glyphs"])
         merged_glyphs = pa.MergeBlocks(Input=group_glyphs)
         merged_glyphs.MergePoints = 0
 
         # Compare the vtk file with the reference file.
-        ref_file = os.path.join(testing_reference,
-            'coordinate_axes_reference.vtu')
+        ref_file = os.path.join(testing_reference, "coordinate_axes_reference.vtu")
         ref = pvutils.load_file(ref_file)
-        self.assertTrue(compare_data(
-            pa.servermanager.Fetch(ref),
-            pa.servermanager.Fetch(merged_glyphs),
-            raise_error=True))
+        self.assertTrue(
+            compare_data(
+                pa.servermanager.Fetch(ref),
+                pa.servermanager.Fetch(merged_glyphs),
+                raise_error=True,
+            )
+        )
 
     def test_add_multiple_coordinate_axes(self):
         """
@@ -755,45 +810,60 @@ class TestPvutils(unittest.TestCase):
         coordinate_axis_1 = pvutils.add_coordinate_axes(
             origin=[1, 2, 3],
             basis=[[1, 1, 1], [0, 1, 0], [0, 0, 1], [-1, 0, 0]],
-            scale=4.0, resolution=4)
+            scale=4.0,
+            resolution=4,
+        )
         coordinate_axis_2 = pvutils.add_coordinate_axes(
             origin=[0, 0, 0],
             basis=[[-1, 0, 0], [0, -1, 0], [0, 0, -1]],
-            scale=2.0, resolution=8)
+            scale=2.0,
+            resolution=8,
+        )
 
-        group_glyphs = pa.GroupDatasets(Input=(
-            coordinate_axis_1['base_glyphs']
-            + coordinate_axis_2['base_glyphs']))
+        group_glyphs = pa.GroupDatasets(
+            Input=(coordinate_axis_1["base_glyphs"] + coordinate_axis_2["base_glyphs"])
+        )
         merged_glyphs = pa.MergeBlocks(Input=group_glyphs)
         merged_glyphs.MergePoints = 0
 
         # Compare the vtk file with the reference file.
-        ref_file = os.path.join(testing_reference,
-            'coordinate_axes_multiple_reference.vtu')
+        ref_file = os.path.join(
+            testing_reference, "coordinate_axes_multiple_reference.vtu"
+        )
         ref = pvutils.load_file(ref_file)
-        self.assertTrue(compare_data(
-            pa.servermanager.Fetch(ref),
-            pa.servermanager.Fetch(merged_glyphs),
-            raise_error=True))
+        self.assertTrue(
+            compare_data(
+                pa.servermanager.Fetch(ref),
+                pa.servermanager.Fetch(merged_glyphs),
+                raise_error=True,
+            )
+        )
 
     def test_get_vtk_data(self):
         """
         Test the get_vtk_data_as_numpy function.
         """
 
-        raw_file = os.path.join(testing_reference, 'solid_bending_test',
-            'solid_bending_test.pvtu')
+        raw_file = os.path.join(
+            testing_reference, "solid_bending_test", "solid_bending_test.pvtu"
+        )
         raw = pvutils.load_file(raw_file)
-        threshold = pvutils.threshold(raw, field='element_gid',
-            data_type='CELLS', threshold_range=[69.0, 72.0])
+        threshold = pvutils.threshold(
+            raw, field="element_gid", data_type="CELLS", threshold_range=[69.0, 72.0]
+        )
 
-        vtk_data = pvutils.get_vtk_data_as_numpy(threshold, coordinates=True,
-            point_data=True, cell_data=True, cell_connectivity=True)
-        coordinates = vtk_data['coordinates']
-        point_data = vtk_data['point_data']
-        cell_data = vtk_data['cell_data']
-        cell_types = vtk_data['cell_types']
-        cell_connectivity = vtk_data['cell_connectivity']
+        vtk_data = pvutils.get_vtk_data_as_numpy(
+            threshold,
+            coordinates=True,
+            point_data=True,
+            cell_data=True,
+            cell_connectivity=True,
+        )
+        coordinates = vtk_data["coordinates"]
+        point_data = vtk_data["point_data"]
+        cell_data = vtk_data["cell_data"]
+        cell_types = vtk_data["cell_types"]
+        cell_connectivity = vtk_data["cell_connectivity"]
 
         coordinates_ref = [
             [-4.0, 5.5, 0.0],
@@ -811,8 +881,8 @@ class TestPvutils(unittest.TestCase):
             [-2.5, 5.5, 0.1],
             [-0.8361517190933228, 5.836465835571289, 0.0193617828190327],
             [0.0, 5.5, 0.1],
-            [-2.5, 5.5, -0.1]
-            ]
+            [-2.5, 5.5, -0.1],
+        ]
         displacement_ref = [
             [0.0003291757392039, 0.0003353593798872, 0.0159429200775854],
             [0.0, 0.0, 0.0],
@@ -829,72 +899,72 @@ class TestPvutils(unittest.TestCase):
             [-0.003470225734218, 0.0008279363486563, 0.0399211419658582],
             [-0.0023565150891169, 0.0005493473675322, 0.1053407068309232],
             [-0.0065797429018676, 0.0004041546251416, 0.1381304273983756],
-            [0.0025836127952543, 0.0008385389656487, 0.0400271307814528]
-            ]
+            [0.0025836127952543, 0.0008385389656487, 0.0400271307814528],
+        ]
         element_owner_ref = [0.0, 0.0, 0.0, 0.0]
         element_gid_ref = [69.0, 70.0, 71.0, 72.0]
         cell_types_ref = [10, 10, 10, 10]
         cell_connectivity_ref = [
-            [0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]]
+            [0, 1, 2, 3],
+            [4, 5, 6, 7],
+            [8, 9, 10, 11],
+            [12, 13, 14, 15],
+        ]
 
         self.assertTrue(len(point_data) == 1)
         self.assertTrue(len(cell_data) == 2)
         self.assertTrue(compare_numpy_arrays(coordinates, coordinates_ref))
-        self.assertTrue(compare_numpy_arrays(
-            point_data['displacement'], displacement_ref))
-        self.assertTrue(compare_numpy_arrays(
-            cell_data['element_owner'], element_owner_ref))
-        self.assertTrue(compare_numpy_arrays(
-            cell_data['element_gid'], element_gid_ref))
-        self.assertTrue(compare_numpy_arrays(
-            cell_types, np.array(cell_types_ref)))
-        self.assertTrue(compare_numpy_arrays(
-            cell_connectivity, np.array(cell_connectivity_ref)))
+        self.assertTrue(
+            compare_numpy_arrays(point_data["displacement"], displacement_ref)
+        )
+        self.assertTrue(
+            compare_numpy_arrays(cell_data["element_owner"], element_owner_ref)
+        )
+        self.assertTrue(compare_numpy_arrays(cell_data["element_gid"], element_gid_ref))
+        self.assertTrue(compare_numpy_arrays(cell_types, np.array(cell_types_ref)))
+        self.assertTrue(
+            compare_numpy_arrays(cell_connectivity, np.array(cell_connectivity_ref))
+        )
 
     def test_get_bounding_box(self):
         """
         Test the get_bounding_box function.
         """
 
-        raw_file = os.path.join(testing_reference, 'solid_bending_test',
-            'solid_bending_test.pvtu')
+        raw_file = os.path.join(
+            testing_reference, "solid_bending_test", "solid_bending_test.pvtu"
+        )
         raw = pvutils.load_file(raw_file)
-        threshold = pvutils.threshold(raw, 'element_gid', 'CELLS',
-            [1.0, 127.0])
+        threshold = pvutils.threshold(raw, "element_gid", "CELLS", [1.0, 127.0])
 
         bounding_box = np.array(pvutils.get_bounding_box(threshold))
         bounding_box_ref = [[-5.0, 5.0], [1.0, 8.0], [-0.1, 0.1]]
-        self.assertTrue(compare_numpy_arrays(bounding_box, bounding_box_ref,
-            tol=1e-8))
+        self.assertTrue(compare_numpy_arrays(bounding_box, bounding_box_ref, tol=1e-8))
 
     def test_list_to_mathematica_string(self):
         """
         Test the list_to_mathematica_string functionality.
         """
 
-        data = np.array([[
-            [1, 2, 3],
-            [4, 5, 6],
-            [9, 8, 7]]
-            ])
+        data = np.array([[[1, 2, 3], [4, 5, 6], [9, 8, 7]]])
 
         self.assertEqual(
             pvutils.list_to_mathematica_string(data),
-            '{{{1.000000000000000, 2.000000000000000, 3.000000000000000}, ' +
-            '{4.000000000000000, 5.000000000000000, 6.000000000000000}, ' +
-            '{9.000000000000000, 8.000000000000000, 7.000000000000000}}}'
-            )
+            "{{{1.000000000000000, 2.000000000000000, 3.000000000000000}, "
+            + "{4.000000000000000, 5.000000000000000, 6.000000000000000}, "
+            + "{9.000000000000000, 8.000000000000000, 7.000000000000000}}}",
+        )
         self.assertEqual(
-            pvutils.list_to_mathematica_string(data, name='testName'),
-            'testName = ' +
-            '{{{1.000000000000000, 2.000000000000000, 3.000000000000000}, ' +
-            '{4.000000000000000, 5.000000000000000, 6.000000000000000}, ' +
-            '{9.000000000000000, 8.000000000000000, 7.000000000000000}}};'
-            )
+            pvutils.list_to_mathematica_string(data, name="testName"),
+            "testName = "
+            + "{{{1.000000000000000, 2.000000000000000, 3.000000000000000}, "
+            + "{4.000000000000000, 5.000000000000000, 6.000000000000000}, "
+            + "{9.000000000000000, 8.000000000000000, 7.000000000000000}}};",
+        )
         self.assertEqual(
-            pvutils.list_to_mathematica_string(data, string_format='{:d}'),
-            '{{{1, 2, 3}, {4, 5, 6}, {9, 8, 7}}}'
-            )
+            pvutils.list_to_mathematica_string(data, string_format="{:d}"),
+            "{{{1, 2, 3}, {4, 5, 6}, {9, 8, 7}}}",
+        )
 
     def test_von_mises_stress(self):
         """
@@ -902,18 +972,21 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load the solid and apply the VonMises filter.
-        solid = pvutils.load_file(os.path.join(testing_reference,
-            'solid_cube_case', 'solid.case'))
+        solid = pvutils.load_file(
+            os.path.join(testing_reference, "solid_cube_case", "solid.case")
+        )
         scene = pvutils.update_scene()
         scene.GoToLast()
-        solid_von_mises = pvutils.von_mises_stress(solid, field_type='POINTS',
-            field_name='nodal_2PK_stresses_xyz')
+        solid_von_mises = pvutils.von_mises_stress(
+            solid, field_type="POINTS", field_name="nodal_2PK_stresses_xyz"
+        )
 
         # Get the stress data and compare with the reference solution.
         data = pvutils.get_vtk_data_as_numpy(solid_von_mises, point_data=True)
-        stress_data = data['point_data']['von_mises_stress_POINTS']
-        stress_data_ref = np.loadtxt(os.path.join(testing_reference,
-            'solid_von_mises.csv'))
+        stress_data = data["point_data"]["von_mises_stress_POINTS"]
+        stress_data_ref = np.loadtxt(
+            os.path.join(testing_reference, "solid_von_mises.csv")
+        )
         self.assertTrue(compare_numpy_arrays(stress_data, stress_data_ref))
 
     def test_blender_surface(self):
@@ -922,8 +995,9 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load the solid file.
-        solid = pvutils.load_file(os.path.join(testing_reference,
-            'elbow', 'structure.pvd'))
+        solid = pvutils.load_file(
+            os.path.join(testing_reference, "elbow", "structure.pvd")
+        )
 
         # Unite double nodes.
         solid = pa.CleantoGrid(Input=solid)
@@ -936,23 +1010,22 @@ class TestPvutils(unittest.TestCase):
 
         # Add a cell group.
         solid_surface = pa.Calculator(Input=solid_surface)
-        solid_surface.ResultArrayName = 'blender_cell_group'
-        solid_surface.Function = 'element_gid < 25'
-        solid_surface.AttributeType = 'Cell Data'
+        solid_surface.ResultArrayName = "blender_cell_group"
+        solid_surface.Function = "element_gid < 25"
+        solid_surface.AttributeType = "Cell Data"
 
         # Export to blender.
         pa.Show(solid_surface)
-        blender.surface_to_blender(solid_surface, 'surface', testing_temp)
+        blender.surface_to_blender(solid_surface, "surface", testing_temp)
 
         # Load the reference array.
-        exec(open(os.path.join(testing_reference, 'blender_surface_ref.py')
-            ).read())
+        exec(open(os.path.join(testing_reference, "blender_surface_ref.py")).read())
 
         # Compare to the created array.
         surface = np.load(
-            os.path.join(testing_temp, 'surface_data.npy'),
-            allow_pickle=True).item()
-        self.assertTrue(compare_dict(locals()['surface_ref'], surface))
+            os.path.join(testing_temp, "surface_data.npy"), allow_pickle=True
+        ).item()
+        self.assertTrue(compare_dict(locals()["surface_ref"], surface))
 
     def test_blender_fiber(self):
         """
@@ -960,36 +1033,34 @@ class TestPvutils(unittest.TestCase):
         """
 
         # Load the beam file.
-        beam = pvutils.BeamDisplay(os.path.join(testing_reference,
-            'elbow', 'structure-beams.pvd'),
+        beam = pvutils.BeamDisplay(
+            os.path.join(testing_reference, "elbow", "structure-beams.pvd"),
             merge_poly_lines=True,
-            merge_polylines_max_angle=np.pi / 6.0)
+            merge_polylines_max_angle=np.pi / 6.0,
+        )
 
         # Export to blender.
-        blender.fibers_to_blender(
-            beam.beam_merge_poly_line,
-            testing_temp + '/fiber')
+        blender.fibers_to_blender(beam.beam_merge_poly_line, testing_temp + "/fiber")
 
         # Load the reference array.
-        exec(open(os.path.join(testing_reference, 'blender_fiber_ref.py')
-            ).read())
+        exec(open(os.path.join(testing_reference, "blender_fiber_ref.py")).read())
 
         # Compare to the created array.
         fiber = np.load(
-            os.path.join(testing_temp, 'fiber.npy'),
-            allow_pickle=True).item()
-        self.assertTrue(compare_dict(locals()['fiber_ref'], fiber))
+            os.path.join(testing_temp, "fiber.npy"), allow_pickle=True
+        ).item()
+        self.assertTrue(compare_dict(locals()["fiber_ref"], fiber))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Execution part of script.
 
     pa._DisableFirstRenderCameraReset()
 
     # Define the testing paths.
     testing_path = os.path.abspath(os.getcwd())
-    testing_reference = os.path.join(testing_path, 'reference-files')
-    testing_temp = os.path.join(testing_path, 'testing-tmp')
+    testing_reference = os.path.join(testing_path, "reference-files")
+    testing_temp = os.path.join(testing_path, "testing-tmp")
 
     # Check and clean the temp directory.
     if not os.path.isdir(testing_temp):
@@ -998,5 +1069,6 @@ if __name__ == '__main__':
 
     # Perform the tests.
     run = unittest.TextTestRunner().run(
-        unittest.TestLoader().loadTestsFromTestCase(TestPvutils))
+        unittest.TestLoader().loadTestsFromTestCase(TestPvutils)
+    )
     sys.exit(not (run.wasSuccessful() and len(run.skipped) == 0))

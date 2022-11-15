@@ -39,8 +39,8 @@ from .utility_functions import (
     set_timestep,
     setup_view,
     update_scene,
-    von_mises_stress
-    )
+    von_mises_stress,
+)
 
 # Load the filter wrappers.
 from .filter_wrapper import (
@@ -50,13 +50,11 @@ from .filter_wrapper import (
     threshold,
     transform,
     tube,
-    warp
-    )
+    warp,
+)
 
 # Load utility classes.
-from .utility_classes import (
-    BeamDisplay
-    )
+from .utility_classes import BeamDisplay
 
 # Load scripts.
 from . import scripts
