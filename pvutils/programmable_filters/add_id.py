@@ -20,10 +20,18 @@ for i in range(pdi.GetPointData().GetNumberOfArrays()):
 
 # Loop over cells and nodes and get ids.
 id_items = [
-    ['cell_id', vtk.vtkDoubleArray(), pdi.GetNumberOfCells(),
-        pdo.GetCellData().AddArray],
-    ['node_id', vtk.vtkDoubleArray(), pdi.GetNumberOfPoints(),
-        pdo.GetPointData().AddArray]
+    [
+        "cell_id",
+        vtk.vtkDoubleArray(),
+        pdi.GetNumberOfCells(),
+        pdo.GetCellData().AddArray,
+    ],
+    [
+        "node_id",
+        vtk.vtkDoubleArray(),
+        pdi.GetNumberOfPoints(),
+        pdo.GetPointData().AddArray,
+    ],
 ]
 for name, array, n_items, add_function in id_items:
     array.SetName(name)

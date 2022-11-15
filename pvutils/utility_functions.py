@@ -30,18 +30,18 @@ def _print_attibutes(obj, attributes, variable_name):
     for att in attributes:
         attribute = getattr(obj, att)
         if isinstance(attribute, str):
-            att_str = '\'{}\''.format(attribute)
-            att_str = att_str.replace('\\', '\\\\')
+            att_str = "'{}'".format(attribute)
+            att_str = att_str.replace("\\", "\\\\")
         elif isinstance(attribute, float):
-            att_str = '{0:.6g}'.format(attribute)
+            att_str = "{0:.6g}".format(attribute)
         elif type(attribute) == paraview.servermanager.VectorProperty:
             att_str_list = []
             for val in attribute:
-                att_str = att_str_list.append('{0:.6g}'.format(val))
-            att_str = '[{}]'.format(', '.join(att_str_list))
+                att_str = att_str_list.append("{0:.6g}".format(val))
+            att_str = "[{}]".format(", ".join(att_str_list))
         else:
             att_str = str(attribute)
-        print('{}.{} = {}'.format(variable_name, att, att_str))
+        print("{}.{} = {}".format(variable_name, att, att_str))
 
 
 def load_file(path):
@@ -52,19 +52,19 @@ def load_file(path):
     if not os.path.isfile(path):
         raise ValueError('The file "{}" does not exist!'.format(path))
 
-    split_path = os.path.basename(path).split('.')
+    split_path = os.path.basename(path).split(".")
     extension = split_path[-1].lower()
-    base_name = ''.join(split_path[:-1])
+    base_name = "".join(split_path[:-1])
 
-    if extension == 'pvd':
+    if extension == "pvd":
         data = pa.PVDReader(FileName=path)
-    elif extension == 'pvtu':
+    elif extension == "pvtu":
         data = pa.XMLPartitionedUnstructuredGridReader(FileName=[path])
-    elif extension == 'vtu':
+    elif extension == "vtu":
         data = pa.XMLUnstructuredGridReader(FileName=[path])
-    elif extension == 'exo':
+    elif extension == "exo":
         data = pa.ExodusIIReader(FileName=[path])
-    elif extension == 'case':
+    elif extension == "case":
         # In this case we get a multiblock structure, we do not want this.
         data = pa.EnSightReader(CaseFileName=path)
         data = pa.MergeBlocks(Input=data)
@@ -75,8 +75,15 @@ def load_file(path):
     return data
 
 
-def display(data, line_width=None, line_color=None, solid_color=None,
-        representation=None, nonlinear_subdividison=None, opacity=None):
+def display(
+    data,
+    line_width=None,
+    line_color=None,
+    solid_color=None,
+    representation=None,
+    nonlinear_subdividison=None,
+    opacity=None,
+):
     """
     Set the display options for the ParaView object data.
 
@@ -101,8 +108,7 @@ def display(data, line_width=None, line_color=None, solid_color=None,
         display.Opacity = opacity
 
 
-def contour(data, field='displacement', data_type='POINTS',
-        vector_type='Magnitude'):
+def contour(data, field="displacement", data_type="POINTS", vector_type="Magnitude"):
     """
     Set the contour options for a data item.
 
@@ -135,8 +141,7 @@ def get_source_name(item):
         if value == item:
             return key[0]
     else:
-        raise ValueError('The item "{}" was not found in sources!'.format(
-            item))
+        raise ValueError('The item "{}" was not found in sources!'.format(item))
 
 
 def get_field_names(item):
@@ -167,31 +172,27 @@ def get_field_names(item):
     return_dict = {}
     visualization_data = pa.servermanager.Fetch(item)
     for funct, data_type in [
-            (visualization_data.GetFieldData, 'FIELD'),
-            (visualization_data.GetCellData, 'CELLS'),
-            (visualization_data.GetPointData, 'POINTS')
-            ]:
+        (visualization_data.GetFieldData, "FIELD"),
+        (visualization_data.GetCellData, "CELLS"),
+        (visualization_data.GetPointData, "POINTS"),
+    ]:
 
         # Create the entry in the return dictionary.
         return_dict[data_type] = []
 
         # Get all names for this data type.
         data = funct()
-        names = [data.GetArrayName(i)
-                 for i in range(data.GetNumberOfArrays())]
+        names = [data.GetArrayName(i) for i in range(data.GetNumberOfArrays())]
 
         # Add the number of components for the fields.
         for name in names:
             field_data = data.GetArray(name)
-            return_dict[data_type].append(
-                (name, field_data.GetNumberOfComponents())
-                )
+            return_dict[data_type].append((name, field_data.GetNumberOfComponents()))
 
     return return_dict
 
 
-def check_data(item, name, data_type='POINTS', dimension=None,
-        fail_on_error=True):
+def check_data(item, name, data_type="POINTS", dimension=None, fail_on_error=True):
     """
     Check if data with the given name and dimension exists.
 
@@ -213,20 +214,25 @@ def check_data(item, name, data_type='POINTS', dimension=None,
         if field_name == name:
             if (dimension is not None) and (not field_dimension == dimension):
                 if fail_on_error:
-                    raise ValueError((
-                        'The field {} has {} instead of {} dimensions in the '
-                        + 'source "{}"!').format(
-                            name, field_dimension, dimension,
-                            get_source_name(item))
+                    raise ValueError(
+                        (
+                            "The field {} has {} instead of {} dimensions in the "
+                            + 'source "{}"!'
+                        ).format(
+                            name, field_dimension, dimension, get_source_name(item)
                         )
+                    )
                 return False
             return True
     else:
         # No match was found in the field names.
         if fail_on_error:
-            raise ValueError(('Could not find {} data with the name {} in the'
-                + 'source "{}"! Available names: {}').format(data_type, name,
-                    get_source_name(item), field_names))
+            raise ValueError(
+                (
+                    "Could not find {} data with the name {} in the"
+                    + 'source "{}"! Available names: {}'
+                ).format(data_type, name, get_source_name(item), field_names)
+            )
         return False
 
 
@@ -235,7 +241,7 @@ def get_base(data):
     Return the root item of a given item, e.g. the base geometry object.
     """
 
-    if 'Input' in dir(data):
+    if "Input" in dir(data):
         return get_base(data.Input)
     else:
         return data
@@ -268,11 +274,11 @@ def reset_layout():
             old_name = name
             break
     else:
-        raise ValueError('Could not get the layout name!')
+        raise ValueError("Could not get the layout name!")
 
     # Create the new layout.
-    new_layout = pa.CreateLayout('temp layout')
-    new_view = pa.CreateView('RenderView')
+    new_layout = pa.CreateLayout("temp layout")
+    new_view = pa.CreateView("RenderView")
     new_layout.AssignView(0, new_view)
 
     # Delete the old stuff.
@@ -290,29 +296,30 @@ def get_filter_script_path(pvutils_name, path, pvutils_prefix):
     The arguments are mutually exclusive.
     """
 
-    if (pvutils_name is None and path is None):
-        raise ValueError('Either a filter in the pvutils repository or a path '
-            'have to be given.')
-    elif (pvutils_name is not None and path is not None):
-        raise ValueError('Both, a filter in the pvutils repository and a path '
-            'are given, the arguments are mutually exclusive.')
+    if pvutils_name is None and path is None:
+        raise ValueError(
+            "Either a filter in the pvutils repository or a path " "have to be given."
+        )
+    elif pvutils_name is not None and path is not None:
+        raise ValueError(
+            "Both, a filter in the pvutils repository and a path "
+            "are given, the arguments are mutually exclusive."
+        )
 
     if pvutils_name is not None:
         filter_path = os.path.join(
-            os.path.dirname(__file__),
-            pvutils_prefix,
-            '{}.py'.format(pvutils_name))
+            os.path.dirname(__file__), pvutils_prefix, "{}.py".format(pvutils_name)
+        )
     else:
         filter_path = path
 
     if not os.path.isfile(filter_path):
-        raise ValueError('The filter path "{}" does not exist'.format(
-            filter_path))
+        raise ValueError('The filter path "{}" does not exist'.format(filter_path))
     else:
         return (
             os.path.abspath(filter_path),
-            os.path.splitext(os.path.basename(filter_path))[0]
-            )
+            os.path.splitext(os.path.basename(filter_path))[0],
+        )
 
 
 def programmable_filter(source, *, pvutils_filter=None, path=None, **kwargs):
@@ -330,29 +337,31 @@ def programmable_filter(source, *, pvutils_filter=None, path=None, **kwargs):
         Path to a filter script.
     """
 
-    filter_path, name = get_filter_script_path(pvutils_filter, path,
-        'programmable_filters')
+    filter_path, name = get_filter_script_path(
+        pvutils_filter, path, "programmable_filters"
+    )
 
     # Store the kwargs in a variable in the namespace of the ParaView python
     # module. This variable can be retrieved by the programmable filter. The
     # kwargs_id stores which keyword arguments belong to this programmable
     # filter.
-    if hasattr(paraview, 'programmable_filter_kwargs'):
+    if hasattr(paraview, "programmable_filter_kwargs"):
         paraview.programmable_filter_kwargs.append(kwargs)
     else:
         paraview.programmable_filter_kwargs = [kwargs]
     kwargs_id = len(paraview.programmable_filter_kwargs) - 1
 
     pv_filter = pa.ProgrammableFilter(Input=source)
-    pv_filter.Script = (
-        'kwargs_id = {}\n'.format(kwargs_id) +
-        'exec(open("{}").read())'.format(filter_path))
+    pv_filter.Script = "kwargs_id = {}\n".format(
+        kwargs_id
+    ) + 'exec(open("{}").read())'.format(filter_path)
     pa.RenameSource(name, pv_filter)
     return pv_filter
 
 
-def programmable_source(*, pvutils_filter=None, path=None,
-        output_data='vtkUnstructuredGrid', **kwargs):
+def programmable_source(
+    *, pvutils_filter=None, path=None, output_data="vtkUnstructuredGrid", **kwargs
+):
     """
     Apply a programmable source filter, either from this git repository or from
     a given path.
@@ -365,14 +374,15 @@ def programmable_source(*, pvutils_filter=None, path=None,
         Path to a filter script.
     """
 
-    filter_path, name = get_filter_script_path(pvutils_filter, path,
-        'programmable_source')
+    filter_path, name = get_filter_script_path(
+        pvutils_filter, path, "programmable_source"
+    )
 
     # Store the kwargs in a variable in the namespace of the ParaView python
     # module. This variable can be retrieved by the programmable source. The
     # kwargs_id stores which keyword arguments belong to this programmable
     # source.
-    if hasattr(paraview, 'programmable_source_kwargs'):
+    if hasattr(paraview, "programmable_source_kwargs"):
         paraview.programmable_source_kwargs.append(kwargs)
     else:
         paraview.programmable_source_kwargs = [kwargs]
@@ -380,10 +390,9 @@ def programmable_source(*, pvutils_filter=None, path=None,
 
     pv_source = pa.ProgrammableSource()
     pv_source.OutputDataSetType = output_data
-    pv_source.Script = (
-        'kwargs_id = {}\n'.format(kwargs_id) +
-        'exec(open("{}").read())'.format(filter_path)
-        )
+    pv_source.Script = "kwargs_id = {}\n".format(
+        kwargs_id
+    ) + 'exec(open("{}").read())'.format(filter_path)
     pa.RenameSource(name, pv_source)
     return pv_source
 
@@ -397,7 +406,7 @@ def get_display(data, view=None):
 
 def get_view():
     """Return the view object from ParaView."""
-    return pa.GetActiveViewOrCreate('RenderView')
+    return pa.GetActiveViewOrCreate("RenderView")
 
 
 def setup_view(*args, **kwargs):
@@ -407,36 +416,38 @@ def setup_view(*args, **kwargs):
 
     # When python3 is used this construct will be obsolete.
     if sys.version_info >= (3, 0):
-        raise ValueError('The keyword management in setup_view should be '
-            + 'adapted to python3.')
+        raise ValueError(
+            "The keyword management in setup_view should be adapted to python3."
+        )
 
     # Default keyword arguments.
     kwargs_default = {
         # The current view object. If none is given, the default one is taken.
-        'view': None,
+        "view": None,
         # Name of the view object in the print out. You can add spaces here to
         # directly copy the resulting print output to the code.
-        'view_name': None,
+        "view_name": None,
         # Name of the variable that holds the view size in pixel.
-        'size_pixel_name': None,
+        "size_pixel_name": None,
         # If the size of the view should be fixed, i.e. preview mode should be
         # used. If pvpython is used, this does not have an effect. The size
         # will be taken from view.
-        'fixed_size': False
-        }
+        "fixed_size": False,
+    }
 
     # Set the keyword arguments.
     for key in kwargs_default.keys():
         if key in kwargs:
             value = kwargs[key]
-            del(kwargs[key])
+            del kwargs[key]
         else:
             value = kwargs_default[key]
-        exec(key + ' = value')
+        exec(key + " = value")
     # Check that no keyword arguments remain.
     if len(kwargs) > 0:
-        raise ValueError('Unsupported keyword arguments {} given.'.format(
-            kwargs.keys()))
+        raise ValueError(
+            "Unsupported keyword arguments {} given.".format(kwargs.keys())
+        )
 
     # Get the view object.
     if view is None:
@@ -455,10 +466,9 @@ def setup_view(*args, **kwargs):
             layout.PreviewMode = view.ViewSize
 
     if view_name is not None:
-        set_function_arguments('print_view_state', 'view_name', view_name)
+        set_function_arguments("print_view_state", "view_name", view_name)
     if size_pixel_name is not None:
-        set_function_arguments('print_view_state', 'size_pixel_name',
-            size_pixel_name)
+        set_function_arguments("print_view_state", "size_pixel_name", size_pixel_name)
     print_view_state(view, *args)
 
 
@@ -468,70 +478,70 @@ def print_view_state(view, *args):
     the GUI and then copy the state to a script.
     """
 
-    view_name = get_function_arguments('view_name', default_value='view')
-    size_pixel_name = get_function_arguments('size_pixel_name',
-        default_value='size_pixel')
+    view_name = get_function_arguments("view_name", default_value="view")
+    size_pixel_name = get_function_arguments(
+        "size_pixel_name", default_value="size_pixel"
+    )
 
     # Display the view attributes.
     attributes = [
-        'CameraPosition',
-        'CameraFocalPoint',
-        'CameraViewUp',
-        'CameraViewAngle',
-        'CameraParallelScale',
-        'OrientationAxesVisibility',
-        'CameraParallelProjection',
-        'InteractionMode'
-        ]
-    print('{} = {}\n\n'.format(size_pixel_name, view.ViewSize))
-    print('{}.ViewSize = {}'.format(view_name, size_pixel_name))
+        "CameraPosition",
+        "CameraFocalPoint",
+        "CameraViewUp",
+        "CameraViewAngle",
+        "CameraParallelScale",
+        "OrientationAxesVisibility",
+        "CameraParallelProjection",
+        "InteractionMode",
+    ]
+    print("{} = {}\n\n".format(size_pixel_name, view.ViewSize))
+    print("{}.ViewSize = {}".format(view_name, size_pixel_name))
     _print_attibutes(view, attributes, view_name)
-    print('')
+    print("")
 
     # If additional items are given to this function, print their properties.
     args = list(args)
-    extra_args = get_function_arguments('extra_args', default_value=[])
+    extra_args = get_function_arguments("extra_args", default_value=[])
     args.extend(extra_args)
     for name, arg in args:
 
         item_string = str(arg)
-        if 'ScalarBarWidgetRepresentation' in item_string:
+        if "ScalarBarWidgetRepresentation" in item_string:
             # Display the color bar attributes.
             attributes = [
-                'Title',
-                'ComponentTitle',
-                'WindowLocation',
-                'Orientation',
-                'HorizontalTitle',
-                'ScalarBarLength',
-                'ScalarBarThickness',
-                'Position',
-                'UseCustomLabels',
-                'CustomLabels',
-                'AddRangeLabels',
-                'DrawAnnotations',
-                'AddRangeAnnotations',
-                'AutomaticAnnotations',
-                'DrawNanAnnotation',
-                'DrawTickLabels'
-                ]
-            print('')
+                "Title",
+                "ComponentTitle",
+                "WindowLocation",
+                "Orientation",
+                "HorizontalTitle",
+                "ScalarBarLength",
+                "ScalarBarThickness",
+                "Position",
+                "UseCustomLabels",
+                "CustomLabels",
+                "AddRangeLabels",
+                "DrawAnnotations",
+                "AddRangeAnnotations",
+                "AutomaticAnnotations",
+                "DrawNanAnnotation",
+                "DrawTickLabels",
+            ]
+            print("")
             _print_attibutes(arg, attributes, name)
 
         else:
-            raise TypeError('Got unexpected type')
+            raise TypeError("Got unexpected type")
 
 
-def set_print_view_state_color_bar(color_bar, name='color_bar'):
+def set_print_view_state_color_bar(color_bar, name="color_bar"):
     """
     Set a scalar bar that will be included in print_view_state.
     """
 
-    extra_args = get_function_arguments('extra_args',
-        function_name='print_view_state')
+    extra_args = get_function_arguments("extra_args", function_name="print_view_state")
     if extra_args is None:
         extra_args = []
-        set_function_arguments('print_view_state', 'extra_args', extra_args)
+        set_function_arguments("print_view_state", "extra_args", extra_args)
 
     extra_args.append([name, color_bar])
 
@@ -541,7 +551,7 @@ def reset_print_view_state_color_bar():
     Reset optional arguments for print_view_state.
     """
 
-    delete_function_arguments('print_view_state', 'extra_args')
+    delete_function_arguments("print_view_state", "extra_args")
 
 
 def delete_function_arguments(function_name, variable_name):
@@ -550,15 +560,16 @@ def delete_function_arguments(function_name, variable_name):
     ParaView.
     """
 
-    if hasattr(paraview, 'pvutils_args'):
+    if hasattr(paraview, "pvutils_args"):
         if function_name in paraview.pvutils_args.keys():
             variable_dictionary = paraview.pvutils_args[function_name]
             if variable_name in variable_dictionary.keys():
                 del variable_dictionary[variable_name]
 
 
-def set_function_arguments(function_name, variable_name, variable_value,
-        overwrite=False):
+def set_function_arguments(
+    function_name, variable_name, variable_value, overwrite=False
+):
     """
     Set arguments for a function that will be called from within ParaView.
 
@@ -575,7 +586,7 @@ def set_function_arguments(function_name, variable_name, variable_value,
         an error will be thrown it an existing variable is overwritten.
     """
 
-    if not hasattr(paraview, 'pvutils_args'):
+    if not hasattr(paraview, "pvutils_args"):
         paraview.pvutils_args = {}
 
     if function_name not in paraview.pvutils_args.keys():
@@ -583,8 +594,11 @@ def set_function_arguments(function_name, variable_name, variable_value,
 
     variable_dictionary = paraview.pvutils_args[function_name]
     if variable_name in variable_dictionary.keys() and not overwrite:
-        raise KeyError(('The variable {} in the function {} is ' +
-            'already set!').format(variable_name, function_name))
+        raise KeyError(
+            ("The variable {} in the function {} is already set!").format(
+                variable_name, function_name
+            )
+        )
 
     variable_dictionary[variable_name] = variable_value
 
@@ -593,12 +607,11 @@ def reset_function_arguments():
     """
     Reset all function arguments for functions called from within ParaView.
     """
-    if hasattr(paraview, 'pvutils_args'):
+    if hasattr(paraview, "pvutils_args"):
         paraview.pvutils_args = {}
 
 
-def get_function_arguments(variable_name, default_value=None,
-        function_name=None):
+def get_function_arguments(variable_name, default_value=None, function_name=None):
     """
     Get an argument that has previously been set. If it has not been set, the
     default value is returned.
@@ -616,10 +629,11 @@ def get_function_arguments(variable_name, default_value=None,
 
     if function_name is None:
         import inspect
+
         stack = inspect.stack()
         function_name = stack[1][3]
 
-    if hasattr(paraview, 'pvutils_args'):
+    if hasattr(paraview, "pvutils_args"):
         if function_name in paraview.pvutils_args.keys():
             if variable_name in paraview.pvutils_args[function_name].keys():
                 return paraview.pvutils_args[function_name][variable_name]
@@ -638,7 +652,7 @@ def is_pvpython():
     """
     Check if the current script is executed by ParaView or pvpthon.
     """
-    return not sys.argv[0] == ''
+    return not sys.argv[0] == ""
 
 
 def set_colorbar_font(color_bar, font_size, dpi):
@@ -649,7 +663,7 @@ def set_colorbar_font(color_bar, font_size, dpi):
     """
 
     # 72 points are in an inch. Calculate the needed pixels for the font size.
-    dpi_font = 72.
+    dpi_font = 72.0
     font_size_pixel = (np.array(font_size) / dpi_font * dpi).astype(int)
 
     color_bar.TitleFontSize = font_size_pixel[0]
@@ -696,8 +710,12 @@ def set_timestep(time, fail_on_not_available_time=True):
         # Check that the given time is a time step in the current state.
         times = get_available_timesteps()
         if min(np.abs(np.array(times) - time)) > 1e-10:
-            raise ValueError(('The given time {} is not a valid time step in '
-                + 'ParaView. The valid times are: {}').format(time, times))
+            raise ValueError(
+                (
+                    "The given time {} is not a valid time step in "
+                    + "ParaView. The valid times are: {}"
+                ).format(time, times)
+            )
 
     scene = pa.GetAnimationScene()
     scene.TimeKeeper.Time = time
@@ -716,17 +734,19 @@ def get_parents(source):
 
     parents = [source]
     # Only add the parent if the object has a method 'get_parents'.
-    if 'Input' in dir(source):
+    if "Input" in dir(source):
         # In some cases input returns a list, e.g. for programmable filters. In
         # this case this function only works if there is exactly one element in
         # that list.
         pv_input = source.Input
-        is_pv_list = ('paraview.servermanager.InputProperty'
-            in str(type(pv_input)))
+        is_pv_list = "paraview.servermanager.InputProperty" in str(type(pv_input))
         if is_pv_list and len(pv_input) > 1:
-            raise ValueError(('"Input" for the object "{}" returned the '
-                + 'following list with more than 1 entry: {}'
-                ).format(source, pv_input))
+            raise ValueError(
+                (
+                    '"Input" for the object "{}" returned the '
+                    + "following list with more than 1 entry: {}"
+                ).format(source, pv_input)
+            )
         elif is_pv_list:
             # For some reason we can not access the __getitem__ method with
             # pv_input[index]. Therefore, we call the method directly.
@@ -767,15 +787,14 @@ def set_color_range(field, val_min, val_max):
     """
 
     color_transfer_function = pa.GetColorTransferFunction(field)
-    color_transfer_function.RescaleTransferFunction(float(val_min),
-        float(val_max))
+    color_transfer_function.RescaleTransferFunction(float(val_min), float(val_max))
     opacity_transfer_function = pa.GetOpacityTransferFunction(field)
-    opacity_transfer_function.RescaleTransferFunction(float(val_min),
-        float(val_max))
+    opacity_transfer_function.RescaleTransferFunction(float(val_min), float(val_max))
 
 
-def von_mises_stress(source, field_name='nodal_cauchy_stresses_xyz',
-        field_type='POINTS'):
+def von_mises_stress(
+    source, field_name="nodal_cauchy_stresses_xyz", field_type="POINTS"
+):
     """
     Add a field with the vonMises stress.
 
@@ -793,23 +812,23 @@ def von_mises_stress(source, field_name='nodal_cauchy_stresses_xyz',
     check_data(source, field_name, data_type=field_type)
 
     function = (
-        'sqrt(' +
-        '{0}_XX^2 + {0}_YY^2 + {0}_ZZ^2' +
-        '- {0}_XX * {0}_YY - {0}_XX * {0}_ZZ - {0}_ZZ * {0}_YY' +
-        '+ 6*({0}_XY^2 + {0}_YZ^2 + {0}_XZ^2))')
+        "sqrt("
+        + "{0}_XX^2 + {0}_YY^2 + {0}_ZZ^2"
+        + "- {0}_XX * {0}_YY - {0}_XX * {0}_ZZ - {0}_ZZ * {0}_YY"
+        + "+ 6*({0}_XY^2 + {0}_YZ^2 + {0}_XZ^2))"
+    )
 
     calc = pa.Calculator(Input=source)
-    calc.ResultArrayName = 'von_mises_stress_{}'.format(field_type)
+    calc.ResultArrayName = "von_mises_stress_{}".format(field_type)
     calc.Function = function.format(field_name)
-    if field_type == 'POINTS':
-        calc.AttributeType = 'Point Data'
+    if field_type == "POINTS":
+        calc.AttributeType = "Point Data"
     else:
-        calc.AttributeType = 'Cell Data'
+        calc.AttributeType = "Cell Data"
     return calc
 
 
-def add_coordinate_axes(origin=None, basis=None, scale=1.0, resolution=20,
-        show=True):
+def add_coordinate_axes(origin=None, basis=None, scale=1.0, resolution=20, show=True):
     """
     Add arrow representations for coordinate axes.
 
@@ -840,21 +859,16 @@ def add_coordinate_axes(origin=None, basis=None, scale=1.0, resolution=20,
     if origin is None:
         origin = [0, 0, 0]
     if basis is None:
-        basis = [
-            [1, 0, 0],
-            [0, 1, 0],
-            [0, 0, 1]
-            ]
-    sorce = programmable_source(pvutils_filter='axes', origin=origin,
-        basis=basis)
+        basis = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+    sorce = programmable_source(pvutils_filter="axes", origin=origin, basis=basis)
     base_glyphs = []
     for i, base in enumerate(basis):
         base_glyph = filter_wrapper.glyph(sorce)
-        base_glyph.GlyphType = 'Arrow'
-        base_glyph.OrientationArray = ['POINTS', 'base_{}'.format(i + 1)]
-        base_glyph.ScaleArray = ['POINTS', 'base_{}'.format(i + 1)]
+        base_glyph.GlyphType = "Arrow"
+        base_glyph.OrientationArray = ["POINTS", "base_{}".format(i + 1)]
+        base_glyph.ScaleArray = ["POINTS", "base_{}".format(i + 1)]
         base_glyph.ScaleFactor = scale
-        base_glyph.GlyphMode = 'All Points'
+        base_glyph.GlyphMode = "All Points"
         base_glyph.GlyphType.TipResolution = resolution
         base_glyph.GlyphType.ShaftResolution = resolution
 
@@ -869,10 +883,7 @@ def add_coordinate_axes(origin=None, basis=None, scale=1.0, resolution=20,
             pa.Show(base_glyph)
         base_glyphs.append(base_glyph)
 
-    return {
-        'axis_source': sorce,
-        'base_glyphs': base_glyphs
-        }
+    return {"axis_source": sorce, "base_glyphs": base_glyphs}
 
 
 def get_bounding_box(source):
@@ -886,16 +897,21 @@ def get_bounding_box(source):
 
     outline = pa.Outline(Input=source)
     vtk_data = get_vtk_data_as_numpy(outline, coordinates=True)
-    position = vtk_data['coordinates']
+    position = vtk_data["coordinates"]
     max_min_coordinates = [
-        [np.min(position[:, i]), np.max(position[:, i])]
-        for i in range(3)]
+        [np.min(position[:, i]), np.max(position[:, i])] for i in range(3)
+    ]
     pa.Delete(outline)
     return max_min_coordinates
 
 
-def get_vtk_data_as_numpy(source, coordinates=False, point_data=False,
-        cell_data=False, cell_connectivity=False):
+def get_vtk_data_as_numpy(
+    source,
+    coordinates=False,
+    point_data=False,
+    cell_data=False,
+    cell_connectivity=False,
+):
     """
     Return all vtk data arrays.
 
@@ -936,7 +952,8 @@ def get_vtk_data_as_numpy(source, coordinates=False, point_data=False,
         data_dir = {}
         for i in range(input_data.GetNumberOfArrays()):
             data_dir[input_data.GetArrayName(i)] = VN.vtk_to_numpy(
-                input_data.GetArray(i))
+                input_data.GetArray(i)
+            )
         return data_dir
 
     if point_data:
@@ -952,8 +969,9 @@ def get_vtk_data_as_numpy(source, coordinates=False, point_data=False,
         """
         Convert an vtk id list to a python list.
         """
-        return [int(vtk_id_list.GetId(i_id)) for i_id in
-            range(vtk_id_list.GetNumberOfIds())]
+        return [
+            int(vtk_id_list.GetId(i_id)) for i_id in range(vtk_id_list.GetNumberOfIds())
+        ]
 
     if cell_connectivity:
         n_cells = data.GetNumberOfCells()
@@ -967,15 +985,15 @@ def get_vtk_data_as_numpy(source, coordinates=False, point_data=False,
         cell_connectivity = None
 
     return {
-        'coordinates': coordinates,
-        'point_data': point_data,
-        'cell_data': cell_data,
-        'cell_types': cell_types,
-        'cell_connectivity': cell_connectivity
-        }
+        "coordinates": coordinates,
+        "point_data": point_data,
+        "cell_data": cell_data,
+        "cell_types": cell_types,
+        "cell_connectivity": cell_connectivity,
+    }
 
 
-def list_to_mathematica_string(data, name=None, string_format='{:.15f}'):
+def list_to_mathematica_string(data, name=None, string_format="{:.15f}"):
     """
     Convert a list to a Mathematica string.
 
@@ -993,19 +1011,19 @@ def list_to_mathematica_string(data, name=None, string_format='{:.15f}'):
     def data_to_string(data):
         """Recursive function to convert array-like structures to a string."""
         if isinstance(data, list) or isinstance(data, np.ndarray):
-            data_string = '{'
+            data_string = "{"
             for var in data:
                 data_string += data_to_string(var)
-            data_string = data_string[:-2] + '}, '
+            data_string = data_string[:-2] + "}, "
             return data_string
         else:
-            return string_format.format(data) + ', '
+            return string_format.format(data) + ", "
 
     data_string = data_to_string(data)[:-2]
     if name is None:
         return data_string
     else:
-        return '{} = {};'.format(name, data_string)
+        return "{} = {};".format(name, data_string)
 
 
 def set_categorized_colorbar(color_transfer_functions, data_labels):
@@ -1014,11 +1032,11 @@ def set_categorized_colorbar(color_transfer_functions, data_labels):
     """
 
     import matplotlib.pyplot as plt
-    colors = plt.get_cmap('Set1').colors
+
+    colors = plt.get_cmap("Set1").colors
 
     if len(data_labels) > len(colors):
-        raise ValueError('Colormap has to have at least as many entries as '
-            + 'the labels.')
+        raise ValueError("Colormap has to have at least as many entries as the labels.")
 
     annotations = []
     indexed_colors = []
@@ -1034,9 +1052,14 @@ def set_categorized_colorbar(color_transfer_functions, data_labels):
     color_transfer_functions.InterpretValuesAsCategories = 1
 
 
-def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
-        figure_path='',
-        number_format='{$\\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\\mathrm{e}{##1}}}]{\\tick}$}'):
+def export_to_tikz(
+    name,
+    view=None,
+    dpi=300,
+    color_transfer_functions=None,
+    figure_path="",
+    number_format="{$\\pgfmathprintnumber[sci,precision=1,sci generic={mantissa sep=,exponent={\\mathrm{e}{##1}}}]{\\tick}$}",
+):
     """
     Export a screenshot and wrap the color bars inside a TikZ axis.
 
@@ -1100,10 +1123,10 @@ def export_to_tikz(name, view=None, dpi=300, color_transfer_functions=None,
             tick.extend(min_max)
         tick.extend(color_bar.CustomLabels)
         tick.sort()
-        tick_str = ','.join(map(str, tick))
+        tick_str = ",".join(map(str, tick))
 
         # Add the code that is valid for all types of labels.
-        tikz_code = '''\\begin{{axis}}[
+        tikz_code = """\\begin{{axis}}[
 scale only axis,
 scaled x ticks=false,
 scaled y ticks=false,
@@ -1115,39 +1138,39 @@ yticklabel={number_format},
 ymin={min_max[0]},
 ymax={min_max[1]},
 xmin={min_max[0]},
-xmax={min_max[1]},\n'''.format(
+xmax={min_max[1]},\n""".format(
             pos=[rel_to_tikz(rel_pos[j], j) for j in range(2)],
             min_max=min_max,
             title=title_old,
-            number_format=number_format
-            )
+            number_format=number_format,
+        )
 
-        if color_bar.Orientation == 'Horizontal':
-            tikz_code += '''ytick=\empty,
+        if color_bar.Orientation == "Horizontal":
+            tikz_code += """ytick=\empty,
 height={height}cm,
 width={width}cm,
 xtick={{{tick}}},
 xtick pos=right,
 xtick align=outside,
-title style={{yshift=10pt,}},\n'''.format(
+title style={{yshift=10pt,}},\n""".format(
                 height=dots_to_tikz(color_bar.ScalarBarThickness),
                 width=rel_to_tikz(color_bar.ScalarBarLength, 0),
-                tick=tick_str
-                )
+                tick=tick_str,
+            )
 
         else:
-            tikz_code += '''xtick=\empty,
+            tikz_code += """xtick=\empty,
 height={height}cm,
 width={width}cm,
 ytick={{{tick}}},
 ytick pos=right,
-ytick align=outside,\n'''.format(
+ytick align=outside,\n""".format(
                 width=dots_to_tikz(color_bar.ScalarBarThickness),
                 height=rel_to_tikz(color_bar.ScalarBarLength, 1),
-                tick=tick_str
-                )
+                tick=tick_str,
+            )
 
-        tikz_code += ']\n\end{axis}\n'
+        tikz_code += "]\n\end{axis}\n"
         return tikz_code
 
     def get_tikz_string_categories(color_transfer_function, title_old):
@@ -1164,7 +1187,7 @@ ytick align=outside,\n'''.format(
         if len(annotations) % 2 == 0:
             n_labels = len(annotations) // 2
         else:
-            raise ValueError('Number of annotations should be dividable by 2')
+            raise ValueError("Number of annotations should be dividable by 2")
         labels = [int(annotations[2 * i]) for i in range(n_labels)]
 
         pos = [rel_to_tikz(rel_pos[j], j) for j in range(2)]
@@ -1174,11 +1197,11 @@ ytick align=outside,\n'''.format(
         label_length = (total_length - (n_labels - 1) * distance) / n_labels
 
         # Create a single axis for each label.
-        tikz_code = ''
+        tikz_code = ""
         for i, label in enumerate(labels):
 
             # Add the code that is valid for all types of labels.
-            tikz_code += '''\\begin{{axis}}[
+            tikz_code += """\\begin{{axis}}[
 axis line style={{draw opacity=0}},
 scale only axis,
 tick label style={{font=\\footnotesize}},
@@ -1187,49 +1210,53 @@ yticklabel={number_format},
 ymin={min_max[0]},
 ymax={min_max[1]},
 xmin={min_max[0]},
-xmax={min_max[1]},\n'''.format(
-                min_max=[label - 1, label + 1],
-                number_format=number_format
-                )
+xmax={min_max[1]},\n""".format(
+                min_max=[label - 1, label + 1], number_format=number_format
+            )
 
             # Get the tick.
             tick_str = str(label)
-            if color_bar.Orientation == 'Horizontal':
+            if color_bar.Orientation == "Horizontal":
                 pos_label = [pos[0] + (label_length + distance) * i, pos[1]]
-                pos_title = [pos[0] + 0.5 * total_length,
-                    pos[1] + height + dots_to_tikz(20)]
-                pos_align = 'south'
-                tikz_code += '''ytick=\empty,
+                pos_title = [
+                    pos[0] + 0.5 * total_length,
+                    pos[1] + height + dots_to_tikz(20),
+                ]
+                pos_align = "south"
+                tikz_code += """ytick=\empty,
 height={height}cm,
 width={width}cm,
 xtick={{{tick}}},
 xtick pos=left,
-xtick align=outside,\n'''.format(
-                    height=height,
-                    width=label_length,
-                    tick=tick_str
-                    )
+xtick align=outside,\n""".format(
+                    height=height, width=label_length, tick=tick_str
+                )
 
             else:
                 pos_label = [pos[0], pos[1] + (label_length + distance) * i]
-                pos_title = [pos[0] + height + dots_to_tikz(20),
-                    pos[1] + 0.5 * total_length]
-                pos_align = 'west'
-                tikz_code += '''xtick=\empty,
+                pos_title = [
+                    pos[0] + height + dots_to_tikz(20),
+                    pos[1] + 0.5 * total_length,
+                ]
+                pos_align = "west"
+                tikz_code += """xtick=\empty,
 height={height}cm,
 width={width}cm,
 ytick={{{tick}}},
 ytick pos=left,
-ytick align=outside,\n'''.format(
-                    height=label_length,
-                    width=height,
-                    tick=tick_str
-                    )
-            tikz_code += 'at={{({pos_label[0]}cm,{pos_label[1]}cm)}},\n'.format(
-                pos_label=pos_label)
-            tikz_code += ']\n\end{axis}\n'
-        tikz_code = '\\node[anchor={pos_align},inner sep=0] at ({pos[0]},{pos[1]}) {{{title}}};'.format(
-            pos=pos_title, title=title_old, pos_align=pos_align) + tikz_code
+ytick align=outside,\n""".format(
+                    height=label_length, width=height, tick=tick_str
+                )
+            tikz_code += "at={{({pos_label[0]}cm,{pos_label[1]}cm)}},\n".format(
+                pos_label=pos_label
+            )
+            tikz_code += "]\n\end{axis}\n"
+        tikz_code = (
+            "\\node[anchor={pos_align},inner sep=0] at ({pos[0]},{pos[1]}) {{{title}}};".format(
+                pos=pos_title, title=title_old, pos_align=pos_align
+            )
+            + tikz_code
+        )
 
         return tikz_code
 
@@ -1237,9 +1264,9 @@ ytick align=outside,\n'''.format(
         view = get_view()
 
     # Name of image and TikZ file.
-    image_name_full = name + '.png'
+    image_name_full = name + ".png"
     image_name = os.path.split(image_name_full)[-1]
-    tikz_name_full = name + '.tex'
+    tikz_name_full = name + ".tex"
 
     # Set options for colorbars.
     draw_tick_marks_old = []
@@ -1260,20 +1287,20 @@ ytick align=outside,\n'''.format(
             color_bar.DrawTickLabels = 0
             color_bar.DrawAnnotations = 0
             color_bar.AddRangeLabels = 0
-            color_bar.Title = ''
+            color_bar.Title = ""
 
     # Save the screenshot.
     pa.SaveScreenshot(
         image_name_full,
         view,
         ImageResolution=view.ViewSize,
-        OverrideColorPalette='WhiteBackground',
+        OverrideColorPalette="WhiteBackground",
         TransparentBackground=0,
-        FontScaling='Do not scale fonts'
-        )
+        FontScaling="Do not scale fonts",
+    )
 
     # Create the TikZ code
-    tikz_code = '''%% This file was created with pvutils
+    tikz_code = """%% This file was created with pvutils
 %% Use the following includes in the LaTeX header:
 %\\usepackage{{tikz}}
 %\\usepackage{{pgfplots}}
@@ -1282,18 +1309,20 @@ ytick align=outside,\n'''.format(
 %{{\\normalsize% Sometimes in figure environments a smaller font is selected -> uncomment this to activate the default font size
 \\begin{{tikzpicture}}
 % The -0.2pt here are needed, so the immage is really placed at the origin.
-\\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{image_path}}}}};\n'''.format(
-        scale=72.0 / dpi,
-        image_path=os.path.join(figure_path, image_name))
+\\node[anchor=south west,inner sep=-0.2pt] (image) at (0,0) {{\\includegraphics[scale={scale}]{{{image_path}}}}};\n""".format(
+        scale=72.0 / dpi, image_path=os.path.join(figure_path, image_name)
+    )
 
     if color_transfer_functions is not None:
         for i, color_transfer_function in enumerate(color_transfer_functions):
             if color_transfer_function.InterpretValuesAsCategories == 1:
                 tikz_code += get_tikz_string_categories(
-                    color_transfer_function, title_old[i])
+                    color_transfer_function, title_old[i]
+                )
             else:
                 tikz_code += get_tikz_string_continuous(
-                    color_transfer_function, title_old[i])
+                    color_transfer_function, title_old[i]
+                )
 
             # Reset the initial values for the color bar.
             color_bar = pa.GetScalarBar(color_transfer_function, view)
@@ -1303,8 +1332,8 @@ ytick align=outside,\n'''.format(
             color_bar.AddRangeLabels = add_range_labels_old[i]
             color_bar.Title = title_old[i]
 
-    tikz_code += '\end{tikzpicture}%\n%}%'
+    tikz_code += "\end{tikzpicture}%\n%}%"
 
     # Write TikZ code to file.
-    with open(tikz_name_full, 'w') as text_file:
+    with open(tikz_name_full, "w") as text_file:
         text_file.write(tikz_code)

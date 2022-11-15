@@ -19,8 +19,9 @@ def load_beam_to_solid(solid_path, beam_path):
     # Load the solid.
     solid = pvutils.load_file(solid_path)
     solid = pvutils.warp(solid)
-    pvutils.display(solid, line_color=[1.0, 1.0, 1.0],
-        representation='Surface With Edges')
+    pvutils.display(
+        solid, line_color=[1.0, 1.0, 1.0], representation="Surface With Edges"
+    )
     pvutils.contour(solid)
 
     # Load the beams.
@@ -50,24 +51,26 @@ def load_beam_to_solid_in_dir(path):
     """
 
     # Get all pvd files in the working directory.
-    pvd_files = [file for file in os.listdir(path) if file.endswith('pvd')]
+    pvd_files = [file for file in os.listdir(path) if file.endswith("pvd")]
 
     # Check if there is ONE structure and beam file.
-    structure_files = [file for file in pvd_files if '-structure.pvd' in file]
-    beam_files = [file for file in pvd_files if '-structure-beams.pvd' in file]
+    structure_files = [file for file in pvd_files if "-structure.pvd" in file]
+    beam_files = [file for file in pvd_files if "-structure-beams.pvd" in file]
     if not len(structure_files) == 1 and not len(beam_files) == 1:
-        raise NameError('Could not find a single solid and beam file. '
-            'Found {} solid and {} beam files.'.format(
-                len(structure_files), len(beam_files)))
+        raise NameError(
+            "Could not find a single solid and beam file. "
+            "Found {} solid and {} beam files.".format(
+                len(structure_files), len(beam_files)
+            )
+        )
 
     # Call the script.
     return load_beam_to_solid(
-        os.path.join(path, structure_files[0]),
-        os.path.join(path, beam_files[0])
-        )
+        os.path.join(path, structure_files[0]), os.path.join(path, beam_files[0])
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """Execute part of script."""
 
-    load_beam_to_solid_in_dir(os.environ['PWD'])
+    load_beam_to_solid_in_dir(os.environ["PWD"])

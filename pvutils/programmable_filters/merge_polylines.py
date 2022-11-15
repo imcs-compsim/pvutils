@@ -16,9 +16,9 @@ import numpy as np
 # Default value, if the angle of a corner is more than 45 degrees, the polyline
 # will be split there.
 max_angle = 0.5 * np.pi
-if hasattr(paraview, 'programmable_filter_kwargs'):
-    if 'max_angle' in paraview.programmable_filter_kwargs[kwargs_id].keys():
-        tmp = paraview.programmable_filter_kwargs[kwargs_id]['max_angle']
+if hasattr(paraview, "programmable_filter_kwargs"):
+    if "max_angle" in paraview.programmable_filter_kwargs[kwargs_id].keys():
+        tmp = paraview.programmable_filter_kwargs[kwargs_id]["max_angle"]
         if tmp is not None:
             max_angle = tmp
 
@@ -38,7 +38,7 @@ for i in range(pdi.GetPointData().GetNumberOfArrays()):
 n_cells = pdi.GetNumberOfCells()
 for i in range(n_cells):
     if not pdi.GetCellType(i) == 4:
-        raise ValueError('Only poly lines (vtk type 4) are supported')
+        raise ValueError("Only poly lines (vtk type 4) are supported")
 
 
 def find_connected_cells(pdi, cell_id):
@@ -51,15 +51,18 @@ def find_connected_cells(pdi, cell_id):
     global max_angle
 
     def vtk_id_to_list(vtk_id_list):
-        return [int(vtk_id_list.GetId(i_id)) for i_id in
-            range(vtk_id_list.GetNumberOfIds())]
+        return [
+            int(vtk_id_list.GetId(i_id)) for i_id in range(vtk_id_list.GetNumberOfIds())
+        ]
 
     def add_cell_recursive(connected_cell_points, old_cells, initial_point_id):
         import numpy as np
+
         pdi.GetPointCells(initial_point_id, id_list)
         cell_connectivity = vtk_id_to_list(id_list)
-        new_cell_ids = [cell_id for cell_id in cell_connectivity if
-            cell_id not in old_cells]
+        new_cell_ids = [
+            cell_id for cell_id in cell_connectivity if cell_id not in old_cells
+        ]
         if len(cell_connectivity) > 2 or len(new_cell_ids) == 0:
             # In this case we either have a bifurcation point or are at the end
             # the poly line.
@@ -67,8 +70,7 @@ def find_connected_cells(pdi, cell_id):
 
         # Add this cell and its points (in correct order).
         new_cell_id = new_cell_ids[0]
-        new_cell_point_ids = vtk_id_to_list(
-            pdi.GetCell(new_cell_id).GetPointIds())
+        new_cell_point_ids = vtk_id_to_list(pdi.GetCell(new_cell_id).GetPointIds())
         if new_cell_point_ids[0] == connected_cell_points[-1]:
             # First point of this cell is added to the last point of the last
             # cell.
@@ -88,16 +90,14 @@ def find_connected_cells(pdi, cell_id):
             # cell.
             extend = False
         else:
-            raise ValueError('This should not happen')
+            raise ValueError("This should not happen")
 
         # Check the angel of the corner and decide whether or not to merge
         # this.
         if extend:
-            corner_point_ids = (connected_cell_points[-2:] +
-                [new_cell_point_ids[1]])
+            corner_point_ids = connected_cell_points[-2:] + [new_cell_point_ids[1]]
         else:
-            corner_point_ids = ([new_cell_point_ids[-2]] +
-                connected_cell_points[:2])
+            corner_point_ids = [new_cell_point_ids[-2]] + connected_cell_points[:2]
         points = [np.array(pdi.GetPoint(j)) for j in corner_point_ids]
         vec_1 = points[1] - points[0]
         vec_1 = vec_1 / np.linalg.norm(vec_1)
@@ -117,14 +117,13 @@ def find_connected_cells(pdi, cell_id):
             connected_cell_points.extend(new_cell_point_ids[1:])
             next_start_index = -1
         else:
-            connected_cell_points = (new_cell_point_ids[:-1] +
-                connected_cell_points)
+            connected_cell_points = new_cell_point_ids[:-1] + connected_cell_points
             next_start_index = 0
 
         old_cells.append(new_cell_id)
         connected_cell_points, old_cells = add_cell_recursive(
-            connected_cell_points, old_cells,
-            new_cell_point_ids[next_start_index])
+            connected_cell_points, old_cells, new_cell_point_ids[next_start_index]
+        )
 
         return connected_cell_points, old_cells
 
@@ -135,9 +134,11 @@ def find_connected_cells(pdi, cell_id):
     start_id = connected_cell_points[0]
     end_id = connected_cell_points[-1]
     connected_cell_points, old_cells = add_cell_recursive(
-        connected_cell_points, old_cells, start_id)
+        connected_cell_points, old_cells, start_id
+    )
     connected_cell_points, old_cells = add_cell_recursive(
-        connected_cell_points, old_cells, end_id)
+        connected_cell_points, old_cells, end_id
+    )
 
     return old_cells, connected_cell_points
 
