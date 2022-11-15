@@ -26,8 +26,10 @@ for i in range(n_cells):
     old_cell = pdi.GetCell(i)
     n_points_old_cell = old_cell.GetNumberOfPoints()
 
-    if (type(old_cell) == vtk.vtkQuadraticHexahedron or
-            type(old_cell) == vtk.vtkTriQuadraticHexahedron):
+    if (
+        type(old_cell) == vtk.vtkQuadraticHexahedron
+        or type(old_cell) == vtk.vtkTriQuadraticHexahedron
+    ):
         n_points_new_cell = 8
         new_cell = vtk.vtkHexahedron()
     elif type(old_cell) == vtk.vtkQuadraticTetra:

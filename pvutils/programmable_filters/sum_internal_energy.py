@@ -13,14 +13,14 @@ pdi = self.GetInput()
 pdo = self.GetOutput()
 
 # Calculate the global internal energy.
-global_internal_energy = 0.
-energy_array = pdi.GetCellData().GetArray('element_internal_energy')
+global_internal_energy = 0.0
+energy_array = pdi.GetCellData().GetArray("element_internal_energy")
 for i_cell in range(energy_array.GetNumberOfTuples()):
     global_internal_energy += energy_array.GetTuple1(i_cell)
 
 # Create array for the global energy data.
 array = vtk.vtkDoubleArray()
-array.SetName('global_internal_energy')
+array.SetName("global_internal_energy")
 array.SetNumberOfComponents(1)
 array.InsertNextTuple1(global_internal_energy)
 
