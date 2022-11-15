@@ -987,7 +987,7 @@ if __name__ == '__main__':
     pa._DisableFirstRenderCameraReset()
 
     # Define the testing paths.
-    testing_path = os.path.abspath(os.getcwd())
+    testing_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     testing_reference = os.path.join(testing_path, 'reference-files')
     testing_temp = os.path.join(testing_path, 'testing-tmp')
 
