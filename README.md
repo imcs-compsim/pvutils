@@ -35,4 +35,10 @@ To setup local testing, modify your `~/.bashrc` to
 
 Then, all tests can be executed by
 - navigating to `tests/`
-- executing `test_local.sh` 
+- executing `test_local.sh`
+
+
+## Code formatting
+
+`pvutils` uses the the python code formatter [black](https://github.com/psf/black).
+The testsuite checks that all source files are formatted accordingly.
