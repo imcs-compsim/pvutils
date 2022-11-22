@@ -3,7 +3,8 @@
 A set of functions that should simplify the usability of `python` scripts in ParaView.
 
 - The directory `pvuitls` contains the files for this module, utility functions and ParaView filter wrappers. 
-- Some useful programmable filters can be found in the directory `filters`. To use one of the programmable filters in a script, use the function `programmable_filter` from `pvutils`.
+- Some useful programmable filters can be found in the directory `filters`.
+To use one of the programmable filters in a script, use the function `programmable_filter` from `pvutils`.
 
 
 ## ParaView version
@@ -14,13 +15,26 @@ The current version of this module is developed with [ParaView 5.10.1](https://w
 
 ## Execute scripts with `pvutils`
 
-Three different ways exist to execute a python ParaView script
+Three two ways exist to execute a python ParaView script
 
-- `<path to ParaView>/bin/pvpython <path to script>`: execute the script with the ParaView internal python interpreter. Per default no grapical window is opened.
-- `<path to ParaView>/bin/paraview --script=<path to script>`: execute the script with the default ParaView application. A GUI will be opened.
-- `python3 <path to script>`: execute the script with the system python interpreter. For this to work, certain path have to be in the environment variables. For details regarding the paths, have a look in the files `.gitlab.yml` and `tests/test_local.sh`.
+- Execute with the ParaView python interpreter (make sure that the path to the root `pvutils` directory is in `PYTHONPATH`):
+  - `<path to ParaView>/bin/pvpython <path to script>`: execute the script with the ParaView internal python interpreter.
+  Per default no graphical window is opened.
+  - `<path to ParaView>/bin/paraview --script=<path to script>`: execute the script with the default ParaView application.
+  A GUI will be opened.
 
-If the script uses `pvutils` the path to the root `pvutils` directory has to be in `PYTHONPATH`.
+- Execute with the system python interpreter `python3 <path to script>`.
+This the recommended way to add the ParaView script to an existing python workflow.
+For this to work, certain things have to be considered:
+  - Add the path to the ParaView python interface
+    ```
+    export PYTHONPATH="${PYTHONPATH}:${<path to ParaView>}/lib/python3.9/site-packages"
+    ```
+  - Add the path to the ParaView python libraries
+    ```
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${<path to ParaView>}/lib"
+    ```
+  - If your external python workflow depends on binary packages, e.g., `cython` or `numpy`, make sure the libraries provided by ParaView are compatible with your binaries.
 
 
 ## Testing
