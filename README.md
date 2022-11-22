@@ -17,21 +17,41 @@ The current version of this module is developed with [ParaView 5.10.1](https://w
 
 Three two ways exist to execute a python ParaView script
 
-- Execute with the ParaView python interpreter (make sure that the path to the root `pvutils` directory is in `PYTHONPATH`):
-  - `<path to ParaView>/bin/pvpython <path to script>`: execute the script with the ParaView internal python interpreter.
-  Per default no graphical window is opened.
-  - `<path to ParaView>/bin/paraview --script=<path to script>`: execute the script with the default ParaView application.
-  A GUI will be opened.
-
-- Execute with the system python interpreter `python3 <path to script>`.
-This the recommended way to add the ParaView script to an existing python workflow.
-For this to work, certain things have to be considered:
-  - Add the path to the ParaView python interface
+- Execute with the ParaView python interpreter.
+  Make sure that the path to the root `pvutils` directory is visible for python
+  ```bash
+  export PYTHONPATH="${PYTHONPATH}:${<path to pvutils>}
+  ```
+  - Execute the script with the ParaView internal python interpreter.
+    Per default no graphical window is opened.
+    ```bash
+    <path to ParaView>/bin/pvpython <path to script>
     ```
+  - Execute the script with the default ParaView application.
+    A GUI will be opened.
+    ```bash
+    <path to ParaView>/bin/paraview --script=<path to script>
+    ```
+
+- Execute with the system python interpreter
+  ```bash
+  python3 <path to script>
+  ```
+  This the recommended way to add the ParaView script to an existing python workflow.
+  For this to work, certain things have to be considered:
+  - Install `pvutils` in your pip environment
+    ```python
+    # Only use pvutils
+    pip install <path to pvutils>
+    # Develop pvutils
+    pip install -e <path to pvutils>
+    ```
+  - Add the path to the ParaView python interface
+    ```bash
     export PYTHONPATH="${PYTHONPATH}:${<path to ParaView>}/lib/python3.9/site-packages"
     ```
   - Add the path to the ParaView python libraries
-    ```
+    ```bash
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${<path to ParaView>}/lib"
     ```
   - If your external python workflow depends on binary packages, e.g., `cython` or `numpy`, make sure the libraries provided by ParaView are compatible with your binaries.
