@@ -45,6 +45,8 @@ for i in range(pdi.GetNumberOfPoints()):
         ]
     )
     eigen_values, eigen_vectors = np.linalg.eig(stress_tensor)
+    # TODO: sort the eigenvalues and the vectors
+    # eigen_values.sort()
     principal_stresses.InsertNextTuple3(*eigen_values)
     for i, direction in enumerate(directions):
         direction.InsertNextTuple3(*(eigen_vectors[i]))
