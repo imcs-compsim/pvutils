@@ -15,13 +15,23 @@ The current version of this module is developed with [ParaView 5.10.1](https://w
 
 ## Execute scripts with `pvutils`
 
-Three two ways exist to execute a python ParaView script
+The two basic ways to execute a python ParaView script are:
 
-- Execute with the ParaView python interpreter.
-  Make sure that the path to the root `pvutils` directory is visible for python
-  ```bash
-  export PYTHONPATH="${PYTHONPATH}:${<path to pvutils>}
-  ```
+- Execute with the **ParaView python interpreter** (`pvpython` or `paraview`).
+  Make sure that the path to the root `pvutils` directory is visible for the interpreter.
+  There are several ways to do this, e.g.,
+  - Add the path to the environment variable `PYTHONPATH`
+    ```bash
+    export PYTHONPATH="${PYTHONPATH}:${<path to pvutils>}
+    ```
+  - Add the path from within the python script
+    ```python
+    import sys
+    sys.path.append("<path to pvutils>")
+    ```
+
+  The call to the script can either be done with the ParaView python wrapper `pvutils` or the main ParaView application itself:
+
   - Execute the script with the ParaView internal python interpreter.
     Per default no graphical window is opened.
     ```bash
@@ -33,7 +43,7 @@ Three two ways exist to execute a python ParaView script
     <path to ParaView>/bin/paraview --script=<path to script>
     ```
 
-- Execute with the system python interpreter
+- Execute with the **system python interpreter**
   ```bash
   python3 <path to script>
   ```
@@ -54,7 +64,7 @@ Three two ways exist to execute a python ParaView script
     ```bash
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${<path to ParaView>}/lib"
     ```
-  - If your external python workflow depends on binary packages, e.g., `cython` or `numpy`, make sure the libraries provided by ParaView are compatible with your binaries.
+  - If your existing python workflow depends on binary packages, e.g., `cython` or `numpy`, make sure the libraries provided by ParaView are compatible with your binaries.
 
 
 ## Testing
