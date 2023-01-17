@@ -3,6 +3,7 @@
 #------------------------------------------------------------------------------
 
 stages:
+    - check_code
     - testing
 
 
@@ -43,6 +44,21 @@ variables:
     tags:
         - "imcs-all"
 
+.pvutils-code-check: &pvutils-code-check
+    stage: check_code
+    script:
+        - "whoami"
+        - "pwd"
+        # Setup virtual environment.
+        - "${PYTHON_EXE} -m venv ${PYTHON_VENV}"
+        - source "${PYTHON_VENV}/bin/activate"
+        - pip install black
+        # Run code check.
+        - 'black . --check --exclude="${PYTHON_VENV}" && exit 0'
+        # If we did not exit earlier, raise an error here
+        - "exit 1"
+    tags:
+        - "imcs-all"
 
 #------------------------------------------------------------------------------
 # Actual jobs for testing.
@@ -59,3 +75,9 @@ variables:
         GITLAB_TESTING_COMMAND: "/hdd/gitlab-runner/lib/spack/opt/spack/linux-ubuntu20.04-broadwell/gcc-9.4.0/python-3.9.15-ul7tj5r5qn3unewqfwxrlu3blvmrec4u/bin/python3"
         APPEND_TO_PYTHONPATH: "${PARAVIEW_PATH}/lib/python3.9/site-packages"
         APPEND_TO_LD_LIBRARY_PATH: "${PARAVIEW_PATH}/lib"
+
+code-check:
+    << : *pvutils-code-check
+    variables:
+        PYTHON_EXE: "/hdd/gitlab-runner/lib/spack/opt/spack/linux-ubuntu20.04-broadwell/gcc-9.4.0/python-3.9.15-ul7tj5r5qn3unewqfwxrlu3blvmrec4u/bin/python3"
+        PYTHON_VENV: "env"
