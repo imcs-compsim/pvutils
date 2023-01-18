@@ -47,7 +47,7 @@ The two basic ways to execute a python ParaView script are:
   ```bash
   python3 <path to script>
   ```
-  This the recommended way to add the ParaView script to an existing python workflow.
+  This is the recommended way to add the ParaView script to an existing python workflow.
   For this to work, certain things have to be considered:
   - Install `pvutils` in your pip environment
     ```python
@@ -75,7 +75,7 @@ The unit tests are defined in `tests/testing.pvutils.py`.
 
 To setup local testing, modify your `~/.bashrc` to
 - point the environment variable `PARAVIEW_PATH` pointing to the root directory of the ParaView installation (the one containing `bin` and `lib`)
-- include th repository `pvutils` into your `PYTHONPATH`.
+- include the repository `pvutils` into your `PYTHONPATH`.
 
 Then, all tests can be executed by
 - navigating to `tests/`
