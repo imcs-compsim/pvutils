@@ -2,7 +2,7 @@
 This script sum the cell value element_internal_energy for all cells.
 
 Use with programmable filter in paraview and execute with:
->> exec(open('path to file').read())
+>> exec(open("<path to file>").read())
 """
 
 # Import paraview moudles.

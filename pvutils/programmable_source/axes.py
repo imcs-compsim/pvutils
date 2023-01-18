@@ -3,7 +3,7 @@ This script generates a point with vector data. Can be used to visualize
 coordinate axes.
 
 Use with programmable source filter in paraview and execute with:
->> exec(open('path to file').read())
+>> exec(open("<path to file>").read())
 """
 
 from paraview import vtk

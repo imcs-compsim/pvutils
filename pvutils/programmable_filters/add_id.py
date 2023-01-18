@@ -2,7 +2,7 @@
 This script adds a field variable with the node and cell ids respectively.
 
 Use with programmable filter in paraview and execute with:
->> exec(open('path to file').read())
+>> exec(open("<path to file>").read())
 """
 
 # Import paraview moudles.

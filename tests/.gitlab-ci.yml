@@ -14,6 +14,7 @@ stages:
 variables:
     # Clone repository by default.
     GIT_STRATEGY: clone
+
     # Flag that GitLab testing is active
     GITLAB_TESTING: 1
 
@@ -25,22 +26,35 @@ variables:
 # Templates for the testing jobs.
 #------------------------------------------------------------------------------
 
-.pvutils-testing: &pvutils-testing
+.pvpython-testing: &pvpython-testing
     stage: testing
     script:
         - "whoami"
         - "pwd"
-        # Set system paths.
-        - export PYTHONPATH="${PYTHONPATH}:${APPEND_TO_PYTHONPATH}"
+        # Add the path to pvutils to the python path.
         - export PYTHONPATH="${PYTHONPATH}:$(pwd)"
         - echo PYTHONPATH=$PYTHONPATH
-        - export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${APPEND_TO_LD_LIBRARY_PATH}"
-        - echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH
         # Run tests.
         - "cd tests"
-        - "echo \"Testing with the following command\""
-        - "echo ${GITLAB_TESTING_COMMAND}"
-        - "${GITLAB_TESTING_COMMAND} testing_pvutils.py"
+        - "${PARAVIEW_PATH}/bin/pvpython testing_pvutils.py"
+    tags:
+        - "imcs-all"
+
+.python-testing: &python-testing
+    stage: testing
+    script:
+        - "whoami"
+        - "pwd"
+        # Setup python environment.
+        - ${PYTHON_EXE} -m venv env
+        - source env/bin/activate
+        - pip install -e .
+        # Set paths to find ParaView paths.
+        - export PYTHONPATH="${PYTHONPATH}:${APPEND_TO_PYTHONPATH}"
+        - export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${APPEND_TO_LD_LIBRARY_PATH}"
+        # Run tests.
+        - "cd tests"
+        - "python3 testing_pvutils.py"
     tags:
         - "imcs-all"
 
@@ -65,14 +79,12 @@ variables:
 #------------------------------------------------------------------------------
 
 5.10.1-pvpython:
-    << : *pvutils-testing
-    variables:
-        GITLAB_TESTING_COMMAND: "${PARAVIEW_PATH}/bin/pvpython"
+    << : *pvpython-testing
 
 5.10.1-system-python:
-    << : *pvutils-testing
+    << : *python-testing
     variables:
-        GITLAB_TESTING_COMMAND: "/hdd/gitlab-runner/lib/spack/opt/spack/linux-ubuntu20.04-broadwell/gcc-9.4.0/python-3.9.15-ul7tj5r5qn3unewqfwxrlu3blvmrec4u/bin/python3"
+        PYTHON_EXE: "/hdd/gitlab-runner/lib/spack/opt/spack/linux-ubuntu20.04-broadwell/gcc-9.4.0/python-3.9.15-ul7tj5r5qn3unewqfwxrlu3blvmrec4u/bin/python3"
         APPEND_TO_PYTHONPATH: "${PARAVIEW_PATH}/lib/python3.9/site-packages"
         APPEND_TO_LD_LIBRARY_PATH: "${PARAVIEW_PATH}/lib"
 
