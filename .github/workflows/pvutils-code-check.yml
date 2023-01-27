@@ -29,6 +29,9 @@ jobs:
         run: |
           $PYTHON_EXE -m venv $PYTHON_VENV
           source $PYTHON_VENV/bin/activate
+          cd tests
+          python3 testing_header.py
+          cd ..
           pip install black
           black . --check --exclude="$PYTHON_VENV" && exit 0
           exit 1
