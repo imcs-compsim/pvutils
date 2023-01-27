@@ -3,9 +3,9 @@
 # PVUTILS: Utility tools for the ParaView python interface
 #
 # Copyright 2023 Ivo Steinbrecher & Matthias Mayr
-#                 Institute for Mathematics and Computer-based Simulation
-#                 University of the Bundeswehr Munich
-#                 https://www.unibw.de/imcs-en
+#                Institute for Mathematics and Computer-based Simulation
+#                University of the Bundeswehr Munich
+#                https://www.unibw.de/imcs-en
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
