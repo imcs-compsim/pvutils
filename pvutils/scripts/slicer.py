@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Slices a 3d geometry with a series of planes.
@@ -46,9 +45,7 @@ s.SliceType.Normal = slice_normal
 slice1 = GetActiveSource()
 renderView1 = GetActiveViewOrCreate("RenderView")
 slice1Display = Show(slice1, renderView1, "GeometryRepresentation")
-# Turn of plane rendering.
 Hide3DWidgets(proxy=slice1.SliceType)
-# set scalar coloring
 if coloring_specified:
     ColorBy(slice1Display, coloring)
 
