@@ -1,6 +1,6 @@
 # Macros in ParaView
 
-Add a macro in ParaView with the following code (path to pvuitls must be set):
+Add a macro in ParaView with the following code (path to pvutils must be set):
 ```python
 # -*- coding: utf-8 -*-
 import sys
