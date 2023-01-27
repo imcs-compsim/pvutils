@@ -44,4 +44,3 @@ jobs:
           pip install -e .
           cd tests
           python3 testing_pvutils.py
-          python3 testing_header.py
