@@ -1,0 +1,34 @@
+name: pvutils-code-check
+
+on: 
+  workflow_call:
+    inputs:
+      PYTHON_EXE:
+        required: true
+        type: string
+      PYTHON_VENV:
+        required: true
+        type: string
+
+jobs:
+  testing:
+    name: pvutils-code-check
+    runs-on: self-hosted
+    env:
+      PYTHON_EXE: ${{inputs.PYTHON_EXE}}
+      PYTHON_VENV: ${{inputs.PYTHON_VENV}}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Display user name
+        run: "whoami"
+      - name: Print the working directory
+        run: "pwd"
+      - name: Setup virtual environment, install black and run code check
+        run: |
+          $PYTHON_EXE -m venv $PYTHON_VENV
+          source $PYTHON_VENV/bin/activate
+          pip install black
+          black . --check --exclude="$PYTHON_VENV" && exit 0
+          exit 1

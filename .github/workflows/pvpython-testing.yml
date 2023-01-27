@@ -1,0 +1,28 @@
+name: pvpython-testing
+
+on: 
+  workflow_call:
+    inputs:
+      PARAVIEW_PATH:
+        required: true
+        type: string
+
+jobs:
+  testing:
+    name: pvpython-testing
+    runs-on: self-hosted
+    env:
+      PARAVIEW_PATH: ${{inputs.PARAVIEW_PATH}}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Display user name
+        run: "whoami"
+      - name: Print the working directory
+        run: "pwd"
+      - name: Add the path to pvutils to the python path.
+        run: echo "PYTHONPATH="${PYTHONPATH}:$(pwd)"" >> $GITHUB_ENV
+      - name: Run tests
+        working-directory: ./tests
+        run: "$PARAVIEW_PATH/bin/pvpython testing_pvutils.py"

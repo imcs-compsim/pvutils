@@ -1,0 +1,46 @@
+name: python-testing
+
+on: 
+  workflow_call:
+    inputs:
+      PARAVIEW_PATH:
+          required: true
+          type: string
+      PYTHON_EXE:
+        required: true
+        type: string
+      PARAVIEW_SITE_PACKAGES:
+        required: true
+        type: string
+      PARAVIEW_LIBRARY_PATH:
+        required: true
+        type: string
+
+jobs:
+  testing:
+    name: python-testing
+    runs-on: self-hosted
+    env:
+      PYTHON_EXE: ${{inputs.PYTHON_EXE}}
+      APPEND_TO_PYTHONPATH: ${{inputs.PARAVIEW_PATH}}${{inputs.PARAVIEW_SITE_PACKAGES}}
+      APPEND_TO_LD_LIBRARY_PATH: ${{inputs.PARAVIEW_PATH}}${{inputs.PARAVIEW_LIBRARY_PATH}}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Display user name
+        run: "whoami"
+      - name: Print the working directory
+        run: "pwd"
+      - name: Set Python path
+        run: echo "PYTHONPATH="${PYTHONPATH}:$APPEND_TO_PYTHONPATH"" >> $GITHUB_ENV
+      - name: Set Ld library path
+        run: echo "LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$APPEND_TO_LD_LIBRARY_PATH"" >> $GITHUB_ENV
+      - name: Setup python environment, Paraview paths and run tests
+        run: |
+          $PYTHON_EXE -m venv env
+          ls -l
+          source env/bin/activate 
+          pip install -e .
+          cd tests
+          python3 testing_pvutils.py
