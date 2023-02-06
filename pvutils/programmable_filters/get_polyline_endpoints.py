@@ -31,7 +31,6 @@ n_cells = pdi.GetNumberOfCells()
 vtk_points = vtk.vtkPoints()
 for i in range(n_cells):
     if isinstance(pdi.GetCell(i), vtk.vtkPolyLine):
-
         # Get the first and last node indices on the polyline.
         n_cell_nodes = pdi.GetCell(i).GetNumberOfPoints()
         id1 = pdi.GetCell(i).GetPointId(0)

@@ -22,7 +22,6 @@ for i in range(pdi.GetPointData().GetNumberOfArrays()):
 n_cells = pdi.GetNumberOfCells()
 new_cells = []
 for i in range(n_cells):
-
     old_cell = pdi.GetCell(i)
     n_points_old_cell = old_cell.GetNumberOfPoints()
 

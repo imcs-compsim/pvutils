@@ -95,7 +95,6 @@ def surface_to_blender(
     cell_connectivity = vtk_data["cell_connectivity"]
     blender_cell_group = {}
     if "blender_cell_group" in cell_data.keys():
-
         # Get all vertices for all grouped cells.
         for i_cell, cell_group in enumerate(cell_data["blender_cell_group"]):
             cell_group_int = int(cell_group)
@@ -243,7 +242,6 @@ def fibers_to_blender(
         vtk_data = pvutils.get_vtk_data_as_numpy(item, coordinates=True)
 
         for i_cell in range(n_elements_total):
-
             # Get the relevant positions for this cell.
             cell_positions = vtk_data["coordinates"][cell_relevant_nodes[i_cell]]
 
