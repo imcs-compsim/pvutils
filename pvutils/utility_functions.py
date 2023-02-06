@@ -197,7 +197,6 @@ def get_field_names(item):
         (visualization_data.GetCellData, "CELLS"),
         (visualization_data.GetPointData, "POINTS"),
     ]:
-
         # Create the entry in the return dictionary.
         return_dict[data_type] = []
 
@@ -525,7 +524,6 @@ def print_view_state(view, *args):
     extra_args = get_function_arguments("extra_args", default_value=[])
     args.extend(extra_args)
     for name, arg in args:
-
         item_string = str(arg)
         if "ScalarBarWidgetRepresentation" in item_string:
             # Display the color bar attributes.
@@ -1220,7 +1218,6 @@ ytick align=outside,\n""".format(
         # Create a single axis for each label.
         tikz_code = ""
         for i, label in enumerate(labels):
-
             # Add the code that is valid for all types of labels.
             tikz_code += """\\begin{{axis}}[
 axis line style={{draw opacity=0}},

@@ -108,7 +108,6 @@ def compare_data(data1, data2, raise_error=False, tol_float=None):
 
         # Compare each array.
         for i in range(data1.GetNumberOfArrays()):
-
             # Get the arrays with the same name.
             name = data1.GetArrayName(i)
             array1 = data1.GetArray(name)
@@ -117,7 +116,6 @@ def compare_data(data1, data2, raise_error=False, tol_float=None):
 
     # Perform all checks, catch errors.
     try:
-
         # Compare the point positions.
         compare_arrays(
             data1.GetPoints().GetData(),
