@@ -8,10 +8,11 @@ To use one of the programmable filters in a script, use the function `programmab
 
 
 ## How to cite
-If you use `pvutils` to create figures for your work, please acknowledge it with a link to the GitHub repository.
-For example:
-- Illustrations in this work have been created using the ParaView scripting toolbox `pvutils` ([https://github.com/imcs-compsim/pvutils](https://github.com/imcs-compsim/pvutils)).
+If you use `pvutils` to create figures for your work, please acknowledge it with a link to the GitHub repository, for example:
 
+> Illustrations in this work have been created using the ParaView scripting toolbox `pvutils` ([https://github.com/imcs-compsim/pvutils](https://github.com/imcs-compsim/pvutils)).
+
+Feel free to leave us a :star: on [GitHub](https://github.com/imcs-compsim/pvutils).
 
 ## ParaView version
 
