@@ -84,7 +84,6 @@ if coloring_specified:
     ColorBy(slice1Display, coloring)
 
 for i, z in enumerate(z_s):
-
     print("Slicing at z = " + str(z) + ".")
     slice.SliceType.Origin = [x * z for x in slice_normal]
 
