@@ -39,6 +39,7 @@ def load_beam_to_solid(solid_path, beam_path):
 
     # Load the solid.
     solid = pvutils.load_file(solid_path)
+    solid = pa.CleantoGrid(Input=solid)
     solid = pvutils.warp(solid)
     pvutils.display(
         solid, line_color=[1.0, 1.0, 1.0], representation="Surface With Edges"
