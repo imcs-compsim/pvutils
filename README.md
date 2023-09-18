@@ -37,7 +37,7 @@ The two basic ways to execute a python ParaView script are:
     sys.path.append("<path to pvutils>")
     ```
 
-  The call to the script can either be done with the ParaView python wrapper `pvutils` or the main ParaView application itself:
+  The call to the script can either be done with the ParaView python wrapper `pvpython` or the main ParaView application itself:
 
   - Execute the script with the ParaView internal python interpreter.
     Per default no graphical window is opened.
