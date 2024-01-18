@@ -338,7 +338,7 @@ class TestPvutils(unittest.TestCase):
         display.SetScalarBarVisibility(view, True)
         color_function_kappa = pa.GetColorTransferFunction("curvature_2_GPs")
         color_bar_kappa = pa.GetScalarBar(color_function_kappa, view)
-        color_bar_kappa.Title = "$\kappa$"
+        color_bar_kappa.Title = "$\\kappa$"
         color_bar_kappa.ComponentTitle = ""
         color_bar_kappa.WindowLocation = "Any Location"
         color_bar_kappa.Position = [0.69, 0.2]

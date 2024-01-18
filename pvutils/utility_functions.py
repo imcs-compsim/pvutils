@@ -1165,7 +1165,7 @@ xmax={min_max[1]},\n""".format(
         )
 
         if color_bar.Orientation == "Horizontal":
-            tikz_code += """ytick=\empty,
+            tikz_code += """ytick=\\empty,
 height={height}cm,
 width={width}cm,
 xtick={{{tick}}},
@@ -1178,7 +1178,7 @@ title style={{yshift=10pt,}},\n""".format(
             )
 
         else:
-            tikz_code += """xtick=\empty,
+            tikz_code += """xtick=\\empty,
 height={height}cm,
 width={width}cm,
 ytick={{{tick}}},
@@ -1189,7 +1189,7 @@ ytick align=outside,\n""".format(
                 tick=tick_str,
             )
 
-        tikz_code += "]\n\end{axis}\n"
+        tikz_code += "]\n\\end{axis}\n"
         return tikz_code
 
     def get_tikz_string_categories(color_transfer_function, title_old):
@@ -1241,7 +1241,7 @@ xmax={min_max[1]},\n""".format(
                     pos[1] + height + dots_to_tikz(20),
                 ]
                 pos_align = "south"
-                tikz_code += """ytick=\empty,
+                tikz_code += """ytick=\\empty,
 height={height}cm,
 width={width}cm,
 xtick={{{tick}}},
@@ -1257,7 +1257,7 @@ xtick align=outside,\n""".format(
                     pos[1] + 0.5 * total_length,
                 ]
                 pos_align = "west"
-                tikz_code += """xtick=\empty,
+                tikz_code += """xtick=\\empty,
 height={height}cm,
 width={width}cm,
 ytick={{{tick}}},
@@ -1268,7 +1268,7 @@ ytick align=outside,\n""".format(
             tikz_code += "at={{({pos_label[0]}cm,{pos_label[1]}cm)}},\n".format(
                 pos_label=pos_label
             )
-            tikz_code += "]\n\end{axis}\n"
+            tikz_code += "]\n\\end{axis}\n"
         tikz_code = (
             "\\node[anchor={pos_align},inner sep=0] at ({pos[0]},{pos[1]}) {{{title}}};".format(
                 pos=pos_title, title=title_old, pos_align=pos_align
@@ -1350,7 +1350,7 @@ ytick align=outside,\n""".format(
             color_bar.AddRangeLabels = add_range_labels_old[i]
             color_bar.Title = title_old[i]
 
-    tikz_code += "\end{tikzpicture}%\n%}%"
+    tikz_code += "\\end{tikzpicture}%\n%}%"
 
     # Write TikZ code to file.
     with open(tikz_name_full, "w") as text_file:
