@@ -429,45 +429,26 @@ def get_view():
     return pa.GetActiveViewOrCreate("RenderView")
 
 
-def setup_view(*args, **kwargs):
+def setup_view(*args, view=None, view_name=None, size_pixel_name=None, fixed_size=None):
     """
     Allow the user to setup and return the relevant values.
+
+    Args
+    ----
+    args:
+        Will be passed to print_view_state
+    view:
+        The current view object. If none is given, the default one is taken.
+    view_name:
+        Name of the view object in the print out. You can add spaces here to
+        directly copy the resulting print output to the code.
+    size_pixel_name:
+        Name of the variable that holds the view size in pixel.
+    fixed_size:
+        If the size of the view should be fixed, i.e., preview mode should be
+        used. If pvpython is used, this does not have an effect. The size
+        will be taken from view.
     """
-
-    # When python3 is used this construct will be obsolete.
-    if sys.version_info >= (3, 0):
-        raise ValueError(
-            "The keyword management in setup_view should be adapted to python3."
-        )
-
-    # Default keyword arguments.
-    kwargs_default = {
-        # The current view object. If none is given, the default one is taken.
-        "view": None,
-        # Name of the view object in the print out. You can add spaces here to
-        # directly copy the resulting print output to the code.
-        "view_name": None,
-        # Name of the variable that holds the view size in pixel.
-        "size_pixel_name": None,
-        # If the size of the view should be fixed, i.e. preview mode should be
-        # used. If pvpython is used, this does not have an effect. The size
-        # will be taken from view.
-        "fixed_size": False,
-    }
-
-    # Set the keyword arguments.
-    for key in kwargs_default.keys():
-        if key in kwargs:
-            value = kwargs[key]
-            del kwargs[key]
-        else:
-            value = kwargs_default[key]
-        exec(key + " = value")
-    # Check that no keyword arguments remain.
-    if len(kwargs) > 0:
-        raise ValueError(
-            "Unsupported keyword arguments {} given.".format(kwargs.keys())
-        )
 
     # Get the view object.
     if view is None:
