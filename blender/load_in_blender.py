@@ -159,7 +159,7 @@ def load_surface(name, base_dir):
     """
 
     # Load the the data.
-    bpy.ops.import_mesh.ply(filepath=os.path.join(base_dir, name + "_mesh.ply"))
+    bpy.ops.wm.ply_import(filepath=os.path.join(base_dir, name + "_mesh.ply"))
     obj = bpy.context.active_object
     obj.name = name
     pv_data = np.load(
