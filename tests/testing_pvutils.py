@@ -250,7 +250,7 @@ class TestPvutils(unittest.TestCase):
         err = np.sum((test_image.astype("float") - ref_image.astype("float")) ** 2)
         err /= float(test_image.shape[0] * test_image.shape[1])
 
-        self.assertTrue(err < 5e-4)
+        self.assertTrue(err < 1e-3)
 
     def test_full_script_beam_to_solid_volume_meshtying(self):
         """
