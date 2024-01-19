@@ -16,8 +16,7 @@ Feel free to leave us a :star: on [GitHub](https://github.com/imcs-compsim/pvuti
 
 ## ParaView version
 
-Unfortunately the ParaView scripting interface changes with minor version.
-The current version of this module is developed with [ParaView 5.10.1](https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-MPI-Linux-Python3.9-x86_64.tar.gz).
+The current version of this module is developed with [ParaView 5.11.2](https://www.paraview.org).
 
 
 ## Execute scripts with `pvutils`

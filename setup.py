@@ -31,6 +31,6 @@ setup(
     description="Utils for ParaView",
     packages=["blender", "pvutils"],
     install_requires=[
-        "numpy==1.21.1",  # This is the version provided with ParaView 5.10.1
+        "numpy",  # There can be issues if the numpy version installed by pip does not match the one provided by ParaView
     ],
 )
