@@ -622,16 +622,18 @@ class TestPvutils(unittest.TestCase):
         )
         pa.Show(clipped_data)
 
-        ref_file = os.path.join(testing_reference, "clip_vtk", "clip.vtu")
-        ref_data = pvutils.load_file(ref_file)
-
-        # Compare the vtk file with the reference file.
-        self.assertTrue(
-            compare_data(
-                pa.servermanager.Fetch(clipped_data),
-                pa.servermanager.Fetch(ref_data),
-                raise_error=True,
-            )
+        # Compare the current view with the reference image.
+        view = pa.GetActiveViewOrCreate("RenderView")
+        view.CameraPosition = [-0.636703, -2.2793, -12.2587]
+        view.CameraFocalPoint = [2.45883, 2.44571, -1.83966]
+        view.CameraViewUp = [-0.964942, 0.132204, 0.226734]
+        view.CameraViewAngle = 30
+        view.CameraParallelScale = 1.73
+        view.OrientationAxesVisibility = 0
+        view.CameraParallelProjection = 0
+        view.InteractionMode = "3D"
+        self._save_screenshot_and_compare(
+            view, OverrideColorPalette="WhiteBackground", TransparentBackground=0
         )
 
     def test_beam_display(self):
