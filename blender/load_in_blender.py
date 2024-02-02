@@ -79,7 +79,7 @@ def create_fiber(nodes, pv_data, i_fiber):
 
     # Add cross-section.
     bpy.ops.curve.primitive_bezier_circle_add(
-        radius=pv_data[b"fiber_radii"][i_fiber],
+        radius=pv_data["fiber_radii"][i_fiber],
         enter_editmode=False,
         location=(0, 0, 0),
     )
@@ -105,7 +105,7 @@ def create_fiber(nodes, pv_data, i_fiber):
 
     # Add shape keys for each time step.
     obj = bpy.context.active_object
-    frames = pv_data[b"frames"]
+    frames = pv_data["frames"]
     for i_frame in range(len(frames)):
         if i_frame == 0:
             name = "Basis"
@@ -117,8 +117,8 @@ def create_fiber(nodes, pv_data, i_fiber):
         set_fiber_position(
             shape_key,
             nodes,
-            pv_data[b"coordinates"][i_frame],
-            pv_data[b"tangents"][i_frame],
+            pv_data["coordinates"][i_frame],
+            pv_data["tangents"][i_frame],
         )
 
         # Set the key frame sequence.
@@ -144,7 +144,7 @@ def load_fibers(file_name):
     pv_data = np.load(file_name, allow_pickle=True, encoding="bytes")[()]
 
     # Loop over beams.
-    connectivity = pv_data[b"connectivity"]
+    connectivity = pv_data["connectivity"]
     for i_fiber, nodes in enumerate(connectivity):
         create_fiber(nodes, pv_data, i_fiber)
         print("Finished fiber {}/{}".format(i_fiber + 1, len(connectivity)))
@@ -159,14 +159,14 @@ def load_surface(name, base_dir):
     """
 
     # Load the the data.
-    bpy.ops.import_mesh.ply(filepath=os.path.join(base_dir, name + "_mesh.ply"))
+    bpy.ops.wm.ply_import(filepath=os.path.join(base_dir, name + "_mesh.ply"))
     obj = bpy.context.active_object
     obj.name = name
     pv_data = np.load(
         os.path.join(base_dir, name + "_data.npy"), allow_pickle=True, encoding="bytes"
     )[()]
-    frames = pv_data[b"frames"]
-    position = pv_data[b"position"]
+    frames = pv_data["frames"]
+    position = pv_data["position"]
 
     # Add shape keys for each time step.
     for i_frame in range(len(frames)):
@@ -190,7 +190,7 @@ def load_surface(name, base_dir):
         )
 
     # Set the groups.
-    blender_cell_group = pv_data[b"blender_cell_group"]
+    blender_cell_group = pv_data["blender_cell_group"]
     for key in blender_cell_group.keys():
         new_vertex_group = obj.vertex_groups.new(name="cell_group_" + str(key))
         vertex_group_data = blender_cell_group[key]
