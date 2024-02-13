@@ -3,7 +3,7 @@ name: pvutils-code-check
 on: 
   workflow_call:
     inputs:
-      PYTHON_EXE:
+      SPACK_ACTIVATION_SCRIPT:
         required: true
         type: string
       PYTHON_VENV:
@@ -15,7 +15,7 @@ jobs:
     name: pvutils-code-check
     runs-on: self-hosted
     env:
-      PYTHON_EXE: ${{inputs.PYTHON_EXE}}
+      SPACK_ACTIVATION_SCRIPT: ${{inputs.SPACK_ACTIVATION_SCRIPT}}
       PYTHON_VENV: ${{inputs.PYTHON_VENV}}
     steps:
       - uses: actions/checkout@v3
@@ -27,7 +27,9 @@ jobs:
         run: "pwd"
       - name: Setup virtual environment, install black and run code check
         run: |
-          $PYTHON_EXE -m venv $PYTHON_VENV
+          . ${SPACK_ACTIVATION_SCRIPT}
+          spack load python@3.9.15
+          python3 -m venv $PYTHON_VENV
           source $PYTHON_VENV/bin/activate
           cd tests
           python3 testing_header.py

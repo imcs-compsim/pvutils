@@ -20,12 +20,12 @@ jobs:
     uses: ./.github/workflows/python-testing.yml
     with:
       PARAVIEW_PATH: /imcs/public/compsim/opt/ParaView-5.11.2-osmesa-MPI-Linux-Python3.9-x86_64/
-      PYTHON_EXE: "/hdd/gitlab-runner/lib/spack/opt/spack/linux-ubuntu20.04-broadwell/gcc-9.4.0/python-3.9.15-ul7tj5r5qn3unewqfwxrlu3blvmrec4u/bin/python3"
+      SPACK_ACTIVATION_SCRIPT: /home_local/github-runner/testing_lib/spack/share/spack/setup-env.sh
       PARAVIEW_SITE_PACKAGES: "/lib/python3.9/site-packages"
       PARAVIEW_LIBRARY_PATH: "/lib"
   
   code-check:
     uses: ./.github/workflows/pvutils-code-check.yml
     with:
-      PYTHON_EXE: "/hdd/gitlab-runner/lib/spack/opt/spack/linux-ubuntu20.04-broadwell/gcc-9.4.0/python-3.9.15-ul7tj5r5qn3unewqfwxrlu3blvmrec4u/bin/python3"
+      SPACK_ACTIVATION_SCRIPT: /home_local/github-runner/testing_lib/spack/share/spack/setup-env.sh
       PYTHON_VENV: "env"
