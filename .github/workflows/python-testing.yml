@@ -6,7 +6,7 @@ on:
       PARAVIEW_PATH:
           required: true
           type: string
-      PYTHON_EXE:
+      SPACK_ACTIVATION_SCRIPT:
         required: true
         type: string
       PARAVIEW_SITE_PACKAGES:
@@ -21,7 +21,7 @@ jobs:
     name: python-testing
     runs-on: self-hosted
     env:
-      PYTHON_EXE: ${{inputs.PYTHON_EXE}}
+      SPACK_ACTIVATION_SCRIPT: ${{inputs.SPACK_ACTIVATION_SCRIPT}}
       APPEND_TO_PYTHONPATH: ${{inputs.PARAVIEW_PATH}}${{inputs.PARAVIEW_SITE_PACKAGES}}
       APPEND_TO_LD_LIBRARY_PATH: ${{inputs.PARAVIEW_PATH}}${{inputs.PARAVIEW_LIBRARY_PATH}}
     steps:
@@ -38,7 +38,9 @@ jobs:
         run: echo "LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$APPEND_TO_LD_LIBRARY_PATH"" >> $GITHUB_ENV
       - name: Setup python environment, Paraview paths and run tests
         run: |
-          $PYTHON_EXE -m venv env
+          . ${SPACK_ACTIVATION_SCRIPT}
+          spack load python@3.9.15
+          python3 -m venv env
           ls -l
           source env/bin/activate 
           pip install -e .
